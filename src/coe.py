@@ -7,6 +7,13 @@ class Metrics:
     def __init__(self):
         pass
 
+    def _angle_between(self, a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
+        cosine = torch.dot(a, b) / (
+            torch.norm(a, p=2).clamp_min(1e-12) * torch.norm(b, p=2).clamp_min(1e-12)
+        )
+        cosine = torch.clamp(cosine, min=-1.0, max=1.0)
+        return torch.acos(cosine)
+
     def _transformer_states(
         self, hidden_states: tuple[torch.Tensor, ...]
     ) -> tuple[torch.Tensor, ...]:
@@ -49,23 +56,14 @@ class Metrics:
         scores = []
         first_state = states[0].float().reshape(-1)
         last_state = states[-1].float().reshape(-1)
-        total_change = torch.nn.functional.cosine_similarity(
-            first_state.unsqueeze(0),
-            last_state.unsqueeze(0),
-            dim=1,
-        ).squeeze(0)
-        total_change = total_change.abs().clamp_min(1e-12)
+        total_change = self._angle_between(first_state, last_state).clamp_min(1e-12)
 
         for previous_state, current_state in self._layer_pairs(hidden_states):
             previous_state = previous_state.float().reshape(-1)
             current_state = current_state.float().reshape(-1)
 
-            score = torch.nn.functional.cosine_similarity(
-                previous_state.unsqueeze(0),
-                current_state.unsqueeze(0),
-                dim=1,
-            )
-            scores.append(score.squeeze(0) / total_change)
+            score = self._angle_between(previous_state, current_state)
+            scores.append(score / total_change)
 
         score_tensor = torch.stack(scores)
         return {
