@@ -71,11 +71,11 @@ def plot_scores_by_label(args: Namespace,
         axis.set_ylabel("Count")
         axis.legend()
 
-    fig.suptitle(f"Angle and Magnitude Scores by Label | N{len(out)} | Model {args.model}")
+    fig.suptitle(f"Angle and Magnitude Scores by Label | N{len(out)} | Model {args.model} | Data {args.dataset}")
     fig.tight_layout()
 
     if save_path is None:
-        save_path = os.path.join(BASE_DIR, f"scores_by_label_{args.model}.pdf")
+        save_path = os.path.join(BASE_DIR, f"scores_by_label_{args.model}_{args.dataset}.pdf")
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close(fig)

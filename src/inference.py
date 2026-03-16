@@ -7,6 +7,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 MODEL_DIR = {
     "qwen_06b": "Qwen/Qwen3-0.6B",
     "qwen_8b": "Qwen/Qwen3-8B",
+    "llama_8b": "meta-llama/Meta-Llama-3-8B"
 }
 
 
