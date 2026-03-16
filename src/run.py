@@ -20,13 +20,23 @@ def load_dataset(args: Namespace):
     random.seed(42)
 
     with open(os.path.join(DATA_DIR, f"{args.dataset}.jsonl"), "r") as f:
-        raw_data = [json.loads(line) for line in f]
+        raw_data = []
+        for line in f:
+            try:
+                raw_data.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
 
         data = []
         for item in raw_data:
-            data.append({'text': item["human_text"],
+            human_text = item.get("human_text", item.get("text"))
+            machine_text = item.get("machine_text")
+            if (human_text is None or human_text.strip() == "") or machine_text is None or machine_text.strip() == "":
+                continue
+
+            data.append({'text': human_text,
                          'label': 0})
-            data.append({'text': item["machine_text"],
+            data.append({'text': machine_text,
                          'label': 1})
 
     random.shuffle(data)
@@ -34,6 +44,11 @@ def load_dataset(args: Namespace):
     if args.smoke_test:
         data = data[:10]
 
+    print("=" * 50)
+    print(f"Loaded {len(data)} samples for dataset: {args.dataset}")
+    print("=" * 50)
+
+    
     return data[:args.n]
 
 def plot_scores_by_label(args: Namespace,
@@ -91,11 +106,16 @@ def plot_scores_by_label(args: Namespace,
         axis.set_ylabel("Count")
         axis.legend()
 
-    fig.suptitle(f"Angle and Magnitude Scores by Label | N{len(out)} | Model {args.model} | Data {args.dataset}")
+    fig.suptitle(
+        f"Angle and Magnitude Scores by Label | N{len(out)} | Model {args.model} | Data {args.dataset} | LastToken {int(args.last_token)}"
+    )
     fig.tight_layout()
 
     if save_path is None:
-        save_path = os.path.join(OUT_DIR, f"scores_by_label_{args.model}_{args.dataset}{'_ST' if args.smoke_test else ''}.pdf")
+        save_path = os.path.join(
+            OUT_DIR,
+            f"scores_by_label_{args.model}_{args.dataset}_LT{int(args.last_token)}{'_ST' if args.smoke_test else ''}.pdf",
+        )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
@@ -210,12 +230,15 @@ def plot_layer_profiles(args: Namespace,
     axes[1].legend()
 
     fig.suptitle(
-        f"Layer Profiles | N{len(out)} | Model {args.model} | Data {args.dataset}"
+        f"Layer Profiles | N{len(out)} | Model {args.model} | Data {args.dataset} | LastToken {int(args.last_token)}"
     )
     fig.tight_layout()
 
     if save_path is None:
-        save_path = os.path.join(OUT_DIR, f"layer_profiles_{args.model}_{args.dataset}{'_ST' if args.smoke_test else ''}.pdf")
+        save_path = os.path.join(
+            OUT_DIR,
+            f"layer_profiles_{args.model}_{args.dataset}_LT{int(args.last_token)}{'_ST' if args.smoke_test else ''}.pdf",
+        )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
@@ -230,7 +253,7 @@ def run(args):
 
     out = []
     for item in tqdm(data, desc="Processing items ..."):
-        hs_dict = inference.run(item=item)
+        hs_dict = inference.run(item=item, args=args)
         metrics_dict = metrics.run(hidden_states=hs_dict["hidden_states"])
         hs_dict.update(metrics_dict)
         del hs_dict["hidden_states"]
@@ -251,11 +274,20 @@ def main():
     parser.add_argument("--model", type=str, required=True)
     parser.add_argument("--smoke_test", type=int, required=True)
     parser.add_argument("--n", type=int, required=True)
+    parser.add_argument("--last_token", type=int, default=1)
     args = parser.parse_args()
 
     assert args.smoke_test in (0, 1), "smoke_test must be 0 or 1"
     args.smoke_test = bool(args.smoke_test)
+    assert args.last_token in (0, 1), "last_token must be 0 or 1"
+    args.last_token = bool(args.last_token)
 
+
+    print("=" * 50)
+    print(f"Running with args:")
+    for key, value in vars(args).items():
+        print(f"{key}: {value}")
+    print("=" * 50)
     run(args=args)
     
 

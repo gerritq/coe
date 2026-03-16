@@ -41,7 +41,7 @@ class Inference:
             return "mps"
         return "cpu"
 
-    def run(self, item: dict) -> dict[str, Any]:
+    def run(self, item: dict, args) -> dict[str, Any]:
         text = item["text"]
         if not text.strip():
             raise ValueError("Input text must be non-empty.")
@@ -53,20 +53,14 @@ class Inference:
             outputs = self.model(**inputs, output_hidden_states=True, use_cache=False)
 
         
-        # B x C x H
-        hidden_states = tuple(layer.detach().cpu() for layer in outputs.hidden_states)
-        
-        # Len of transformer blocks + 1 for the embedding layer
-        # print(len(hidden_states))
-        
-        # B x H
-        # hidden state for the last token only
-        # print(hidden_states[0].shape)
-                
-        
-        hidden_states_last = tuple(
-            layer[:, -1, :].detach().cpu() for layer in outputs.hidden_states
-        )
+        if args.last_token:
+            hidden_states = tuple(
+                layer[:, -1, :].detach().cpu() for layer in outputs.hidden_states
+            )
+        else:
+            hidden_states = tuple(
+                layer.mean(dim=1).detach().cpu() for layer in outputs.hidden_states
+            )
 
     
         # print(hidden_states_last[0].shape)
@@ -74,5 +68,5 @@ class Inference:
             "model_id": self.model_id,
             "text": text,
             "label": item["label"],
-            "hidden_states": hidden_states_last,
+            "hidden_states": hidden_states,
         }
