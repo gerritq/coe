@@ -47,6 +47,7 @@ class Metrics:
 
         score_tensor = torch.stack(scores)
         return {
+            "scores": score_tensor.tolist(),
             "mean": score_tensor.mean().item(),
             "std": score_tensor.std(unbiased=False).item(),
         }
@@ -67,6 +68,7 @@ class Metrics:
 
         score_tensor = torch.stack(scores)
         return {
+            "scores": score_tensor.tolist(),
             "mean": score_tensor.mean().item(),
             "std": score_tensor.std(unbiased=False).item(),
         }
@@ -76,8 +78,10 @@ class Metrics:
         angle_scores = self.angle(hidden_states)
 
         return {
+            "magnitude_change_scores": magnitude_scores["scores"],
             "magnitude_change_mean": magnitude_scores["mean"],
             "magnitude_change_std": magnitude_scores["std"],
+            "angle_change_scores": angle_scores["scores"],
             "angle_change_mean": angle_scores["mean"],
             "angle_change_std": angle_scores["std"],
         }

@@ -11,11 +11,14 @@
 
 
 # Define your lists
-DATASETS=("wikipedia_chatgpt" "arxiv_chatGPT" "arxiv_cohere" "wikipedia_cohere")
-MODELS=("qwen_06b" "qwen_8b" "llama_8b")
+DATASETS=("wikipedia_chatgpt" "wikipedia_cohere" "wikipedia_bloomz" "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz" "reddit_chatgpt" "reddit_cohere" "reddit_bloomz")
+MODELS=("qwen_06b" "qwen_8b" "llama_8b") # "qwen_32b"
+
+DATASETS=("wikipedia_chatgpt")
+MODELS=("qwen_06b") # "qwen_32b"
 
 # Fixed parameters
-SMOKE_TEST=0
+SMOKE_TEST=1
 N=5000
 
 # Nested loop to run every model on every dataset
