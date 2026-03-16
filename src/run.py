@@ -34,7 +34,9 @@ def load_dataset(args: Namespace):
 
     return data[:args.n]
 
-def plot_scores_by_label(out: list[dict], save_path: str | None = None) -> str:
+def plot_scores_by_label(args: Namespace,
+                         out: list[dict], 
+                         save_path: str | None = None) -> str:
     metric_specs = [
         ("angle_change_mean", "Angle Mean"),
         ("angle_change_std", "Angle Std"),
@@ -69,11 +71,11 @@ def plot_scores_by_label(out: list[dict], save_path: str | None = None) -> str:
         axis.set_ylabel("Count")
         axis.legend()
 
-    fig.suptitle("Angle and Magnitude Scores by Label")
+    fig.suptitle(f"Angle and Magnitude Scores by Label | N{len(out)} | Model {args.model}")
     fig.tight_layout()
 
     if save_path is None:
-        save_path = os.path.join(BASE_DIR, "scores_by_label.pdf")
+        save_path = os.path.join(BASE_DIR, f"scores_by_label_{args.model}.pdf")
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
@@ -94,7 +96,7 @@ def run(args):
         del hs_dict["hidden_states"]
         out.append(hs_dict)
 
-    figure_path = plot_scores_by_label(out=out)
+    figure_path = plot_scores_by_label(args=args, out=out)
     print(f"Saved figure to {figure_path}")
 
     return out
