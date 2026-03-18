@@ -6,6 +6,8 @@ import math
 from argparse import Namespace
 
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 from tqdm import tqdm
 
 from inference import Inference
@@ -42,7 +44,7 @@ def load_dataset(args: Namespace):
     random.shuffle(data)
 
     if args.smoke_test:
-        data = data[:10]
+        data = data[:30]
 
     print("=" * 50)
     print(f"Loaded {len(data)} samples for dataset: {args.dataset}")
@@ -283,6 +285,50 @@ def plot_layer_profiles(args: Namespace,
     plt.close(fig)
     return save_path
 
+
+def pair_plot(args: Namespace, 
+              out: list[dict], 
+              save_path: str | None = None
+              ) -> str:
+
+    os.makedirs(OUT_DIR, exist_ok=True)
+    df = pd.DataFrame(
+        [
+            {
+                "label": item["label"],
+                "Angle": item["angle_change_mean"],
+                "Magnitude": item["magnitude_change_mean"],
+                "Length": item["length_change_mean"],
+            }
+            for item in out
+        ]
+    )
+    df["label"] = df["label"].map({0: "human", 1: "machine"}).fillna(df["label"])
+
+    grid = sns.pairplot(
+        df,
+        vars=["Angle", "Magnitude", "Length"],
+        hue="label",
+        kind="kde",
+        diag_kind="kde",
+        corner=True,
+        plot_kws={"levels": 8, "fill": False},
+    )
+    grid.fig.suptitle(
+        f"Pair Plot (Means) | N{len(out)} | Model {args.model} | Data {args.dataset} | LastToken {int(args.last_token)} | DiffVec {int(args.diff_vectors)}",
+        y=1.02,
+    )
+
+    if save_path is None:
+        save_path = os.path.join(
+            OUT_DIR,
+            f"pp_{args.model}_{args.dataset}_LT{int(args.last_token)}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
+        )
+
+    grid.fig.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close(grid.fig)
+    return save_path
+
 def run(args):
     data = load_dataset(args=args)
 
@@ -305,6 +351,9 @@ def run(args):
 
     layer_path = plot_layer_profiles(args=args, out=out)
     print(f"Saved layer profiles to {layer_path}")
+
+    pair_path = pair_plot(args=args, out=out)
+    print(f"Saved pair plot to {pair_path}")
 
     return out
     
