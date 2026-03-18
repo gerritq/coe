@@ -54,12 +54,15 @@ def load_dataset(args: Namespace):
 def plot_scores_by_label(args: Namespace,
                          out: list[dict], 
                          save_path: str | None = None) -> str:
+    
     os.makedirs(OUT_DIR, exist_ok=True)
     metric_specs = [
         ("angle_change_mean", "Angle Mean"),
         ("angle_change_std", "Angle Std"),
         ("magnitude_change_mean", "Magnitude Mean"),
         ("magnitude_change_std", "Magnitude Std"),
+        ("length_change_mean", "Length Mean"),
+        ("length_change_std", "Length Std"),
     ]
     label_names = {
         0: "human",
@@ -71,7 +74,7 @@ def plot_scores_by_label(args: Namespace,
     }
 
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    fig, axes = plt.subplots(3, 2, figsize=(12, 12))
     axes = axes.flatten()
 
     labels = sorted({item["label"] for item in out})
@@ -107,14 +110,14 @@ def plot_scores_by_label(args: Namespace,
         axis.legend()
 
     fig.suptitle(
-        f"Angle and Magnitude Scores by Label | N{len(out)} | Model {args.model} | Data {args.dataset} | LastToken {int(args.last_token)}"
+        f"Angle, Magnitude, and Length Scores by Label | N{len(out)} | Model {args.model} | Data {args.dataset} | LastToken {int(args.last_token)} | DiffVec {int(args.diff_vectors)}"
     )
     fig.tight_layout()
 
-    if save_path is None:
+    if save_path is None:              
         save_path = os.path.join(
             OUT_DIR,
-            f"scores_by_label_{args.model}_{args.dataset}_LT{int(args.last_token)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"coe_dist_{args.model}_{args.dataset}_LT{int(args.last_token)}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
         )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -129,6 +132,7 @@ def _mean_std(values: list[float]) -> tuple[float, float]:
 def plot_layer_profiles(args: Namespace,
                         out: list[dict],
                         save_path: str | None = None) -> str:
+    
     os.makedirs(OUT_DIR, exist_ok=True)
 
     label_colors = {
@@ -142,33 +146,41 @@ def plot_layer_profiles(args: Namespace,
     }
     labels = sorted({item["label"] for item in out})
 
-    fig, axes = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
+    fig, axes = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
 
     for label in labels:
         label_out = [item for item in out if item["label"] == label]
         angle_scores = [item["angle_change_scores"] for item in label_out]
         magnitude_scores = [item["magnitude_change_scores"] for item in label_out]
+        length_scores = [item["length_change_scores"] for item in label_out]
 
-        min_layers = min(len(scores) for scores in angle_scores + magnitude_scores)
+        min_layers = min(len(scores) for scores in angle_scores + magnitude_scores + length_scores)
         angle_scores = [scores[:min_layers] for scores in angle_scores]
         magnitude_scores = [scores[:min_layers] for scores in magnitude_scores]
+        length_scores = [scores[:min_layers] for scores in length_scores]
 
         angle_means = []
         angle_stds = []
         magnitude_means = []
         magnitude_stds = []
+        length_means = []
+        length_stds = []
 
         for layer_index in range(min_layers):
             angle_vals = [scores[layer_index] for scores in angle_scores]
             magnitude_vals = [scores[layer_index] for scores in magnitude_scores]
+            length_vals = [scores[layer_index] for scores in length_scores]
 
             angle_mean, angle_std = _mean_std(angle_vals)
             magnitude_mean, magnitude_std = _mean_std(magnitude_vals)
+            length_mean, length_std = _mean_std(length_vals)
 
             angle_means.append(angle_mean)
             angle_stds.append(angle_std)
             magnitude_means.append(magnitude_mean)
             magnitude_stds.append(magnitude_std)
+            length_means.append(length_mean)
+            length_stds.append(length_std)
 
         layers = list(range(1, min_layers + 1))
         label_name = label_names.get(label, str(label))
@@ -220,24 +232,51 @@ def plot_layer_profiles(args: Namespace,
             label=f"{label_name} std",
         )
 
+        avg_length = sum(length_means) / len(length_means)
+        axes[2].plot(
+            layers,
+            length_means,
+            color=label_color,
+            label=f"{label_name} mean",
+        )
+        axes[2].axhline(
+            avg_length,
+            linestyle="--",
+            color=label_color,
+            linewidth=1,
+            label=f"{label_name} mean (avg)",
+        )
+        axes[2].fill_between(
+            layers,
+            [m - s for m, s in zip(length_means, length_stds)],
+            [m + s for m, s in zip(length_means, length_stds)],
+            color=label_color,
+            alpha=0.2,
+            label=f"{label_name} std",
+        )
+
     axes[0].set_title("Angle by Layer")
     axes[0].set_ylabel("Score")
     axes[0].legend()
 
     axes[1].set_title("Magnitude by Layer")
-    axes[1].set_xlabel("Layer")
     axes[1].set_ylabel("Score")
     axes[1].legend()
 
+    axes[2].set_title("Length by Layer")
+    axes[2].set_xlabel("Layer")
+    axes[2].set_ylabel("Score")
+    axes[2].legend()
+
     fig.suptitle(
-        f"Layer Profiles | N{len(out)} | Model {args.model} | Data {args.dataset} | LastToken {int(args.last_token)}"
+        f"Trajectory | N{len(out)} | Model {args.model} | Data {args.dataset} | LastToken {int(args.last_token)} | DiffVec {int(args.diff_vectors)}"
     )
     fig.tight_layout()
 
-    if save_path is None:
+    if save_path is None:       
         save_path = os.path.join(
             OUT_DIR,
-            f"layer_profiles_{args.model}_{args.dataset}_LT{int(args.last_token)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"trajectory_{args.model}_{args.dataset}_LT{int(args.last_token)}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
         )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -247,14 +286,16 @@ def plot_layer_profiles(args: Namespace,
 def run(args):
     data = load_dataset(args=args)
 
-    
     inference = Inference(model_name=args.model)
     metrics = Metrics()
 
     out = []
     for item in tqdm(data, desc="Processing items ..."):
         hs_dict = inference.run(item=item, args=args)
-        metrics_dict = metrics.run(hidden_states=hs_dict["hidden_states"])
+        metrics_dict = metrics.run(
+            hidden_states=hs_dict["hidden_states"],
+            use_diff_vectors=args.diff_vectors,
+        )
         hs_dict.update(metrics_dict)
         del hs_dict["hidden_states"]
         out.append(hs_dict)
@@ -269,25 +310,35 @@ def run(args):
     
 
 def main():
+    global OUT_DIR
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--model", type=str, required=True)
     parser.add_argument("--smoke_test", type=int, required=True)
     parser.add_argument("--n", type=int, required=True)
     parser.add_argument("--last_token", type=int, default=1)
+    parser.add_argument("--diff_vectors", type=int, default=0)
+    parser.add_argument("--test", type=int, default=0)
     args = parser.parse_args()
 
     assert args.smoke_test in (0, 1), "smoke_test must be 0 or 1"
     args.smoke_test = bool(args.smoke_test)
     assert args.last_token in (0, 1), "last_token must be 0 or 1"
     args.last_token = bool(args.last_token)
+    assert args.diff_vectors in (0, 1), "diff_vectors must be 0 or 1"
+    args.diff_vectors = bool(args.diff_vectors)
+    assert args.test in (0, 1), "test must be 0 or 1"
+    args.test = bool(args.test)
 
-
+    if args.test:
+        OUT_DIR = os.path.join(OUT_DIR, "test")
+        os.makedirs(OUT_DIR, exist_ok=True)
     print("=" * 50)
     print(f"Running with args:")
     for key, value in vars(args).items():
         print(f"{key}: {value}")
     print("=" * 50)
+    
     run(args=args)
     
 
