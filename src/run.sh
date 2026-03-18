@@ -1,28 +1,34 @@
 #!/bin/bash
-#SBATCH --job-name=coe_q32b
+#SBATCH --job-name=coe_llama_all_domains
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
-#SBATCH --time=04:00:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=15GB
 # SBATCH --constraint=a100
 
+nvidia-smi
 
-# Define your lists
+# 4 domains = 4 generators
+# "wikipedia_chatgpt" "wikipedia_cohere" "wikipedia_bloomz"
+# "reddit_chatgpt" "reddit_cohere" "reddit_bloomz"
+# "wikihow_chatgpt" "wikihow_cohere" "wikihow_bloomz"
+# "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz"
+
 # DATASETS=("wikipedia_chatgpt" "wikipedia_cohere" "wikipedia_bloomz" "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz" "reddit_chatgpt" "reddit_cohere" "reddit_bloomz")
 # MODELS=("qwen_06b" "qwen_8b" "llama_8b") # "qwen_32b"
 # MODELS=("qwen_32b") # "qwen_32b"
 
-DATASETS=("wikipedia_chatgpt")
-MODELS=("qwen_06b") # "qwen_32b"
+DATASETS=("wikihow_chatgpt" "arxiv_chatgpt")
+MODELS=("qwen_8b") # "qwen_32b"
 
 # Fixed parameters
-LAST_TOKENS=(0)
+LAST_TOKENS=(1)
 DIFF_VECTORS=(1)
 
 TEST=1
-SMOKE_TEST=1
+SMOKE_TEST=0
 N=5000
 
 # Nested loop to run every model on every dataset

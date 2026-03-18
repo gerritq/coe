@@ -1,6 +1,7 @@
 # To do
 
-
+- for the ration, do we need to normalize?
+- spikes at the beginning and end, should we exclude them?
 - confirm pooling is correct
 - difference between layers
 - rename layer profile trajectory; add layer nums
@@ -9,6 +10,8 @@
 
 # Brain dump
 
+
+- Dimension indpendent metric as in OOD paper
 - Other metrics
     - CoE for attention heads
     - Abs diff as in the neurips paper
@@ -20,6 +23,10 @@
     - Total turning as in 3.2 of Rintoul
     - Variation along the straight line between first and last one - tortuosity
     - distance from the average thought
+- Use CoE embeddings for a classifier
+ - Can use the dimension independent volatility vector as in "Embedding trajectory"
+- Use CoT in some way?
+
 
 # Qs
 
