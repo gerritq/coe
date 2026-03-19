@@ -2,7 +2,7 @@
 #SBATCH --job-name=coe_horizontal
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=01:30:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=15GB
@@ -20,7 +20,7 @@ nvidia-smi
 # MODELS=("qwen_06b" "qwen_8b" "llama_8b") # "qwen_32b"
 # MODELS=("qwen_32b") # "qwen_32b"
 
-DATASETS=("wikipedia_chatgpt")
+DATASETS=("wikihow_chatgpt")
 MODELS=("qwen_8b" "llama_8b") # "qwen_32b" "qwen_06b"
 
 # Fixed parameters
@@ -29,7 +29,7 @@ DIFF_VECTORS=(0)
 
 TEST=1
 SMOKE_TEST=0
-N=10000
+N=1000
 
 # Nested loop to run every model on every dataset
 for DATASET in "${DATASETS[@]}"; do
