@@ -23,6 +23,20 @@ class Metrics:
         probs = torch.softmax(topk_vals, dim=-1)
         return self._entropy_from_probs(probs)
 
+    def _tvd_from_probs(self, probs: torch.Tensor) -> torch.Tensor:
+        diffs = (probs[:, 1:] - probs[:, :-1]).abs()
+        tvd = 0.5 * diffs.sum(dim=-1)
+        return tvd.squeeze(0)
+
+    def _tvd_full(self, logits: torch.Tensor) -> torch.Tensor:
+        probs = torch.softmax(logits, dim=-1)
+        return self._tvd_from_probs(probs)
+
+    def _tvd_topk(self, logits: torch.Tensor) -> torch.Tensor:
+        topk_vals, _ = torch.topk(logits, k=self.top_k, dim=-1)
+        probs = torch.softmax(topk_vals, dim=-1)
+        return self._tvd_from_probs(probs)
+
     def _per_token_entropy(self, logits: torch.Tensor, topk: bool) -> torch.Tensor:
         if topk:
             ent = self._entropy_topk(logits)
@@ -55,6 +69,8 @@ class Metrics:
         vocab_entropy = self._per_token_entropy(logits, topk=False)
         topk_entropy = self._per_token_entropy(logits, topk=True)
 
+        vocab_tvd = self._tvd_full(logits)
+        topk_tvd = self._tvd_topk(logits)
 
         vocab_change = self._change_scores(vocab_entropy)
         topk_change = self._change_scores(topk_entropy)
@@ -65,6 +81,9 @@ class Metrics:
         vocab_change_stats = self._stats(vocab_change)
         topk_change_stats = self._stats(topk_change)
 
+        vocab_tvd_stats = self._stats(vocab_tvd)
+        topk_tvd_stats = self._stats(topk_tvd)
+
         return {
             "vocab_entropy_scores": vocab_stats["scores"],
             "vocab_entropy_mean": vocab_stats["mean"],
@@ -72,10 +91,16 @@ class Metrics:
             "vocab_entropy_change_scores": vocab_change_stats["scores"],
             "vocab_entropy_change_mean": vocab_change_stats["mean"],
             "vocab_entropy_change_std": vocab_change_stats["std"],
+            "vocab_tvd_scores": vocab_tvd_stats["scores"],
+            "vocab_tvd_mean": vocab_tvd_stats["mean"],
+            "vocab_tvd_std": vocab_tvd_stats["std"],
             "topk_entropy_scores": topk_stats["scores"],
             "topk_entropy_mean": topk_stats["mean"],
             "topk_entropy_std": topk_stats["std"],
             "topk_entropy_change_scores": topk_change_stats["scores"],
             "topk_entropy_change_mean": topk_change_stats["mean"],
             "topk_entropy_change_std": topk_change_stats["std"],
+            "topk_tvd_scores": topk_tvd_stats["scores"],
+            "topk_tvd_mean": topk_tvd_stats["mean"],
+            "topk_tvd_std": topk_tvd_stats["std"],
         }
