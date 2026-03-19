@@ -1,12 +1,12 @@
-# To do
+# To do/Progress
 
 - chain of logits
+    - Implemented: 
+        - mean/std entropy across tokens + mean/std of diff entropy across tokens
+        - Full vocab vs topk
     - KD div
     - ppl
-    - cross entropy change
-    - top-k tokens distribution
     - logit vector metrics
-    - cross-entropy
     - total variation distance 
     - JS divergence
 
@@ -22,6 +22,7 @@
 
 # Brain dump
 
+- Can we do this for AFC?
 - Prefix: can we add is this text machine or human generated?
 - Can we use the uncertainty at the unembedding layer across tokens?
 - Dimension indpendent metric as in OOD paper
