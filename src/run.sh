@@ -24,7 +24,7 @@ DATASETS=("wikihow_chatgpt")
 MODELS=("qwen_06b") # "qwen_32b" "qwen_06b"
 
 # Fixed parameters
-LAST_TOKENS=(0)
+MODES=("horizontal") # "last_token" "pooling" "horizontal"
 DIFF_VECTORS=(0)
 
 TEST=1
@@ -34,10 +34,10 @@ N=10000
 # Nested loop to run every model on every dataset
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
-        for LAST_TOKEN in "${LAST_TOKENS[@]}"; do
+        for MODE in "${MODES[@]}"; do
             for DIFF_VECTOR in "${DIFF_VECTORS[@]}"; do
                 echo "------------------------------------------------"
-                echo "Running Experiment: Dataset=$DATASET, Model=$MODEL, LastToken=$LAST_TOKEN, DiffVec=$DIFF_VECTOR"
+                echo "Running Experiment: Dataset=$DATASET, Model=$MODEL, Mode=$MODE, DiffVec=$DIFF_VECTOR"
                 echo "------------------------------------------------"
 
                 uv run run.py \
@@ -45,7 +45,7 @@ for DATASET in "${DATASETS[@]}"; do
                     --model "$MODEL" \
                     --smoke_test "$SMOKE_TEST" \
                     --n "$N" \
-                    --last_token "$LAST_TOKEN" \
+                    --mode "$MODE" \
                     --diff_vectors "$DIFF_VECTOR" \
                     --test "$TEST"
             done

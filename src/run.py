@@ -112,14 +112,14 @@ def plot_scores_by_label(args: Namespace,
         axis.legend()
 
     fig.suptitle(
-        f"Angle, Magnitude, and Length Scores by Label | N{len(out)} | Model {args.model} | Data {args.dataset} | LastToken {int(args.last_token)} | DiffVec {int(args.diff_vectors)}"
+        f"Angle, Magnitude, and Length Scores by Label | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)}"
     )
     fig.tight_layout()
 
     if save_path is None:              
         save_path = os.path.join(
             OUT_DIR,
-            f"coe_dist_{args.model}_{args.dataset}_LT{int(args.last_token)}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"coe_dist_{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
         )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -271,14 +271,14 @@ def plot_layer_profiles(args: Namespace,
     axes[2].legend()
 
     fig.suptitle(
-        f"Trajectory | N{len(out)} | Model {args.model} | Data {args.dataset} | LastToken {int(args.last_token)} | DiffVec {int(args.diff_vectors)}"
+        f"Trajectory | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)}"
     )
     fig.tight_layout()
 
     if save_path is None:       
         save_path = os.path.join(
             OUT_DIR,
-            f"trajectory_{args.model}_{args.dataset}_LT{int(args.last_token)}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"trajectory_{args.model}_{args.dataset}_MODE{args.model}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
         )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -315,14 +315,14 @@ def pair_plot(args: Namespace,
         plot_kws={"levels": 8, "fill": False},
     )
     grid.fig.suptitle(
-        f"Pair Plot (Means) | N{len(out)} | Model {args.model} | Data {args.dataset} | LastToken {int(args.last_token)} | DiffVec {int(args.diff_vectors)}",
+        f"Pair Plot (Means) | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)}",
         y=1.02,
     )
 
     if save_path is None:
         save_path = os.path.join(
             OUT_DIR,
-            f"pp_{args.model}_{args.dataset}_LT{int(args.last_token)}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"pp_{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
         )
 
     grid.fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -349,12 +349,12 @@ def run(args):
     figure_path = plot_scores_by_label(args=args, out=out)
     print(f"Saved figure to {figure_path}")
 
-    layer_path = plot_layer_profiles(args=args, out=out)
-    print(f"Saved layer profiles to {layer_path}")
-
     pair_path = pair_plot(args=args, out=out)
     print(f"Saved pair plot to {pair_path}")
 
+    if args.mode != "horizontal":
+        trajectory_path = plot_layer_profiles(args=args, out=out)
+        print(f"Saved trajectory plot to {trajectory_path}")
     return out
     
 
@@ -365,15 +365,18 @@ def main():
     parser.add_argument("--model", type=str, required=True)
     parser.add_argument("--smoke_test", type=int, required=True)
     parser.add_argument("--n", type=int, required=True)
-    parser.add_argument("--last_token", type=int, default=1)
+    parser.add_argument(
+        "--mode",
+        type=str,
+        default="last_token",
+        choices=["last_token", "pooling", "horizontal"],
+    )
     parser.add_argument("--diff_vectors", type=int, default=0)
     parser.add_argument("--test", type=int, default=0)
     args = parser.parse_args()
 
     assert args.smoke_test in (0, 1), "smoke_test must be 0 or 1"
     args.smoke_test = bool(args.smoke_test)
-    assert args.last_token in (0, 1), "last_token must be 0 or 1"
-    args.last_token = bool(args.last_token)
     assert args.diff_vectors in (0, 1), "diff_vectors must be 0 or 1"
     args.diff_vectors = bool(args.diff_vectors)
     assert args.test in (0, 1), "test must be 0 or 1"

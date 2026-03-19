@@ -53,22 +53,21 @@ class Inference:
         with torch.no_grad():
             outputs = self.model(**inputs, output_hidden_states=True, use_cache=False)
 
-        # Outputs: keys: [tensor of 'logits', list of tensors of 'hidden_states']
-        print(len(outputs))
-        print(outputs.keys())
-        print(outputs["hidden_states"][-1].shape)
-
-
-        
-
-        if args.last_token:
+        if args.mode == "last_token":
             hidden_states = tuple(
                 layer[:, -1, :].detach().cpu() for layer in outputs.hidden_states
             )
-        else:
+        elif args.mode == "pooling":
             hidden_states = tuple(
                 layer.mean(dim=1).detach().cpu() for layer in outputs.hidden_states
             )
+        elif args.mode == "horizontal":
+            last_layer = outputs.hidden_states[-1].detach().cpu()
+            hidden_states = tuple(
+                last_layer[:, t, :] for t in range(last_layer.shape[1])
+            )
+        else:
+            raise ValueError(f"Unknown mode mode: {args.mode}")
 
         # print(hidden_states_last[0].shape)
         return {
