@@ -20,15 +20,15 @@ nvidia-smi
 # MODELS=("qwen_06b" "qwen_8b" "llama_8b") # "qwen_32b"
 # MODELS=("qwen_32b") # "qwen_32b"
 
-DATASETS=("wikihow_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" "wikihow_chatgpt") # "wikipedia_chatgpt" "wikipedia_cohere" "wikipedia_bloomz" "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz" "reddit_chatgpt" "reddit_cohere" "reddit_bloomz"
+DATASETS=("wikihow_chatgpt")
 MODELS=("qwen_06b") # "qwen_32b" "qwen_06b"
 
 # Fixed parameters
-LAST_TOKENS=(0 1)
-DIFF_VECTORS=(0 1)
+LAST_TOKENS=(0)
+DIFF_VECTORS=(0)
 
 TEST=1
-SMOKE_TEST=0
+SMOKE_TEST=1
 N=10000
 
 # Nested loop to run every model on every dataset

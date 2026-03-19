@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import Any
 
 import torch
@@ -52,7 +53,14 @@ class Inference:
         with torch.no_grad():
             outputs = self.model(**inputs, output_hidden_states=True, use_cache=False)
 
+        # Outputs: keys: [tensor of 'logits', list of tensors of 'hidden_states']
+        print(len(outputs))
+        print(outputs.keys())
+        print(outputs["hidden_states"][-1].shape)
+
+
         
+
         if args.last_token:
             hidden_states = tuple(
                 layer[:, -1, :].detach().cpu() for layer in outputs.hidden_states
@@ -62,7 +70,6 @@ class Inference:
                 layer.mean(dim=1).detach().cpu() for layer in outputs.hidden_states
             )
 
-    
         # print(hidden_states_last[0].shape)
         return {
             "model_id": self.model_id,

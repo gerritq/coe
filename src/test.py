@@ -103,9 +103,9 @@ def pairplot_kde_groups():
     plt.show()
 
 if __name__ == "__main__":
-    # load_model()
+    load_model()
 
     # magnitude_change()
     # length_change()
     # kde_two_vectors()
-    pairplot_kde_groups()
+    # pairplot_kde_groups()
