@@ -6,7 +6,9 @@
     - cross entropy change
     - top-k tokens distribution
     - logit vector metrics
-
+    - cross-entropy
+    - total variation distance 
+    - JS divergence
 
 
 
