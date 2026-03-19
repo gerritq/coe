@@ -1,5 +1,15 @@
 # To do
 
+- chain of logits
+    - KD div
+    - ppl
+    - cross entropy change
+    - top-k tokens distribution
+    - logit vector metrics
+
+
+
+
 - for the ration, do we need to normalize?
 - spikes at the beginning and end, should we exclude them?
 - confirm pooling is correct
@@ -10,7 +20,8 @@
 
 # Brain dump
 
-
+- Prefix: can we add is this text machine or human generated?
+- Can we use the uncertainty at the unembedding layer across tokens?
 - Dimension indpendent metric as in OOD paper
 - Other metrics
     - CoE for attention heads
@@ -29,7 +40,7 @@
 
 
 # Qs
-
+- Why is there no difference in reddit?
 - Why magnitude change if it is distance change?
 
 # Knowledge
