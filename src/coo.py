@@ -1,0 +1,69 @@
+from typing import Any
+
+import torch
+
+
+class Metrics:
+    def __init__(self, top_k: int = 1000) -> None:
+        self.top_k = top_k
+
+    def _entropy_from_probs(self, probs: torch.Tensor) -> torch.Tensor:
+        log_probs = torch.log(probs.clamp_min(1e-12))
+        return -(probs * log_probs).sum(dim=-1)
+
+    def _entropy_full(self, logits: torch.Tensor) -> torch.Tensor:
+        probs = torch.softmax(logits, dim=-1)
+        return self._entropy_from_probs(probs)
+
+    def _entropy_topk(self, logits: torch.Tensor) -> torch.Tensor:
+        k = min(self.top_k, logits.shape[-1])
+        topk_vals, _ = torch.topk(logits, k=k, dim=-1)
+        probs = torch.softmax(topk_vals, dim=-1)
+        return self._entropy_from_probs(probs)
+
+    def _per_token_entropy(self, logits: torch.Tensor, topk: bool) -> torch.Tensor:
+        if topk:
+            ent = self._entropy_topk(logits)
+        else:
+            ent = self._entropy_full(logits)
+        return ent.mean(dim=0)
+
+    def _change_scores(self, values: torch.Tensor) -> torch.Tensor:
+        diffs = (values[1:] - values[:-1]).abs()
+        total = (values[-1] - values[0]).abs().clamp_min(1e-12)
+        return diffs / total
+
+    def _stats(self, values: torch.Tensor) -> dict[str, Any]:
+        return {
+            "scores": values.tolist(),
+            "mean": values.mean().item(),
+            "std": values.std(unbiased=False).item(),
+        }
+
+    def run(self, logits: torch.Tensor) -> dict[str, Any]:
+        vocab_entropy = self._per_token_entropy(logits, topk=False)
+        topk_entropy = self._per_token_entropy(logits, topk=True)
+
+        vocab_change = self._change_scores(vocab_entropy)
+        topk_change = self._change_scores(topk_entropy)
+
+        vocab_stats = self._stats(vocab_entropy)
+        topk_stats = self._stats(topk_entropy)
+
+        vocab_change_stats = self._stats(vocab_change)
+        topk_change_stats = self._stats(topk_change)
+
+        return {
+            "vocab_entropy_scores": vocab_stats["scores"],
+            "vocab_entropy_mean": vocab_stats["mean"],
+            "vocab_entropy_std": vocab_stats["std"],
+            "vocab_entropy_change_scores": vocab_change_stats["scores"],
+            "vocab_entropy_change_mean": vocab_change_stats["mean"],
+            "vocab_entropy_change_std": vocab_change_stats["std"],
+            "topk_entropy_scores": topk_stats["scores"],
+            "topk_entropy_mean": topk_stats["mean"],
+            "topk_entropy_std": topk_stats["std"],
+            "topk_entropy_change_scores": topk_change_stats["scores"],
+            "topk_entropy_change_mean": topk_change_stats["mean"],
+            "topk_entropy_change_std": topk_change_stats["std"],
+        }

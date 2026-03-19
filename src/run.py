@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from inference import Inference
 from coe import Metrics
+from coo import Metrics as EntropyMetrics
 
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -329,32 +330,113 @@ def pair_plot(args: Namespace,
     plt.close(grid.fig)
     return save_path
 
+def plot_entropy_by_label(
+    args: Namespace,
+    out: list[dict],
+    save_path: str | None = None,
+) -> str:
+    os.makedirs(OUT_DIR, exist_ok=True)
+    metric_specs = [
+        ("vocab_entropy_mean", "Vocab Entropy Mean"),
+        ("vocab_entropy_std", "Vocab Entropy Std"),
+        ("topk_entropy_mean", "Top-K Entropy Mean"),
+        ("topk_entropy_std", "Top-K Entropy Std"),
+    ]
+    label_names = {
+        0: "human",
+        1: "machine",
+    }
+    label_colors = {
+        0: "tab:blue",
+        1: "tab:orange",
+    }
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    axes = axes.flatten()
+
+    labels = sorted({item["label"] for item in out})
+
+    for axis, (metric_key, title) in zip(axes, metric_specs):
+        for label in labels:
+            values = [item[metric_key] for item in out if item["label"] == label]
+            if not values:
+                continue
+
+            label_name = label_names.get(label, str(label))
+            label_color = label_colors.get(label, "tab:gray")
+            mean_value = sum(values) / len(values)
+
+            axis.hist(
+                values,
+                bins=20,
+                alpha=0.5,
+                color=label_color,
+                label=label_name,
+            )
+            axis.axvline(
+                mean_value,
+                color=label_color,
+                linestyle="--",
+                linewidth=1,
+                label=f"{label_name} mean",
+            )
+
+        axis.set_title(title)
+        axis.set_xlabel("Entropy")
+        axis.set_ylabel("Count")
+        axis.legend()
+
+    fig.suptitle(
+        f"Entropy (Mean/Std) by Label | N{len(out)} | Model {args.model} | Data {args.dataset}"
+    )
+    fig.tight_layout()
+
+    if save_path is None:
+        save_path = os.path.join(
+            OUT_DIR,
+            f"entropy_dist_{args.model}_{args.dataset}{'_ST' if args.smoke_test else ''}.pdf",
+        )
+
+    fig.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    return save_path
+
 def run(args):
     data = load_dataset(args=args)
 
     inference = Inference(model_name=args.model)
-    metrics = Metrics()
+    metrics = EntropyMetrics() if args.mode == "logits" else Metrics()
 
     out = []
     for item in tqdm(data, desc="Processing items ..."):
         hs_dict = inference.run(item=item, args=args)
-        metrics_dict = metrics.run(
-            hidden_states=hs_dict["hidden_states"],
-            use_diff_vectors=args.diff_vectors,
-        )
-        hs_dict.update(metrics_dict)
-        del hs_dict["hidden_states"]
+        if args.mode == "logits":
+            metrics_dict = metrics.run(logits=hs_dict["logits"])
+            hs_dict.update(metrics_dict)
+            del hs_dict["logits"]
+        else:
+            metrics_dict = metrics.run(
+                hidden_states=hs_dict["hidden_states"],
+                use_diff_vectors=args.diff_vectors,
+            )
+            hs_dict.update(metrics_dict)
+            del hs_dict["hidden_states"]
         out.append(hs_dict)
 
-    figure_path = plot_scores_by_label(args=args, out=out)
-    print(f"Saved figure to {figure_path}")
+    if args.mode not in ["logits"]:
+        figure_path = plot_scores_by_label(args=args, out=out)
+        print(f"Saved figure to {figure_path}")
 
-    pair_path = pair_plot(args=args, out=out)
-    print(f"Saved pair plot to {pair_path}")
+        pair_path = pair_plot(args=args, out=out)
+        print(f"Saved pair plot to {pair_path}")
+    else:
+        entropy_path = plot_entropy_by_label(args=args, out=out)
+        print(f"Saved entropy plot to {entropy_path}")
 
-    if args.mode != "horizontal":
+    if args.mode not in ["logits", "horizontal"]:
         trajectory_path = plot_layer_profiles(args=args, out=out)
         print(f"Saved trajectory plot to {trajectory_path}")
+        
     return out
     
 
@@ -369,7 +451,7 @@ def main():
         "--mode",
         type=str,
         default="last_token",
-        choices=["last_token", "pooling", "horizontal"],
+        choices=["last_token", "pooling", "horizontal", "logits"],
     )
     parser.add_argument("--diff_vectors", type=int, default=0)
     parser.add_argument("--test", type=int, default=0)

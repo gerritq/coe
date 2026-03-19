@@ -57,22 +57,40 @@ class Inference:
             hidden_states = tuple(
                 layer[:, -1, :].detach().cpu() for layer in outputs.hidden_states
             )
+            return {
+                "model_id": self.model_id,
+                "text": text,
+                "label": item["label"],
+                "hidden_states": hidden_states,
+            }
         elif args.mode == "pooling":
             hidden_states = tuple(
                 layer.mean(dim=1).detach().cpu() for layer in outputs.hidden_states
             )
+            return {
+                "model_id": self.model_id,
+                "text": text,
+                "label": item["label"],
+                "hidden_states": hidden_states,
+            }
         elif args.mode == "horizontal":
             last_layer = outputs.hidden_states[-1].detach().cpu()
             hidden_states = tuple(
                 last_layer[:, t, :] for t in range(last_layer.shape[1])
             )
+            return {
+                "model_id": self.model_id,
+                "text": text,
+                "label": item["label"],
+                "hidden_states": hidden_states,
+            }
+        elif args.mode == "logits":
+            logits = outputs.logits.detach().cpu()
+            return {
+                "model_id": self.model_id,
+                "text": text,
+                "label": item["label"],
+                "logits": logits,
+            }
         else:
-            raise ValueError(f"Unknown mode mode: {args.mode}")
-
-        # print(hidden_states_last[0].shape)
-        return {
-            "model_id": self.model_id,
-            "text": text,
-            "label": item["label"],
-            "hidden_states": hidden_states,
-        }
+            raise ValueError(f"Unknown mode: {args.mode}")

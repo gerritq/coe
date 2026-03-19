@@ -24,7 +24,7 @@ DATASETS=("wikihow_chatgpt")
 MODELS=("qwen_06b") # "qwen_32b" "qwen_06b"
 
 # Fixed parameters
-MODES=("horizontal") # "last_token" "pooling" "horizontal"
+MODES=("logits")
 DIFF_VECTORS=(0)
 
 TEST=1
