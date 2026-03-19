@@ -341,6 +341,10 @@ def plot_entropy_by_label(
         ("vocab_entropy_std", "Vocab Entropy Std"),
         ("topk_entropy_mean", "Top-K Entropy Mean"),
         ("topk_entropy_std", "Top-K Entropy Std"),
+        ("vocab_entropy_change_mean", "Vocab Entropy Change Mean"),
+        ("vocab_entropy_change_std", "Vocab Entropy Change Std"),
+        ("topk_entropy_change_mean", "Top-K Entropy Change Mean"),
+        ("topk_entropy_change_std", "Top-K Entropy Change Std"),
     ]
     label_names = {
         0: "human",
@@ -351,7 +355,7 @@ def plot_entropy_by_label(
         1: "tab:orange",
     }
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    fig, axes = plt.subplots(4, 2, figsize=(12, 16))
     axes = axes.flatten()
 
     labels = sorted({item["label"] for item in out})
@@ -387,7 +391,7 @@ def plot_entropy_by_label(
         axis.legend()
 
     fig.suptitle(
-        f"Entropy (Mean/Std) by Label | N{len(out)} | Model {args.model} | Data {args.dataset}"
+        f"Entropy (Mean/Std/Change) by Label | N{len(out)} | Model {args.model} | Data {args.dataset}"
     )
     fig.tight_layout()
 

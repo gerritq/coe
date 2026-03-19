@@ -1,23 +1,25 @@
 from typing import Any
 
 import torch
-
+import sys
 
 class Metrics:
     def __init__(self, top_k: int = 1000) -> None:
         self.top_k = top_k
 
     def _entropy_from_probs(self, probs: torch.Tensor) -> torch.Tensor:
+        # print(probs.shape) # shape 1 x sequence length x vocab size
         log_probs = torch.log(probs.clamp_min(1e-12))
-        return -(probs * log_probs).sum(dim=-1)
+        entropy = -(probs * log_probs).sum(dim=-1)
+        # print(entropy.shape) # dim 1 x sequence length
+        return entropy
 
     def _entropy_full(self, logits: torch.Tensor) -> torch.Tensor:
         probs = torch.softmax(logits, dim=-1)
         return self._entropy_from_probs(probs)
 
     def _entropy_topk(self, logits: torch.Tensor) -> torch.Tensor:
-        k = min(self.top_k, logits.shape[-1])
-        topk_vals, _ = torch.topk(logits, k=k, dim=-1)
+        topk_vals, _ = torch.topk(logits, k=self.top_k, dim=-1)
         probs = torch.softmax(topk_vals, dim=-1)
         return self._entropy_from_probs(probs)
 
@@ -26,12 +28,20 @@ class Metrics:
             ent = self._entropy_topk(logits)
         else:
             ent = self._entropy_full(logits)
-        return ent.mean(dim=0)
+        
+        # dim 1 x sequence length
+        ent = ent.squeeze(0)  # remove batch dimension
+        # dim sequence length
+        return ent
+
 
     def _change_scores(self, values: torch.Tensor) -> torch.Tensor:
         diffs = (values[1:] - values[:-1]).abs()
-        total = (values[-1] - values[0]).abs().clamp_min(1e-12)
-        return diffs / total
+        # norm by total
+        # total = (values[-1] - values[0]).abs().clamp_min(1e-12)
+        # norm by mean
+        mean = values.mean().abs().clamp_min(1e-12)
+        return diffs / mean
 
     def _stats(self, values: torch.Tensor) -> dict[str, Any]:
         return {
@@ -41,8 +51,10 @@ class Metrics:
         }
 
     def run(self, logits: torch.Tensor) -> dict[str, Any]:
+        # return vecgor of entropies of sequence length
         vocab_entropy = self._per_token_entropy(logits, topk=False)
         topk_entropy = self._per_token_entropy(logits, topk=True)
+
 
         vocab_change = self._change_scores(vocab_entropy)
         topk_change = self._change_scores(topk_entropy)
