@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=coe_llama_all_domains
+#SBATCH --job-name=coe_llama
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
-#SBATCH --time=04:00:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=15GB
