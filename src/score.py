@@ -41,7 +41,7 @@ class ScoreGMM:
     n_components: int = 2
     random_state: int = 42
 
-    def run(self, out: list[dict[str, Any]]) -> dict[str, float]:
+    def run(self, out: list[dict[str, Any]], suffix: str) -> dict[str, float]:
         x, y = _features_labels(out)
         gmm = GaussianMixture(n_components=self.n_components, random_state=self.random_state)
         clusters = gmm.fit_predict(x)
@@ -59,7 +59,7 @@ class ScoreGMM:
         metrics = _metrics(y, y_pred)
         out_dir = os.path.join(BASE_DIR, "out", "scores")
         os.makedirs(out_dir, exist_ok=True)
-        with open(os.path.join(out_dir, "score_gmm.json"), "w") as f:
+        with open(os.path.join(out_dir, f"score_gmm_{suffix}.json"), "w") as f:
             json.dump(metrics, f, indent=2)
         return metrics
 
@@ -68,7 +68,7 @@ class ScoreGMM:
 class ScoreLogistic:
     random_state: int = 42
 
-    def run(self, out: list[dict[str, Any]]) -> dict[str, float]:
+    def run(self, out: list[dict[str, Any]], suffix: str) -> dict[str, float]:
         x, y = _features_labels(out)
         model = LogisticRegression(random_state=self.random_state, max_iter=1000)
         model.fit(x, y)
@@ -77,6 +77,6 @@ class ScoreLogistic:
         metrics = _metrics(y, y_pred)
         out_dir = os.path.join(BASE_DIR, "out", "scores")
         os.makedirs(out_dir, exist_ok=True)
-        with open(os.path.join(out_dir, "score_logistic.json"), "w") as f:
+        with open(os.path.join(out_dir, f"score_logistic_{suffix}.json"), "w") as f:
             json.dump(metrics, f, indent=2)
         return metrics
