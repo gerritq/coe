@@ -43,21 +43,26 @@ class Metrics:
     ) -> list[tuple[torch.Tensor, torch.Tensor]]:
         return list(zip(vectors[:-1], vectors[1:]))
 
-    def magnitude(self, 
-                  states: list[torch.Tensor]
-                    ) -> dict[str, float]:
+    def magnitude(
+        self,
+        states: list[torch.Tensor],
+        normalize: bool = False,
+    ) -> dict[str, float]:
         
         scores = []
 
         first_state = states[0].float().reshape(-1)
         last_state = states[-1].float().reshape(-1)
         total_change = torch.norm(last_state - first_state, p=2)
+        denom = torch.clamp(total_change, min=1e-12)
 
         for previous_state, current_state in self._layer_pairs(states):
             previous_state = previous_state.float().reshape(-1)
             current_state = current_state.float().reshape(-1)
 
-            score = torch.norm(current_state - previous_state, p=2) # / total_change
+            score = torch.norm(current_state - previous_state, p=2)
+            if normalize:
+                score = score / denom
             scores.append(score)
 
         score_tensor = torch.stack(scores)
@@ -67,21 +72,25 @@ class Metrics:
             "std": score_tensor.std(unbiased=False).item(),
         }
 
-    def angle(self, 
-              states: list[torch.Tensor]
-                ) -> dict[str, float]:
+    def angle(
+        self,
+        states: list[torch.Tensor],
+        normalize: bool = False,
+    ) -> dict[str, float]:
         
         scores = []
         first_state = states[0].float().reshape(-1)
         last_state = states[-1].float().reshape(-1)
         total_change = self._angle_between(first_state, last_state)
+        denom = torch.clamp(total_change, min=1e-12)
 
         for previous_state, current_state in self._layer_pairs(states):
             previous_state = previous_state.float().reshape(-1)
             current_state = current_state.float().reshape(-1)
 
             score = self._angle_between(previous_state, current_state)
-            # scores.append(score / total_change)
+            if normalize:
+                score = score / denom
             scores.append(score)
 
         score_tensor = torch.stack(scores)
@@ -91,14 +100,16 @@ class Metrics:
             "std": score_tensor.std(unbiased=False).item(),
         }
 
-    def run(self, 
-            hidden_states: tuple[torch.Tensor, ...], 
-            use_diff_vectors: bool
-            ) -> dict[str, Any]:
+    def run(
+        self,
+        hidden_states: tuple[torch.Tensor, ...],
+        use_diff_vectors: bool,
+        normalize: bool = False,
+    ) -> dict[str, Any]:
         
         states = self._states(hidden_states=hidden_states, use_diff_vectors=use_diff_vectors)
-        magnitude_scores = self.magnitude(states)
-        angle_scores = self.angle(states)
+        magnitude_scores = self.magnitude(states, normalize=normalize)
+        angle_scores = self.angle(states, normalize=normalize)
         length_scores = self.length(states)
 
         return {

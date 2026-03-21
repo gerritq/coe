@@ -1,9 +1,8 @@
-# To do/Progress
+# Progress
 
 - coe: think about other features of hidden state progression
-    - normalization change / no norm?
-    - prefix
-    - attention access?
+    - Added flag for norm normalization change / no norm => rm seems to lead to more separable blobs
+    - prefix => for Wikipedia, it leads to differences; but not for other domains. Need to compare results of scoring model with and w/o prefix
 
     - difference between first and last
     - something dimension based (with squared differences)

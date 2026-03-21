@@ -13,6 +13,7 @@ from tqdm import tqdm
 from inference import Inference
 from coe import Metrics
 from coo import Metrics as EntropyMetrics
+from score import ScoreGMM, ScoreLogistic
 
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -124,14 +125,14 @@ def plot_scores_by_label(args: Namespace,
         axis.legend()
 
     fig.suptitle(
-        f"Angle, Magnitude, and Length Scores by Label | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)} | Prefix {int(args.prefix)}"
+        f"Angle, Magnitude, and Length Scores by Label {args.title_info}"
     )
     fig.tight_layout()
 
     if save_path is None:              
         save_path = os.path.join(
             OUT_DIR,
-            f"coe_dist_{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"coe_dist_{args.suffix}",
         )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -288,14 +289,14 @@ def plot_layer_profiles(args: Namespace,
     axes[2].legend()
 
     fig.suptitle(
-        f"Trajectory | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)} | PF{int(args.prefix)}"
+        f"Trajectory | {args.title_info}"
     )
     fig.tight_layout()
 
     if save_path is None:       
         save_path = os.path.join(
             OUT_DIR,
-            f"trajectory_{args.model}_{args.dataset}_MODE{args.model}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"trajectory_{args.suffix}"
         )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -335,14 +336,14 @@ def pair_plot(args: Namespace,
         plot_kws={"levels": 8, "fill": False},
     )
     grid.fig.suptitle(
-        f"Pair Plot (Means) | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)} | PF{int(args.prefix)}",
+        f"Pair Plot (Means) | {args.title_info}",
         y=1.02,
     )
 
     if save_path is None:
         save_path = os.path.join(
             OUT_DIR,
-            f"pp_{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"pp_{args.suffix}",
         )
 
     grid.fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -411,14 +412,14 @@ def plot_entropy_by_label(
         axis.legend()
 
     fig.suptitle(
-        f"Entropy (Mean/Std/Change) by Label | N{len(out)} | Model {args.model} | Data {args.dataset}"
+        f"Entropy (Mean/Std/Change) by Label {args.title_info}"
     )
     fig.tight_layout()
 
     if save_path is None:
         save_path = os.path.join(
             OUT_DIR,
-            f"entropy_dist_{args.model}_{args.dataset}{'_ST' if args.smoke_test else ''}.pdf",
+            f"entropy_dist_{args.suffix}",
         )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -482,22 +483,21 @@ def plot_tvd_by_label(
         axis.legend()
 
     fig.suptitle(
-        f"Total Variation Distance (Mean/Std) by Label | N{len(out)} | Model {args.model} | Data {args.dataset}"
+        f"Total Variation Distance (Mean/Std) by Label {args.title_info}"
     )
     fig.tight_layout()
 
     if save_path is None:
         save_path = os.path.join(
             OUT_DIR,
-            f"tvd_dist_{args.model}_{args.dataset}{'_ST' if args.smoke_test else ''}.pdf",
+            f"tvd_dist_{args.suffix}",
         )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
     return save_path
 
-def run(args):
-    data = load_dataset(args=args)
+def run(args, data):
 
     inference = Inference(model_name=args.model)
     metrics = EntropyMetrics() if args.mode == "logits" else Metrics()
@@ -513,6 +513,7 @@ def run(args):
             metrics_dict = metrics.run(
                 hidden_states=hs_dict["hidden_states"],
                 use_diff_vectors=args.diff_vectors,
+                normalize=args.normalize,
             )
             hs_dict.update(metrics_dict)
             del hs_dict["hidden_states"]
@@ -552,7 +553,9 @@ def main():
     )
     parser.add_argument("--diff_vectors", type=int, default=0)
     parser.add_argument("--prefix", type=int, default=0)
+    parser.add_argument("--normalize", type=int, default=0)
     parser.add_argument("--test", type=int, default=0)
+    parser.add_argument("--scoring", type=int, default=0)
     args = parser.parse_args()
 
     assert args.smoke_test in (0, 1), "smoke_test must be 0 or 1"
@@ -561,8 +564,12 @@ def main():
     args.diff_vectors = bool(args.diff_vectors)
     assert args.prefix in (0, 1), "prefix must be 0 or 1"
     args.prefix = bool(args.prefix)
+    assert args.normalize in (0, 1), "normalize must be 0 or 1"
+    args.normalize = bool(args.normalize)
     assert args.test in (0, 1), "test must be 0 or 1"
     args.test = bool(args.test)
+    assert args.scoring in (0, 1), "scoring must be 0 or 1"
+    args.scoring = bool(args.scoring)
 
     if args.test:
         OUT_DIR = os.path.join(OUT_DIR, "test")
@@ -572,9 +579,29 @@ def main():
     for key, value in vars(args).items():
         print(f"{key}: {value}")
     print("=" * 50)
+
+    # get data
+    data = load_dataset(args=args)
     
-    run(args=args)
+    # saving suffix and title info 
+    suffix = f"{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}_NO{int(args.normalize)}{'_ST' if args.smoke_test else ''}.pdf"
+    title_info = f"{args.model} | {args.dataset} | N={len(data)} | Mode {args.mode} | DV {int(args.diff_vectors)} | Pre {int(args.prefix)} | Norm {int(args.normalize)}"
+    args.suffix = suffix
+    args.title_info = title_info
+
+    # main run
+    out = run(args=args, data=data)
     
+    if args.scoring:
+        if args.mode != "logits":
+            gmm_metrics = ScoreGMM().run(out)
+            logreg_metrics = ScoreLogistic().run(out)
+            print("=" * 50)
+            print("Scoring results:")
+            print(f"GMM: {gmm_metrics}")
+            print(f"Logistic: {logreg_metrics}")
+            print("=" * 50)
+        
 
 if __name__ == "__main__":
     main()
