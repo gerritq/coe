@@ -20,12 +20,12 @@ nvidia-smi
 # MODELS=("qwen_06b" "qwen_8b" "llama_8b") # "qwen_32b"
 # MODELS=("qwen_32b") # "qwen_32b"
 
-DATASETS=("counterfact") # "wikipedia_chatgpt" "wikipedia_cohere" "wikipedia_bloomz" "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz" "reddit_chatgpt" "reddit_cohere" "reddit_bloomz"
+DATASETS=("reddit_bloomz") # "wikipedia_chatgpt" "wikipedia_cohere" "wikipedia_bloomz" "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz" "reddit_chatgpt" "reddit_cohere" "reddit_bloomz"
 MODELS=("llama_8b") # "qwen_32b" "qwen_06b"
 
 # Fixed parameters
-MODES=("pooling" "last_token") #  "logits" "last_token" "pooling" "horizontal"
-DIFF_VECTORS=(0 1)
+MODES=("last_token") #  "logits" "last_token" "pooling" "horizontal"
+DIFF_VECTORS=(0)
 
 TEST=1
 SMOKE_TEST=0
