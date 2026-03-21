@@ -6,9 +6,7 @@ class Metrics:
         pass
 
     def _angle_between(self, a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
-        cosine = torch.dot(a, b) / (
-            torch.norm(a, p=2) * torch.norm(b, p=2)
-        )
+        cosine = torch.dot(a, b) / (torch.norm(a, p=2) * torch.norm(b, p=2))
         cosine = torch.clamp(cosine, min=-1.0, max=1.0)
         return torch.acos(cosine)
 
@@ -59,7 +57,7 @@ class Metrics:
             previous_state = previous_state.float().reshape(-1)
             current_state = current_state.float().reshape(-1)
 
-            score = torch.norm(current_state - previous_state, p=2) / total_change
+            score = torch.norm(current_state - previous_state, p=2) # / total_change
             scores.append(score)
 
         score_tensor = torch.stack(scores)
@@ -83,7 +81,8 @@ class Metrics:
             current_state = current_state.float().reshape(-1)
 
             score = self._angle_between(previous_state, current_state)
-            scores.append(score / total_change)
+            # scores.append(score / total_change)
+            scores.append(score)
 
         score_tensor = torch.stack(scores)
         return {

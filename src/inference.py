@@ -51,7 +51,13 @@ class Inference:
         inputs = {key: value.to(self.device) for key, value in inputs.items()}
 
         with torch.no_grad():
-            outputs = self.model(**inputs, output_hidden_states=True, use_cache=False)
+            outputs = self.model(**inputs, 
+                                 output_hidden_states=True, 
+                                 use_cache=False,
+                                 output_attentions=True)
+            
+        print(len(outputs.attentions))
+        sys.exit(0)
 
         if args.mode == "last_token":
             hidden_states = tuple(

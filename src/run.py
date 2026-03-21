@@ -17,6 +17,7 @@ from coo import Metrics as EntropyMetrics
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 OUT_DIR = os.path.join(BASE_DIR, "out")
+TEXT_PREFIX = "Is this text human- or LLM-written?"
 
 def load_dataset(args: Namespace):
 
@@ -36,6 +37,10 @@ def load_dataset(args: Namespace):
             machine_text = item.get("machine_text", item.get("incorrect"))
             if (human_text is None or human_text.strip() == "") or machine_text is None or machine_text.strip() == "":
                 continue
+
+            if args.prefix:
+                human_text = f"{TEXT_PREFIX} {human_text}"
+                machine_text = f"{TEXT_PREFIX} {machine_text}"
 
             data.append({'text': human_text,
                          'label': 0})
@@ -546,6 +551,7 @@ def main():
         choices=["last_token", "pooling", "horizontal", "logits"],
     )
     parser.add_argument("--diff_vectors", type=int, default=0)
+    parser.add_argument("--prefix", type=int, default=0)
     parser.add_argument("--test", type=int, default=0)
     args = parser.parse_args()
 
@@ -553,6 +559,8 @@ def main():
     args.smoke_test = bool(args.smoke_test)
     assert args.diff_vectors in (0, 1), "diff_vectors must be 0 or 1"
     args.diff_vectors = bool(args.diff_vectors)
+    assert args.prefix in (0, 1), "prefix must be 0 or 1"
+    args.prefix = bool(args.prefix)
     assert args.test in (0, 1), "test must be 0 or 1"
     args.test = bool(args.test)
 

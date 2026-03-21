@@ -1,5 +1,14 @@
 # To do/Progress
 
+- coe: think about other features of hidden state progression
+    - normalization change / no norm?
+    - prefix
+    - attention access?
+
+    - difference between first and last
+    - something dimension based (with squared differences)
+    
+
 - chain of logits
     - Implemented: 
         - mean/std entropy across tokens + mean/std of diff entropy across tokens
@@ -71,3 +80,10 @@
 ## https://www.osti.gov/servlets/purl/1319636
 
 - Paper mentioned in CoE about trajectories
+
+# Story
+- Idea:
+    - CoE: coe discrepancies may happen when LLMs generate correct and incorrect responses
+    - We hypothezise the same but for machine vs human texts, i.e., the model "thinking process" (=coe) differs between these types of text
+    - Task 1: how to quantify the coe features
+    - Task 2: how to use those features to predict whether a text is machine or human
