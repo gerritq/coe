@@ -17,7 +17,7 @@ from coo import Metrics as EntropyMetrics
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 OUT_DIR = os.path.join(BASE_DIR, "out")
-TEXT_PREFIX = "Is this text human- or LLM-written?"
+TEXT_PREFIX = "Is this text human or LLM wirtten?"
 
 def load_dataset(args: Namespace):
 
