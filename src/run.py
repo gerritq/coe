@@ -32,8 +32,8 @@ def load_dataset(args: Namespace):
 
         data = []
         for item in raw_data:
-            human_text = item.get("human_text", item.get("text"))
-            machine_text = item.get("machine_text")
+            human_text = item.get("human_text", item.get("text", item.get("correct")))
+            machine_text = item.get("machine_text", item.get("incorrect"))
             if (human_text is None or human_text.strip() == "") or machine_text is None or machine_text.strip() == "":
                 continue
 
@@ -67,10 +67,16 @@ def plot_scores_by_label(args: Namespace,
         ("length_change_mean", "Length Mean"),
         ("length_change_std", "Length Std"),
     ]
-    label_names = {
+    if args.dataset in ["counterfact"]:
+        label_names = {
+        0: "correct",
+        1: "incorrect",
+        }        
+    else:
+        label_names = {
         0: "human",
         1: "machine",
-    }
+        }
     label_colors = {
         0: "tab:blue",
         1: "tab:orange",
@@ -138,14 +144,19 @@ def plot_layer_profiles(args: Namespace,
     
     os.makedirs(OUT_DIR, exist_ok=True)
 
+    if args.dataset in ["counterfact"]:
+        label_names = {
+        0: "correct",
+        1: "incorrect",
+        }        
+    else:
+        label_names = {
+        0: "human",
+        1: "machine",
+        }
     label_colors = {
         0: "tab:blue",
         1: "tab:orange",
-    }
-
-    label_names = {
-        0: "human",
-        1: "machine",
     }
     labels = sorted({item["label"] for item in out})
 
@@ -304,7 +315,10 @@ def pair_plot(args: Namespace,
             for item in out
         ]
     )
-    df["label"] = df["label"].map({0: "human", 1: "machine"}).fillna(df["label"])
+    if args.dataset in ["counterfact"]:
+        df["label"] = df["label"].map({0: "correct", 1: "incorrect"}).fillna(df["label"])
+    else:
+        df["label"] = df["label"].map({0: "human", 1: "machine"}).fillna(df["label"])
 
     grid = sns.pairplot(
         df,
@@ -346,6 +360,7 @@ def plot_entropy_by_label(
         ("topk_entropy_change_mean", "Top-K Entropy Change Mean"),
         ("topk_entropy_change_std", "Top-K Entropy Change Std"),
     ]
+
     label_names = {
         0: "human",
         1: "machine",

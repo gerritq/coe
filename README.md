@@ -4,6 +4,7 @@
     - Implemented: 
         - mean/std entropy across tokens + mean/std of diff entropy across tokens
         - Full vocab vs topk
+    - entropy dynamics?
     - KD div
     - ppl
     - logit vector metrics
