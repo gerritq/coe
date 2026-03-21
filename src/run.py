@@ -13,7 +13,7 @@ from tqdm import tqdm
 from inference import Inference
 from coe import Metrics
 from coo import Metrics as EntropyMetrics
-from score import ScoreGMM, ScoreLogistic, make_split
+from score import ScoreGMM, ScoreLogistic, ScoreMLP
 
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -596,13 +596,15 @@ def main():
         if args.mode != "logits":
             gmm = ScoreGMM()
             logreg = ScoreLogistic()
-            split = make_split(out, test_size=gmm.test_size, random_state=gmm.random_state)
-            gmm_metrics = gmm.run(out=out, suffix=args.suffix, args=args, split=split)
-            logreg_metrics = logreg.run(out=out, suffix=args.suffix, args=args, split=split)
+            mlp = ScoreMLP()
+            gmm_metrics = gmm.run(out=out, suffix=args.suffix, args=args)
+            logreg_metrics = logreg.run(out=out, suffix=args.suffix, args=args)
+            mlp_metrics = mlp.run(out=out, suffix=args.suffix, args=args)
             print("=" * 50)
             print("Scoring results:")
             print(f"GMM: {gmm_metrics}")
             print(f"Logistic: {logreg_metrics}")
+            print(f"MLP: {mlp_metrics}")
             print("=" * 50)
             
 

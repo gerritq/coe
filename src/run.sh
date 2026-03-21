@@ -31,7 +31,7 @@ NORMALIZE=(0)
 
 PREFIX=(0)
 TEST=1
-SMOKE_TEST=0
+SMOKE_TEST=1
 N=3000
 
 # Nested loop to run every model on every dataset

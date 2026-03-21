@@ -9,6 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.mixture import GaussianMixture
 from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
 
 
 BASE_DIR = os.getenv("BASE_COE") or os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -71,11 +72,8 @@ class ScoreGMM:
         out: list[dict[str, Any]],
         suffix: str,
         args: Any | None = None,
-        split: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None = None,
     ) -> dict[str, float]:
-        if split is None:
-            split = make_split(out, test_size=self.test_size, random_state=self.random_state)
-        x_train, x_test, y_train, y_test = split
+        x_train, x_test, y_train, y_test = make_split(out, test_size=self.test_size, random_state=self.random_state)
         gmm = GaussianMixture(n_components=self.n_components, random_state=self.random_state)
         train_clusters = gmm.fit_predict(x_train)
 
@@ -112,11 +110,8 @@ class ScoreLogistic:
         out: list[dict[str, Any]],
         suffix: str,
         args: Any | None = None,
-        split: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None = None,
     ) -> dict[str, float]:
-        if split is None:
-            split = make_split(out, test_size=self.test_size, random_state=self.random_state)
-        x_train, x_test, y_train, y_test = split
+        x_train, x_test, y_train, y_test = make_split(out, test_size=self.test_size, random_state=self.random_state)
         model = LogisticRegression(random_state=self.random_state, max_iter=1000)
         model.fit(x_train, y_train)
         y_pred = model.predict(x_test)
@@ -129,5 +124,38 @@ class ScoreLogistic:
         out_dir = os.path.join(BASE_DIR, "out", "scores")
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, f"score_logistic_{suffix}.json"), "w") as f:
+            json.dump(payload, f, indent=2)
+        return metrics
+
+
+@dataclass
+class ScoreMLP:
+    hidden_size: int = 16
+    random_state: int = 42
+    test_size: float = 0.2
+
+    def run(
+        self,
+        out: list[dict[str, Any]],
+        suffix: str,
+        args: Any | None = None,
+    ) -> dict[str, float]:
+        x_train, x_test, y_train, y_test = make_split(out, test_size=self.test_size, random_state=self.random_state)
+        model = MLPClassifier(
+            hidden_layer_sizes=(self.hidden_size,),
+            random_state=self.random_state,
+            max_iter=1000,
+        )
+        model.fit(x_train, y_train)
+        y_pred = model.predict(x_test)
+
+        metrics = _metrics(y_test, y_pred)
+        payload = {
+            "metrics": metrics,
+            "args": _args_payload(args),
+        }
+        out_dir = os.path.join(BASE_DIR, "out", "scores")
+        os.makedirs(out_dir, exist_ok=True)
+        with open(os.path.join(out_dir, f"score_mlp_{suffix}.json"), "w") as f:
             json.dump(payload, f, indent=2)
         return metrics
