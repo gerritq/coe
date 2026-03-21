@@ -594,14 +594,16 @@ def main():
     
     if args.scoring:
         if args.mode != "logits":
-            gmm_metrics = ScoreGMM().run(out=out, suffix=args.suffix)
-            logreg_metrics = ScoreLogistic().run(out=out, suffix=args.suffix)
+            gmm = ScoreGMM()
+            logreg = ScoreLogistic()
+            gmm_metrics = gmm.run(out=out, suffix=args.suffix)
+            logreg_metrics = logreg.run(out=out, suffix=args.suffix)
             print("=" * 50)
             print("Scoring results:")
             print(f"GMM: {gmm_metrics}")
             print(f"Logistic: {logreg_metrics}")
             print("=" * 50)
-        
+            
 
 if __name__ == "__main__":
     main()

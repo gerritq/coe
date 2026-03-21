@@ -8,9 +8,10 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.mixture import GaussianMixture
+from sklearn.model_selection import train_test_split
 
 
-BASE_DIR = os.getenv("BASE_COE")
+BASE_DIR = os.getenv("BASE_COE") or os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 def _features_labels(out: list[dict[str, Any]]) -> tuple[np.ndarray, np.ndarray]:
     features = []
@@ -35,28 +36,49 @@ def _metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
         "recall": float(recall_score(y_true, y_pred, average="binary")),
     }
 
+def make_split(
+    out: list[dict[str, Any]],
+    test_size: float,
+    random_state: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    x, y = _features_labels(out)
+    return train_test_split(
+        x,
+        y,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=y,
+    )
+
 
 @dataclass
 class ScoreGMM:
     n_components: int = 2
     random_state: int = 42
+    test_size: float = 0.2
 
-    def run(self, out: list[dict[str, Any]], suffix: str) -> dict[str, float]:
-        x, y = _features_labels(out)
+    def run(
+        self,
+        out: list[dict[str, Any]],
+        suffix: str,
+    ) -> dict[str, float]:
+        
+        x_train, x_test, y_train, y_test = make_split(out, test_size=self.test_size, random_state=self.random_state)
         gmm = GaussianMixture(n_components=self.n_components, random_state=self.random_state)
-        clusters = gmm.fit_predict(x)
+        train_clusters = gmm.fit_predict(x_train)
 
         # Map clusters to labels by majority vote
         mapping: dict[int, int] = {}
         for cluster_id in range(self.n_components):
-            cluster_labels = y[clusters == cluster_id]
+            cluster_labels = y_train[train_clusters == cluster_id]
             if cluster_labels.size == 0:
                 mapping[cluster_id] = 0
             else:
                 mapping[cluster_id] = int(np.round(cluster_labels.mean()))
-        y_pred = np.vectorize(mapping.get)(clusters)
+        test_clusters = gmm.predict(x_test)
+        y_pred = np.vectorize(mapping.get)(test_clusters)
 
-        metrics = _metrics(y, y_pred)
+        metrics = _metrics(y_test, y_pred)
         out_dir = os.path.join(BASE_DIR, "out", "scores")
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, f"score_gmm_{suffix}.json"), "w") as f:
@@ -67,14 +89,20 @@ class ScoreGMM:
 @dataclass
 class ScoreLogistic:
     random_state: int = 42
+    test_size: float = 0.2
 
-    def run(self, out: list[dict[str, Any]], suffix: str) -> dict[str, float]:
-        x, y = _features_labels(out)
+    def run(
+        self,
+        out: list[dict[str, Any]],
+        suffix: str,
+    ) -> dict[str, float]:
+        
+        x_train, x_test, y_train, y_test = make_split(out, test_size=self.test_size, random_state=self.random_state)
         model = LogisticRegression(random_state=self.random_state, max_iter=1000)
-        model.fit(x, y)
-        y_pred = model.predict(x)
+        model.fit(x_train, y_train)
+        y_pred = model.predict(x_test)
 
-        metrics = _metrics(y, y_pred)
+        metrics = _metrics(y_test, y_pred)
         out_dir = os.path.join(BASE_DIR, "out", "scores")
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, f"score_logistic_{suffix}.json"), "w") as f:
