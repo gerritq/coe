@@ -55,9 +55,6 @@ class Inference:
                                  output_hidden_states=True, 
                                  use_cache=False,
                                  output_attentions=True)
-            
-        print(len(outputs.attentions))
-        sys.exit(0)
 
         if args.mode == "last_token":
             hidden_states = tuple(

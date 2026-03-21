@@ -124,14 +124,14 @@ def plot_scores_by_label(args: Namespace,
         axis.legend()
 
     fig.suptitle(
-        f"Angle, Magnitude, and Length Scores by Label | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)}"
+        f"Angle, Magnitude, and Length Scores by Label | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)} | Prefix {int(args.prefix)}"
     )
     fig.tight_layout()
 
     if save_path is None:              
         save_path = os.path.join(
             OUT_DIR,
-            f"coe_dist_{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"coe_dist_{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}{'_ST' if args.smoke_test else ''}.pdf",
         )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -288,14 +288,14 @@ def plot_layer_profiles(args: Namespace,
     axes[2].legend()
 
     fig.suptitle(
-        f"Trajectory | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)}"
+        f"Trajectory | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)} | PF{int(args.prefix)}"
     )
     fig.tight_layout()
 
     if save_path is None:       
         save_path = os.path.join(
             OUT_DIR,
-            f"trajectory_{args.model}_{args.dataset}_MODE{args.model}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"trajectory_{args.model}_{args.dataset}_MODE{args.model}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}{'_ST' if args.smoke_test else ''}.pdf",
         )
 
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -335,14 +335,14 @@ def pair_plot(args: Namespace,
         plot_kws={"levels": 8, "fill": False},
     )
     grid.fig.suptitle(
-        f"Pair Plot (Means) | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)}",
+        f"Pair Plot (Means) | N{len(out)} | Model {args.model} | Data {args.dataset} | Mode {args.mode} | DiffVec {int(args.diff_vectors)} | PF{int(args.prefix)}",
         y=1.02,
     )
 
     if save_path is None:
         save_path = os.path.join(
             OUT_DIR,
-            f"pp_{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}{'_ST' if args.smoke_test else ''}.pdf",
+            f"pp_{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}{'_ST' if args.smoke_test else ''}.pdf",
         )
 
     grid.fig.savefig(save_path, dpi=300, bbox_inches="tight")
