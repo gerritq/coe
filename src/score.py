@@ -36,6 +36,15 @@ def _metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
         "recall": float(recall_score(y_true, y_pred, average="binary")),
     }
 
+def _args_payload(args: Any | None) -> dict[str, Any] | None:
+    if args is None:
+        return None
+    if isinstance(args, dict):
+        return args
+    if hasattr(args, "__dict__"):
+        return vars(args)
+    return {"value": str(args)}
+
 def make_split(
     out: list[dict[str, Any]],
     test_size: float,
@@ -61,9 +70,12 @@ class ScoreGMM:
         self,
         out: list[dict[str, Any]],
         suffix: str,
+        args: Any | None = None,
+        split: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None = None,
     ) -> dict[str, float]:
-        
-        x_train, x_test, y_train, y_test = make_split(out, test_size=self.test_size, random_state=self.random_state)
+        if split is None:
+            split = make_split(out, test_size=self.test_size, random_state=self.random_state)
+        x_train, x_test, y_train, y_test = split
         gmm = GaussianMixture(n_components=self.n_components, random_state=self.random_state)
         train_clusters = gmm.fit_predict(x_train)
 
@@ -79,10 +91,14 @@ class ScoreGMM:
         y_pred = np.vectorize(mapping.get)(test_clusters)
 
         metrics = _metrics(y_test, y_pred)
+        payload = {
+            "metrics": metrics,
+            "args": _args_payload(args),
+        }
         out_dir = os.path.join(BASE_DIR, "out", "scores")
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, f"score_gmm_{suffix}.json"), "w") as f:
-            json.dump(metrics, f, indent=2)
+            json.dump(payload, f, indent=2)
         return metrics
 
 
@@ -95,16 +111,23 @@ class ScoreLogistic:
         self,
         out: list[dict[str, Any]],
         suffix: str,
+        args: Any | None = None,
+        split: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None = None,
     ) -> dict[str, float]:
-        
-        x_train, x_test, y_train, y_test = make_split(out, test_size=self.test_size, random_state=self.random_state)
+        if split is None:
+            split = make_split(out, test_size=self.test_size, random_state=self.random_state)
+        x_train, x_test, y_train, y_test = split
         model = LogisticRegression(random_state=self.random_state, max_iter=1000)
         model.fit(x_train, y_train)
         y_pred = model.predict(x_test)
 
         metrics = _metrics(y_test, y_pred)
+        payload = {
+            "metrics": metrics,
+            "args": _args_payload(args),
+        }
         out_dir = os.path.join(BASE_DIR, "out", "scores")
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, f"score_logistic_{suffix}.json"), "w") as f:
-            json.dump(metrics, f, indent=2)
+            json.dump(payload, f, indent=2)
         return metrics
