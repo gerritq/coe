@@ -1,3 +1,23 @@
+# Hanqi Qs
+- Check with her whether the length ratio makes sense.
+- How to find optimal normalization? Empirically?
+- Her thoughts on length feature?
+- Other ideas of CoE features?
+- I expected more from the trajectories?
+
+
+# To do
+
+**Papers**
+- Actually read and understand the two papers
+
+**Zero-shot thresholds**
+- Understand how detectgpt, binoculars estimate the threshold? Or criteria?
+- Implement baselines: lrr, ppl, ... etc..., fastdetectgpt, binoculars
+
+**Full dimesion volatility score**
+- Implement the dimension-independent score, but think how to aggregate?
+
 # Progress
 
 **21.03.26**
@@ -15,21 +35,8 @@
 
 
 **22.03.26**
-- Added three scorers mlp, gmm, and logistic and ran them on the three feature vectors
-
-- for the ration, do we need to normalize?
-- spikes at the beginning and end, should we exclude them?
-- confirm pooling is correct
-- difference between layers
-- rename layer profile trajectory; add layer nums
-- identify other metrics
-- try the karpathy agent on my task
-
-# To do
-
-- Understand how detectgpt, binoculars estimate the threshold? Or criteria?
-
-- Implement baselines: lrr, ppl, ... etc..., fastdetectgpt, binoculars
+- Added three scorers mlp, gmm, and logistic and ran them on the three feature vectors => results are strong compared to bert baseline on actual texts
+- 
 
 # Brain dump
 
@@ -41,24 +48,28 @@
 
 ## Zero-shot
 
-- Simple assignment to distributions?
+- Understand how Binoculars and FastDetectGPT get the thresholds?
+    - I guess it is using ROC and then Youden's J
+    - Using these to find the optimal threshold on a held out data
+
+- Simple assignment to distributions? And then simple log diff?
 
 - How to create a unified score with mean and std info?
 
 ## CoE Features
 
 - Average change between the first and last token
+- Dimension independent metric as in OOD paper
+    - Square dim differences?
 
 ## Misc
 
 - PCA on hidden states?
 - Other normalization: relative to first or last vector? On the dimension of the vector?
-
-- Can we do this for AFC?
 - Prefix: can we add is this text machine or human generated?
+    - Visually there is not much change except for Wikipedia, but we should check in more detail
 - Can we use the uncertainty at the unembedding layer across tokens?
-- Dimension indpendent metric as in OOD paper
-    - Square dim differences?
+
 - Other metrics
     - CoE for attention heads
     - Abs diff as in the neurips paper
@@ -74,10 +85,9 @@
  - Can use the dimension independent volatility vector as in "Embedding trajectory"
 - Use CoT in some way?
 
-
-# Qs
-- Why is there no difference in reddit?
-- Why magnitude change if it is distance change?
+**Done**
+- Can we do this for AFC?
+    - Tried with counterfact data, did not really work, distributions are overlapping af. My suspicion is that this is because the facts are really short 
 
 # Knowledge
 

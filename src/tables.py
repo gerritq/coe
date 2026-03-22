@@ -1,13 +1,16 @@
-from __future__ import annotations
-
-import argparse
 import json
 import os
 import re
 from dataclasses import dataclass
 
+# define the subfolder here
+SUBFOLDER_COE = "0322_first_table_run"
+SUBFOLDER_BASELINE = "test"
+
+# base dirs
 BASE_DIR = os.getenv("BASE_COE")
-SCORER_DIR = os.path.join(BASE_DIR, "scores")
+SCORER_DIR = os.path.join(BASE_DIR, "scores", SUBFOLDER_COE)
+BASELINE_DIR = os.path.join(BASE_DIR, "baselines", SUBFOLDER_BASELINE)
 TABLE_DIR = os.path.join(BASE_DIR, "tables")
 
 SCORER_ORDER = ["gmm", "logistic", "mlp"]
@@ -113,14 +116,78 @@ def format_table(
 
     table = "\n".join(lines)
     table = table.replace("_", "-")
+    os.makedirs(TABLE_DIR, exist_ok=True)
     out_dir = os.path.join(TABLE_DIR, f"t1_{METRIC}.tex")
     with open(out_dir, "w", encoding="utf-8") as f:
         f.write(table)
-    
+
+
+def load_baselines() -> tuple[dict[str, dict[str, float]], list[str]]:
+    data: dict[str, dict[str, float]] = {}
+    datasets = set()
+
+    for filename in sorted(os.listdir(BASELINE_DIR)):
+        if not filename.endswith(".json"):
+            continue
+
+        path = os.path.join(BASELINE_DIR, filename)
+        with open(path, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+        args = payload.get("args", {})
+        metrics = payload.get("metrics", {})
+
+        dataset = args.get("dataset")
+        model = args.get("model")
+        if dataset is None or model is None:
+            continue
+
+        metric = metrics.get(METRIC)
+        if metric is None:
+            continue
+
+        datasets.add(dataset)
+        data.setdefault(str(model), {})[dataset] = float(metric)
+
+    return data, sorted(datasets)
+
+
+def format_baseline_table(
+    data: dict[str, dict[str, float]],
+    datasets: list[str],
+) -> None:
+    models = sorted(data.keys())
+
+    col_spec = "l" + "".join(["|c" for _ in datasets])
+    lines = []
+    lines.append("\\begin{tabular}{" + col_spec + "}")
+    lines.append("\\toprule")
+
+    header = ["Model"] + datasets
+    lines.append(" & ".join(header) + " \\\\")
+    lines.append("\\midrule")
+
+    for model in models:
+        row = [model]
+        for ds in datasets:
+            val = data.get(model, {}).get(ds)
+            row.append("" if val is None else f"{val*100:.2f}")
+        lines.append(" & ".join(row) + " \\\\")
+
+    lines.append("\\bottomrule")
+    lines.append("\\end{tabular}")
+
+    table = "\n".join(lines)
+    table = table.replace("_", "-")
+    os.makedirs(TABLE_DIR, exist_ok=True)
+    out_dir = os.path.join(TABLE_DIR, f"baseline_{METRIC}.tex")
+    with open(out_dir, "w", encoding="utf-8") as f:
+        f.write(table)
 
 def main() -> None:
     data, datasets = load_scores()
     table = format_table(data, datasets)
+    baseline_data, baseline_datasets = load_baselines()
+    format_baseline_table(baseline_data, baseline_datasets)
 
 
 
