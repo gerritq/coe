@@ -1,25 +1,21 @@
 # Progress
 
-- coe: think about other features of hidden state progression
+**21.03.26**
+
+- coe:
     - Added flag for norm normalization change / no norm => rm seems to lead to more separable blobs
-    - prefix => for Wikipedia, it leads to differences; but not for other domains. Need to compare results of scoring model with and w/o prefix
+    - prefix => for Wikipedia, it leads to differences; but not for other domains. Need to compare results of scoring model with and w/o prefix; but this is an empircial question at the end
 
     - difference between first and last
     - something dimension based (with squared differences)
     
-
 - chain of logits
-    - Implemented: 
-        - mean/std entropy across tokens + mean/std of diff entropy across tokens
-        - Full vocab vs topk
-    - entropy dynamics?
-    - KD div
-    - ppl
-    - logit vector metrics
-    - total variation distance 
-    - JS divergence
+    - Implemented mean/std entropy across tokens + mean/std of diff entropy across tokens; done this on full and top-k tokens => it could work, need to interpret and analyse results further
+    - Implemented TVD => does also work to some extend but needs closer inspection + check whether this is correcty implemented
 
 
+**22.03.26**
+- Added three scorers mlp, gmm, and logistic and ran them on the three feature vectors
 
 - for the ration, do we need to normalize?
 - spikes at the beginning and end, should we exclude them?
@@ -29,12 +25,40 @@
 - identify other metrics
 - try the karpathy agent on my task
 
+# To do
+
+- Understand how detectgpt, binoculars estimate the threshold? Or criteria?
+
+- Implement baselines: lrr, ppl, ... etc..., fastdetectgpt, binoculars
+
 # Brain dump
+
+## Horizontal
+
+- KD or JS divergence
+- PPL change 
+- logit vector, but this is highly dimensional
+
+## Zero-shot
+
+- Simple assignment to distributions?
+
+- How to create a unified score with mean and std info?
+
+## CoE Features
+
+- Average change between the first and last token
+
+## Misc
+
+- PCA on hidden states?
+- Other normalization: relative to first or last vector? On the dimension of the vector?
 
 - Can we do this for AFC?
 - Prefix: can we add is this text machine or human generated?
 - Can we use the uncertainty at the unembedding layer across tokens?
 - Dimension indpendent metric as in OOD paper
+    - Square dim differences?
 - Other metrics
     - CoE for attention heads
     - Abs diff as in the neurips paper
