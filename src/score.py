@@ -12,7 +12,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 
 
-BASE_DIR = os.getenv("BASE_COE") or os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+BASE_DIR = os.getenv("BASE_COE")
+SCORER_DIR = os.path.join(BASE_DIR, "scores", "test")
+os.makedirs(SCORER_DIR, exist_ok=True)
 
 def _features_labels(out: list[dict[str, Any]]) -> tuple[np.ndarray, np.ndarray]:
     features = []
@@ -93,9 +95,8 @@ class ScoreGMM:
             "metrics": metrics,
             "args": _args_payload(args),
         }
-        out_dir = os.path.join(BASE_DIR, "out", "scores")
-        os.makedirs(out_dir, exist_ok=True)
-        with open(os.path.join(out_dir, f"score_gmm_{suffix}.json"), "w") as f:
+        
+        with open(os.path.join(SCORER_DIR, f"score_gmm_{suffix}.json"), "w") as f:
             json.dump(payload, f, indent=2)
         return metrics
 
@@ -121,9 +122,8 @@ class ScoreLogistic:
             "metrics": metrics,
             "args": _args_payload(args),
         }
-        out_dir = os.path.join(BASE_DIR, "out", "scores")
-        os.makedirs(out_dir, exist_ok=True)
-        with open(os.path.join(out_dir, f"score_logistic_{suffix}.json"), "w") as f:
+        
+        with open(os.path.join(SCORER_DIR, f"score_logistic_{suffix}.json"), "w") as f:
             json.dump(payload, f, indent=2)
         return metrics
 
@@ -154,8 +154,7 @@ class ScoreMLP:
             "metrics": metrics,
             "args": _args_payload(args),
         }
-        out_dir = os.path.join(BASE_DIR, "out", "scores")
-        os.makedirs(out_dir, exist_ok=True)
-        with open(os.path.join(out_dir, f"score_mlp_{suffix}.json"), "w") as f:
+        
+        with open(os.path.join(SCORER_DIR, f"score_mlp_{suffix}.json"), "w") as f:
             json.dump(payload, f, indent=2)
         return metrics
