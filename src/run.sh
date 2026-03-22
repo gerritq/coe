@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=coe_horizontal
+#SBATCH --job-name=coe_scoring_llama
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
-#SBATCH --time=03:30:00
+#SBATCH --time=02:30:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=15GB
@@ -21,17 +21,17 @@ nvidia-smi
 # MODELS=("qwen_32b") # "qwen_32b"
 
 DATASETS=("wikipedia_chatgpt" "wikihow_chatgpt" "reddit_chatgpt" "arxiv_chatgpt") # "wikipedia_chatgpt" "wikipedia_cohere" "wikipedia_bloomz" "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz" "reddit_chatgpt" "reddit_cohere" "reddit_bloomz"
-MODELS=("qwen_06b") # "qwen_8b" "llama_8b" "qwen_06b"
+MODELS=("llama_8b") # "qwen_8b" "llama_8b" "qwen_06b"
 SCORING=1
 
 # Fixed parameters
-MODES=("last_token") #  "logits" "last_token" "pooling" "horizontal"
+MODES=("pooling" "last_token") #  "logits" "last_token" "pooling" "horizontal"
 DIFF_VECTORS=(0)
-NORMALIZE=(0)
+NORMALIZE=(0 1)
 
 PREFIX=(0)
 TEST=1
-SMOKE_TEST=1
+SMOKE_TEST=0
 N=3000
 
 # Nested loop to run every model on every dataset
