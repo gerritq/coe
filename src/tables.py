@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 
 # define the subfolder here
-SUBFOLDER_COE = "0322_first_table_run"
+SUBFOLDER_COE = "0322_score_run_with_dv_pref"
 SUBFOLDER_BASELINE = "test"
 
 # base dirs
@@ -81,13 +81,52 @@ def load_scores() -> tuple[dict[Config, dict[str, dict[str, float]]], list[str]]
 def format_table(
     data: dict[Config, dict[str, dict[str, float]]],
     datasets: list[str],
-) -> str:
+) -> None:
+    configs = list(data.keys())
+
+    row_values: dict[Config, list[float | None]] = {}
+    means: dict[Config, float | None] = {}
+    num_score_cols = len(datasets) * len(SCORER_ORDER) + len(SCORER_ORDER)
+
+    for config in configs:
+        values: list[float | None] = []
+        acc = 0.0
+        count = 0
+        scorer_acc = {scorer: 0.0 for scorer in SCORER_ORDER}
+        scorer_count = {scorer: 0 for scorer in SCORER_ORDER}
+        for ds in datasets:
+            for scorer in SCORER_ORDER:
+                val = data.get(config, {}).get(ds, {}).get(scorer)
+                values.append(val)
+                if val is not None:
+                    acc += val
+                    count += 1
+                    scorer_acc[scorer] += val
+                    scorer_count[scorer] += 1
+        mean_val = acc / count if count > 0 else None
+        scorer_means = [
+            (scorer_acc[scorer] / scorer_count[scorer])
+            if scorer_count[scorer] > 0
+            else None
+            for scorer in SCORER_ORDER
+        ]
+        values.extend(scorer_means)
+        row_values[config] = values
+        means[config] = mean_val
+
     configs = sorted(
-        data.keys(),
-        key=lambda c: (c.model, c.mode, c.diff_vectors, c.prefix, c.normalize),
+        configs,
+        key=lambda c: (
+            c.model,
+            -(means[c] if means[c] is not None else -1.0),
+            c.mode,
+            c.diff_vectors,
+            c.prefix,
+            c.normalize,
+        ),
     )
 
-    col_spec = "lllll" + "".join(["|ccc" for _ in datasets])
+    col_spec = "lllll" + "".join(["|ccc" for _ in datasets]) + "|ccc"
     lines = []
     lines.append("\\begin{tabular}{" + col_spec + "}")
     lines.append("\\toprule")
@@ -95,20 +134,42 @@ def format_table(
     header = ["Model", "Mode", "DV", "Pre", "Norm"]
     for ds in datasets:
         header.append(f"\\multicolumn{{3}}{{c}}{{{ds}}}")
+    header.append("\\multicolumn{3}{c}{Mean}")
     lines.append(" & ".join(header) + " \\\\")
 
     subheader = ["", "", "", "", ""]
     for _ in datasets:
         subheader.extend(SCORER_ORDER)
+    subheader.extend(SCORER_ORDER)
     lines.append(" & ".join(subheader) + " \\\\")
     lines.append("\\midrule")
 
+    per_model_max: dict[str, list[float | None]] = {}
+    for config in configs:
+        model = config.model
+        if model not in per_model_max:
+            per_model_max[model] = [None] * (num_score_cols + 1)
+        for idx, val in enumerate(row_values[config]):
+            if val is None:
+                continue
+            current = per_model_max[model][idx]
+            if current is None or val > current:
+                per_model_max[model][idx] = val
+
+    def format_cell(val: float | None, max_val: float | None) -> str:
+        if val is None:
+            return ""
+        formatted = f"{val*100:.2f}"
+        if max_val is not None and abs(val - max_val) <= 1e-12:
+            return f"\\textbf{{{formatted}}}"
+        return formatted
+
     for config in configs:
         row = config.as_row()
-        for ds in datasets:
-            for scorer in SCORER_ORDER:
-                val = data.get(config, {}).get(ds, {}).get(scorer)
-                row.append("" if val is None else f"{val*100:.2f}")
+        model_max = per_model_max.get(config.model, [])
+        for idx, val in enumerate(row_values[config]):
+            max_val = model_max[idx] if idx < len(model_max) else None
+            row.append(format_cell(val, max_val))
         lines.append(" & ".join(row) + " \\\\")
 
     lines.append("\\bottomrule")
