@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=coe_scoring_qwen
+#SBATCH --job-name=coe_scoring_llama
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
 #SBATCH --time=04:30:00
@@ -21,7 +21,7 @@ nvidia-smi
 # MODELS=("qwen_32b") # "qwen_32b"
 
 DATASETS=("wikipedia_chatgpt" "wikihow_chatgpt" "reddit_chatgpt" "arxiv_chatgpt") # "wikipedia_chatgpt" "wikipedia_cohere" "wikipedia_bloomz" "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz" "reddit_chatgpt" "reddit_cohere" "reddit_bloomz"
-MODELS=("qwen_8b") # "qwen_8b" "llama_8b" "qwen_06b"
+MODELS=("llama_8b") # "qwen_8b" "llama_8b" "qwen_06b"
 SCORING=1
 
 # Fixed parameters

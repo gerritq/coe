@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 
 # define the subfolder here
-SUBFOLDER_COE = "0322_score_run_with_dv_pref"
+SUBFOLDER_COE = "test"
 SUBFOLDER_BASELINE = "test"
 
 # base dirs

@@ -25,9 +25,9 @@ def _features_labels(out: list[dict[str, Any]]) -> tuple[np.ndarray, np.ndarray]
                 item["magnitude_change_mean"],
                 item["angle_change_mean"],
                 item["length_change_mean"],
-                item["magnitude_change_std"],
-                item["angle_change_std"],
-                item["length_change_std"],
+                # item["magnitude_change_std"],
+                # item["angle_change_std"],
+                # item["length_change_std"],
             ]
         )
         labels.append(item["label"])
