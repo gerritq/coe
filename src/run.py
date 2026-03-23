@@ -13,9 +13,9 @@ from tqdm import tqdm
 from inference import Inference
 from coe import Metrics
 from coo import Metrics as EntropyMetrics
-from score import ScoreGMM, ScoreLogistic, ScoreMLP
+from classifier import ScoreGMM, ScoreLogistic, ScoreMLP
 
-from utils import load_dataset
+from utils import load_dataset, compute_auc_for_scores
 
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -553,6 +553,21 @@ def main():
 
     # main run
     out = run(args=args, data=data)
+
+    if args.mode != "logits":
+        auc_metrics = compute_auc_for_scores(
+            out=out,
+            args=args,
+            score_keys=[
+                "difference_change_mean",
+                "addition_change_mean",
+            ],
+        )
+        print("=" * 50)
+        print("AUC results (new metrics):")
+        for key, stats in auc_metrics["metrics"].items():
+            print(f"{key}: {stats['auc']}")
+        print("=" * 50)
     
     if args.scoring:
         if args.mode != "logits":

@@ -1,6 +1,7 @@
+import torch
+import sys
 from typing import Any
 
-import torch
 class Metrics:
     def __init__(self):
         pass
@@ -100,6 +101,52 @@ class Metrics:
             "std": score_tensor.std(unbiased=False).item(),
         }
 
+    def _zero_shot_scores(
+        self,
+        states: list[torch.Tensor],
+        normalize: bool,
+    ) -> dict[str, dict[str, Any]]:
+    
+        first_state = states[0].float().reshape(-1)
+        last_state = states[-1].float().reshape(-1)
+        total_magnitude = torch.norm(last_state - first_state, p=2)
+        total_angle = self._angle_between(first_state, last_state)
+        denom_magnitude = torch.clamp(total_magnitude, min=1e-12)
+        denom_angle = torch.clamp(total_angle, min=1e-12)
+
+        magnitudes = []
+        angles = []
+        for previous_state, current_state in self._layer_pairs(states):
+            previous_state = previous_state.float().reshape(-1)
+            current_state = current_state.float().reshape(-1)
+        
+            mag = torch.norm(current_state - previous_state, p=2)
+            ang = self._angle_between(previous_state, current_state)
+            if normalize:
+                mag = mag / denom_magnitude
+                ang = ang / denom_angle
+            magnitudes.append(mag)
+            angles.append(ang)
+
+        # this is a vector of size 28
+        mag_tensor = torch.stack(magnitudes)
+        ang_tensor = torch.stack(angles)
+    
+        diff_tensor = mag_tensor - ang_tensor
+        add_tensor = mag_tensor + ang_tensor
+
+        def pack(scores: torch.Tensor) -> dict[str, Any]:
+            return {
+                "scores": scores.tolist(),
+                "mean": scores.mean().item(),
+                "std": scores.std(unbiased=False).item(),
+            }
+
+        return {
+            "difference": pack(diff_tensor),
+            "addition": pack(add_tensor),
+        }
+
     def run(
         self,
         hidden_states: tuple[torch.Tensor, ...],
@@ -111,6 +158,7 @@ class Metrics:
         magnitude_scores = self.magnitude(states, normalize=normalize)
         angle_scores = self.angle(states, normalize=normalize)
         length_scores = self.length(states)
+        cross_layer = self._zero_shot_scores(states, normalize=normalize)
 
         return {
             "magnitude_change_scores": magnitude_scores["scores"],
@@ -122,4 +170,10 @@ class Metrics:
             "length_change_scores": length_scores["scores"],
             "length_change_mean": length_scores["mean"],
             "length_change_std": length_scores["std"],
+            "difference_change_scores": cross_layer["difference"]["scores"],
+            "difference_change_mean": cross_layer["difference"]["mean"],
+            "difference_change_std": cross_layer["difference"]["std"],
+            "addition_change_scores": cross_layer["addition"]["scores"],
+            "addition_change_mean": cross_layer["addition"]["mean"],
+            "addition_change_std": cross_layer["addition"]["std"],
         }
