@@ -2,7 +2,7 @@ import os
 import json
 import random
 import numpy as np
-import torch
+
 from typing import Any
 from argparse import Namespace
 
@@ -75,42 +75,23 @@ def return_args(args: Any | None) -> dict[str, Any] | None:
     return {"value": str(args)}
 
 
-def compute_auc_for_scores(
-    out: list[dict],
-    args: Any | None,
-    score_keys: list[str],
+def compute_auc(
+    labels: list[int],
+    values: list[float],
     ) -> dict[str, Any]:
 
-    results: dict[str, Any] = {"args": return_args(args), "metrics": {}}
-
-    for key in score_keys:
-        values = []
-        labels = []
-        for item in out:
-            val = item.get(key)
-            if val is None:
-                continue
-            if isinstance(val, float) and (np.isnan(val) or np.isinf(val)):
-                continue
-            values.append(float(val))
-            labels.append(int(item["label"]))
 
     
-        y_true = np.array(labels)
-        y_score = np.array(values)
-        fpr, tpr, thresholds = roc_curve(y_true, y_score)
-        auc_val = float(roc_auc_score(y_true, y_score))
-        results["metrics"][key] = {
-            "auc": auc_val,
-            "fpr": fpr.tolist(),
-            "tpr": tpr.tolist(),
-            "thresholds": thresholds.tolist(),
-            "n": int(len(values)),
-        }
+    y_true = np.array(labels)
+    y_score = np.array(values)
+    fpr, tpr, thresholds = roc_curve(y_true, y_score)
+    auc_val = float(roc_auc_score(y_true, y_score))
+    return {
+        "auc": auc_val,
+        # "fpr": fpr.tolist(),
+        # "tpr": tpr.tolist(),
+        # "thresholds": thresholds.tolist(),
+        "n": int(len(values)),
+    }
 
-    out_path = os.path.join(OUT_DIR, f"auroc_{args.suffix}.json")
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2)
-
-    return results
-
+    

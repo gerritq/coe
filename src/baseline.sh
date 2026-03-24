@@ -16,10 +16,18 @@ nvidia-smi
 # "wikihow_chatgpt" "wikihow_cohere" "wikihow_bloomz"
 # "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz"
 
-DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
-MODELS=("bert")
+# DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
+DATASETS=("wikipedia_chatgpt")
+MODELS=(
+        # "encoder" 
+        "llr" 
+        # "fastdetectgpt" 
+        # "rank" 
+        # "entropy"
+        # "binoculars" 
+        )        
 
-SMOKE_TEST=0
+SMOKE_TEST=1
 N=3000
 
 # Nested loop to run every model on every dataset
