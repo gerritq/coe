@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --job-name=baselines
+#SBATCH --job-name=baselines_bin
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
-#SBATCH --time=00:30:00
+#SBATCH --time=01:30:00
 #SBATCH --partition=gpu,nmes_gpu
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:2
 #SBATCH --mem=15GB
 # SBATCH --constraint=a100
 
@@ -17,18 +17,18 @@ nvidia-smi
 # "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz"
 
 # DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
-DATASETS=("wikipedia_chatgpt")
+# DATASETS=("wikipedia_chatgpt")
 MODELS=(
         # "encoder" 
-        "llr" 
+        # "llr" 
         # "fastdetectgpt" 
         # "rank" 
         # "entropy"
-        # "binoculars" 
+        "binoculars" 
         )        
 
-SMOKE_TEST=1
-N=3000
+SMOKE_TEST=0
+N=2000
 
 # Nested loop to run every model on every dataset
 for DATASET in "${DATASETS[@]}"; do

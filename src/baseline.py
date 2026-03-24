@@ -75,29 +75,29 @@ def main():
         from baselines.binoculars import Binoculars
         baseline = Binoculars(observer_name_or_path=args.base_model_1, 
                               performer_name_or_path=args.base_model_2)
-        scores = baseline.run(input_text=splits[2])
+        scores = baseline.run(input_text=splits[1])
     
     if args.model == "llr":
         from baselines.llr import LLR
         baseline = LLR(model_name=args.base_model_1, device=DEVICE)
-        scores = baseline.run(texts=splits[2])
+        scores = baseline.run(texts=splits[1])
 
     if args.model == "rank":
         from baselines.rank import Rank
         baseline = Rank(model_name=args.base_model_1, device=DEVICE)
-        scores = baseline.run(texts=splits[2])
+        scores = baseline.run(texts=splits[1])
 
     if args.model == "entropy":
         from baselines.entropy import Entropy
         baseline = Entropy(model_name=args.base_model_1, device=DEVICE)
-        scores = baseline.run(texts=splits[2])
+        scores = baseline.run(texts=splits[1])
 
     if args.model == "fastdetectgpt":
         from baselines.fastdetectgpt import FastDetectGPT
         baseline = FastDetectGPT(scoring_model=args.base_model_1, 
                                  reference_model=args.base_model_1,
                                  device=DEVICE)
-        scores = baseline.run(texts=splits[2])
+        scores = baseline.run(texts=splits[1])
 
     metrics = compute_auc(
         labels=labels,

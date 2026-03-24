@@ -12,13 +12,13 @@ class Rank:
                                                         torch_dtype=torch.float16).to(self.device)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-    def _get_rank(self, text, tokenizer, model, log=False):
+    def _get_rank(self, text, log=False):
         with torch.no_grad():
             if text == "":
                 return None
             else:
-                tokenized = tokenizer(text, return_tensors="pt").to(self.device)
-                logits = model(**tokenized).logits[:, :-1]
+                tokenized = self.tokenizer(text, return_tensors="pt").to(self.device)
+                logits = self.model(**tokenized).logits[:, :-1]
                 labels = tokenized.input_ids[:, 1:]
 
                 matches = (logits.argsort(-1, descending=True) == labels.unsqueeze(-1)).nonzero()
@@ -37,5 +37,5 @@ class Rank:
                 return ranks.float().mean().item()
 
 
-    def run(self, texts: list[str], args) -> list[float]:
+    def run(self, texts: list[str]) -> list[float]:
         return [self._get_rank(text) for text in texts]
