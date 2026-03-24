@@ -116,24 +116,28 @@ class Metrics:
 
         magnitudes = []
         angles = []
+        ratios = []
         for previous_state, current_state in self._layer_pairs(states):
             previous_state = previous_state.float().reshape(-1)
             current_state = current_state.float().reshape(-1)
         
             mag = torch.norm(current_state - previous_state, p=2)
             ang = self._angle_between(previous_state, current_state)
+            ratio = torch.norm(current_state, p=2) / torch.norm(previous_state, p=2)
             if normalize:
                 mag = mag / denom_magnitude
                 ang = ang / denom_angle
             magnitudes.append(mag)
             angles.append(ang)
+            ratios.append(ratio)
 
         # this is a vector of size 28
         mag_tensor = torch.stack(magnitudes)
         ang_tensor = torch.stack(angles)
+        ratio_tensor = torch.stack(ratios)
     
-        diff_tensor = mag_tensor - ang_tensor
-        add_tensor = mag_tensor + ang_tensor
+        diff_tensor = mag_tensor - ang_tensor - ratio_tensor
+        add_tensor = mag_tensor - ang_tensor + ratio_tensor
 
         def pack(scores: torch.Tensor) -> dict[str, Any]:
             return {

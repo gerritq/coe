@@ -108,7 +108,7 @@ def compute_auc_for_scores(
             "n": int(len(values)),
         }
 
-    out_path = os.path.join(OUT_DIR, f"auroc_{args.suffix}.json")
+    out_path = os.path.join(ZERO_SCORES_DIR, f"auroc_{args.suffix.replace(".pdf", ".json")}")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
 
