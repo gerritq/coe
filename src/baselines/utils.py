@@ -75,23 +75,43 @@ def return_args(args: Any | None) -> dict[str, Any] | None:
     return {"value": str(args)}
 
 
-def compute_auc(
-    labels: list[int],
-    values: list[float],
-    ) -> dict[str, Any]:
-
-
+def compute_auc(labels: list[int],
+                values: list[float]
+                ) -> dict[str, Any]:
     
-    y_true = np.array(labels)
-    y_score = np.array(values)
+    
+    valid_labels: list[int] = []
+    valid_scores: list[float] = []
+    invalid_count = 0
+
+
+    for label, value in zip(labels, values):
+        try:
+            score = float(value)
+        except (TypeError, ValueError):
+            invalid_count += 1
+            continue
+
+        if not np.isfinite(score):
+            invalid_count += 1
+            continue
+
+        valid_labels.append(int(label))
+        valid_scores.append(score)
+
+    y_true = np.array(valid_labels)
+    y_score = np.array(valid_scores)
+
+
     fpr, tpr, thresholds = roc_curve(y_true, y_score)
     auc_val = float(roc_auc_score(y_true, y_score))
+
     return {
         "auc": auc_val,
-        # "fpr": fpr.tolist(),
-        # "tpr": tpr.tolist(),
-        # "thresholds": thresholds.tolist(),
-        "n": int(len(values)),
+        "n": int(len(valid_scores)),
+        "n_valid": int(len(valid_scores)),
+        "n_invalid": int(invalid_count),
+        "n_total": int(len(values)),
     }
 
     

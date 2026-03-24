@@ -140,6 +140,7 @@ class Metrics:
         diff_diff_tensor = mag_tensor - ang_tensor - ratio_tensor
         diff_add_tensor = mag_tensor - ang_tensor + ratio_tensor
         feature_space_tensor = torch.sqrt(mag_tensor**2 + ang_tensor**2 + ratio_tensor**2)
+        feature_avg_tensor = torch.sqrt(mag_tensor.mean()**2 + ang_tensor.mean()**2 + ratio_tensor.mean()**2)
 
         def pack(scores: torch.Tensor) -> dict[str, Any]:
             return {
@@ -153,6 +154,7 @@ class Metrics:
             "difference": pack(diff_diff_tensor),
             "addition": pack(diff_add_tensor),
             "feature_space": pack(feature_space_tensor),
+            "feature_average": pack(feature_avg_tensor),
         }
 
     def run(
@@ -190,4 +192,8 @@ class Metrics:
             "feature_space_change_mean": cross_layer["feature_space"]["mean"],
             "feature_space_change_std": cross_layer["feature_space"]["std"],
             "feature_space_change_max": cross_layer["feature_space"]["max"],
+            "feature_average_change_scores": cross_layer["feature_average"]["scores"],
+            "feature_average_change_mean": cross_layer["feature_average"]["mean"],
+            "feature_average_change_std": cross_layer["feature_average"]["std"],
+            "feature_average_change_max": cross_layer["feature_average"]["max"],
         }

@@ -13,7 +13,7 @@ from sklearn.neural_network import MLPClassifier
 
 
 BASE_DIR = os.getenv("BASE_COE")
-CLASSIFIER_DIR = os.path.join(BASE_DIR, "scores", "test")
+CLASSIFIER_DIR = os.path.join(BASE_DIR, "classifier", "test")
 os.makedirs(CLASSIFIER_DIR, exist_ok=True)
 
 def _features_labels(out: list[dict[str, Any]]) -> tuple[np.ndarray, np.ndarray]:

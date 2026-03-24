@@ -19,14 +19,17 @@ from utils import load_dataset, compute_auc_for_scores
 
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data")
-OUT_DIR = os.path.join(BASE_DIR, "out")
+VIZ_DIR = os.path.join(BASE_DIR, "out")
+SCORE_DIR = os.path.join(BASE_DIR, "scores")
+CLASSIFIER_DIR = os.path.join(BASE_DIR, "classifier")
+
 TEXT_PREFIX = "Is this text human- or LLM-written?"
 
 def plot_scores_by_label(args: Namespace,
                          out: list[dict], 
                          save_path: str | None = None) -> str:
     
-    os.makedirs(OUT_DIR, exist_ok=True)
+    os.makedirs(VIZ_DIR, exist_ok=True)
     metric_specs = [
         ("angle_change_mean", "Angle Mean"),
         ("angle_change_std", "Angle Std"),
@@ -93,7 +96,7 @@ def plot_scores_by_label(args: Namespace,
 
     if save_path is None:              
         save_path = os.path.join(
-            OUT_DIR,
+            VIZ_DIR,
             f"coe_dist_{args.suffix}",
         )
 
@@ -110,7 +113,7 @@ def plot_layer_profiles(args: Namespace,
                         out: list[dict],
                         save_path: str | None = None) -> str:
     
-    os.makedirs(OUT_DIR, exist_ok=True)
+    os.makedirs(VIZ_DIR, exist_ok=True)
 
     if args.dataset in ["counterfact"]:
         label_names = {
@@ -380,7 +383,7 @@ def plot_entropy_by_label(
 
     if save_path is None:
         save_path = os.path.join(
-            OUT_DIR,
+            VIZ_DIR,
             f"entropy_dist_{args.suffix}",
         )
 
@@ -451,7 +454,7 @@ def plot_tvd_by_label(
 
     if save_path is None:
         save_path = os.path.join(
-            OUT_DIR,
+            VIZ_DIR,
             f"tvd_dist_{args.suffix}",
         )
 
@@ -459,7 +462,7 @@ def plot_tvd_by_label(
     plt.close(fig)
     return save_path
 
-def run(args, data):
+def run(args, data) -> None:
 
     inference = Inference(model_name=args.model)
     metrics = EntropyMetrics() if args.mode == "logits" else Metrics()
@@ -481,24 +484,58 @@ def run(args, data):
             del hs_dict["hidden_states"]
         out.append(hs_dict)
 
-    if args.mode not in ["logits"]:
-        figure_path = plot_scores_by_label(args=args, out=out)
-        print(f"Saved figure to {figure_path}")
+    # PLOTTING AREA
+    if args.save_viz:
+        if args.mode not in ["logits"]:
+            figure_path = plot_scores_by_label(args=args, out=out)
+            print(f"Saved figure to {figure_path}")
 
-        pair_path = pair_plot(args=args, out=out)
-        print(f"Saved pair plot to {pair_path}")
-    else:
-        entropy_path = plot_entropy_by_label(args=args, out=out)
-        print(f"Saved entropy plot to {entropy_path}")
-        tvd_path = plot_tvd_by_label(args=args, out=out)
-        print(f"Saved tvd plot to {tvd_path}")
+            pair_path = pair_plot(args=args, out=out)
+            print(f"Saved pair plot to {pair_path}")
+        else:
+            entropy_path = plot_entropy_by_label(args=args, out=out)
+            print(f"Saved entropy plot to {entropy_path}")
+            tvd_path = plot_tvd_by_label(args=args, out=out)
+            print(f"Saved tvd plot to {tvd_path}")
 
-    if args.mode not in ["logits", "horizontal"]:
-        trajectory_path = plot_layer_profiles(args=args, out=out)
-        print(f"Saved trajectory plot to {trajectory_path}")
-        
-    return out
+        if args.mode not in ["logits", "horizontal"]:
+            trajectory_path = plot_layer_profiles(args=args, out=out)
+            print(f"Saved trajectory plot to {trajectory_path}")
     
+    # ZERO-SHOT SCORES
+    if args.score:
+        if args.mode != "logits":
+            auc_metrics = compute_auc_for_scores(
+                out=out,
+                args=args,
+                score_keys=[
+                    "diff_diff_change_mean",
+                    "diff_add_change_mean",
+                    "feature_space_change_mean",
+                    "feature_average_change_mean"
+                ],
+            )
+            print("=" * 50)
+            print("AUC results (new metrics):")
+            for key, stats in auc_metrics["metrics"].items():
+                print(f"{key}: {stats['auc']}")
+            print("=" * 50)
+    
+    # CLASSIFIER
+    if args.classifier:
+        if args.mode != "logits":
+            gmm = ScoreGMM()
+            logreg = ScoreLogistic()
+            mlp = ScoreMLP()
+            gmm_metrics = gmm.run(out=out, suffix=args.suffix, args=args)
+            logreg_metrics = logreg.run(out=out, suffix=args.suffix, args=args)
+            mlp_metrics = mlp.run(out=out, suffix=args.suffix, args=args)
+            print("=" * 50)
+            print("Classifier results:")
+            print(f"GMM: {gmm_metrics}")
+            print(f"Logistic: {logreg_metrics}")
+            print(f"MLP: {mlp_metrics}")
+            print("=" * 50)
 
 def main():
     global OUT_DIR
@@ -506,7 +543,6 @@ def main():
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--model", type=str, required=True)
     parser.add_argument("--smoke_test", type=int, required=True)
-    parser.add_argument("--n", type=int, required=True)
     parser.add_argument(
         "--mode",
         type=str,
@@ -516,10 +552,13 @@ def main():
     parser.add_argument("--diff_vectors", type=int, default=0)
     parser.add_argument("--prefix", type=int, default=0)
     parser.add_argument("--normalize", type=int, default=0)
-    parser.add_argument("--test", type=int, default=0)
-    parser.add_argument("--scoring", type=int, default=0)
+    parser.add_argument("--save_viz", type=int, default=0)
+    parser.add_argument("--classifier", type=int, default=0)
+    parser.add_argument("--score", type=int, default=0)
+
     args = parser.parse_args()
 
+    # make int bool
     assert args.smoke_test in (0, 1), "smoke_test must be 0 or 1"
     args.smoke_test = bool(args.smoke_test)
     assert args.diff_vectors in (0, 1), "diff_vectors must be 0 or 1"
@@ -528,14 +567,23 @@ def main():
     args.prefix = bool(args.prefix)
     assert args.normalize in (0, 1), "normalize must be 0 or 1"
     args.normalize = bool(args.normalize)
-    assert args.test in (0, 1), "test must be 0 or 1"
-    args.test = bool(args.test)
-    assert args.scoring in (0, 1), "scoring must be 0 or 1"
-    args.scoring = bool(args.scoring)
+    assert args.save_viz in (0, 1), "save_viz must be 0 or 1"
+    args.save_viz = bool(args.save_viz)
+    assert args.classifier in (0, 1), "classifier must be 0 or 1"
+    args.classifier = bool(args.classifier)
+    assert args.score in (0, 1), "score must be 0 or 1"
+    args.score = bool(args.score)
 
-    if args.test:
+    
+    # dirs
+    if args.save_viz:
         OUT_DIR = os.path.join(OUT_DIR, "test")
         os.makedirs(OUT_DIR, exist_ok=True)
+
+    if args.classifier:
+        CLASSIFIER_DIR = os.path.join(OUT_DIR, "classifier")
+        os.makedirs(CLASSIFIER_DIR, exist_ok=True)
+
     print("=" * 50)
     print(f"Running with args:")
     for key, value in vars(args).items():
@@ -544,7 +592,8 @@ def main():
 
     # get data
     data = load_dataset(args=args)
-    
+    data = list(data['test'])
+
     # saving suffix and title info 
     suffix = f"{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}_NO{int(args.normalize)}{'_ST' if args.smoke_test else ''}.pdf"
     title_info = f"{args.model} | {args.dataset} | N={len(data)} | Mode {args.mode} | DV {int(args.diff_vectors)} | Pre {int(args.prefix)} | Norm {int(args.normalize)}"
@@ -552,39 +601,7 @@ def main():
     args.title_info = title_info
 
     # main run
-    out = run(args=args, data=data)
-
-    if args.mode != "logits":
-        auc_metrics = compute_auc_for_scores(
-            out=out,
-            args=args,
-            score_keys=[
-                "diff_diff_change_mean",
-                "diff_add_change_mean",
-                "feature_space_change_mean",
-            ],
-        )
-        print("=" * 50)
-        print("AUC results (new metrics):")
-        for key, stats in auc_metrics["metrics"].items():
-            print(f"{key}: {stats['auc']}")
-        print("=" * 50)
-    
-    if args.scoring:
-        if args.mode != "logits":
-            gmm = ScoreGMM()
-            logreg = ScoreLogistic()
-            mlp = ScoreMLP()
-            gmm_metrics = gmm.run(out=out, suffix=args.suffix, args=args)
-            logreg_metrics = logreg.run(out=out, suffix=args.suffix, args=args)
-            mlp_metrics = mlp.run(out=out, suffix=args.suffix, args=args)
-            print("=" * 50)
-            print("Scoring results:")
-            print(f"GMM: {gmm_metrics}")
-            print(f"Logistic: {logreg_metrics}")
-            print(f"MLP: {mlp_metrics}")
-            print("=" * 50)
-            
+    run(args=args, data=data)
 
 if __name__ == "__main__":
     main()
