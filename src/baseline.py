@@ -5,33 +5,28 @@ import numpy as np
 from typing import Any
 import torch
 
-from transformers import (
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    DataCollatorWithPadding,
-    Trainer,
-    TrainingArguments,
-    set_seed,
-)
+from transformers import set_seed
 
 from sklearn.model_selection import train_test_split
-from utils import load_dataset, return_args, compute_metrics
+
+from utils import load_dataset, return_args
+from baselines.utils import compute_auc
 
 BASE_DIR = os.getenv("BASE_COE")
 BASELINE_DIR = os.path.join(BASE_DIR, "baselines", "test")
 os.makedirs(BASELINE_DIR, exist_ok=True)
 
-MAX_LENGTH = 256
+if torch.cuda.is_available():
+    DEVICE = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    DEVICE = torch.device("mps")
+else:
+    DEVICE = torch.device("cpu")
+
 TEST_SIZE = 0.2
-BATCH_SIZE = 32
-EPOCHS = 2
-LEARNING_RATE = 2e-5
-WEIGHT_DECAY = 0.01
 SEED = 42
 
-MODE_DICT = {"bert": "google-bert/bert-base-uncased"}
-
-def prepare_dataset(args: Namespace) -> list[dict[str, Any]]:
+def prepare_dataset(args: Namespace) -> tuple[list[str], list[int], list[str], list[int]]:
     data = load_dataset(args)
     
     # train and test split
@@ -42,103 +37,6 @@ def prepare_dataset(args: Namespace) -> list[dict[str, Any]]:
         random_state=SEED,
         stratify=[item["label"] for item in data],
     )
-
-def build_dataset(
-    texts: list[str],
-    labels: list[int],
-    tokenizer: Any,
-    max_length: int,
-) -> list[dict[str, Any]]:
-    dataset = []
-    for text, label in zip(texts, labels, strict=True):
-        encoded = tokenizer(
-            text,
-            truncation=True,
-            max_length=max_length,
-        )
-        encoded["labels"] = int(label)
-        dataset.append(encoded)
-    return dataset
-
-class BERTBaseline:
-    def __init__(
-        self,
-        model_name: str,
-        max_length: int = MAX_LENGTH,
-        batch_size: int = BATCH_SIZE,
-        num_epochs: int = EPOCHS,
-        learning_rate: float = LEARNING_RATE,
-        weight_decay: float = WEIGHT_DECAY,
-        seed: int = SEED,
-    ):
-        self.model_name = model_name
-        self.max_length = max_length
-        self.batch_size = batch_size
-        self.num_epochs = num_epochs
-        self.learning_rate = learning_rate
-        self.weight_decay = weight_decay
-        self.seed = seed
-
-    def run(self, args: Namespace) -> dict[str, Any]:
-        set_seed(self.seed)
-
-        if torch.cuda.is_available():
-            device = torch.device("cuda")
-        elif torch.backends.mps.is_available():
-            device = torch.device("mps")
-        else:
-            device = torch.device("cpu")
-
-        # prep data
-        x_train, x_test, y_train, y_test = prepare_dataset(args)
-
-        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        model = AutoModelForSequenceClassification.from_pretrained(
-            self.model_name,
-            num_labels=2,
-        )
-        model.to(device)
-
-        data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-
-        train_dataset = build_dataset(x_train, y_train, tokenizer, self.max_length)
-        test_dataset = build_dataset(x_test, y_test, tokenizer, self.max_length)
-
-        training_args = TrainingArguments(
-            output_dir=None,
-            per_device_train_batch_size=self.batch_size,
-            per_device_eval_batch_size=self.batch_size,
-            num_train_epochs=self.num_epochs,
-            learning_rate=self.learning_rate,
-            weight_decay=self.weight_decay,
-            logging_steps=50,
-            report_to="none",
-        )
-
-        trainer = Trainer(
-            model=model,
-            args=training_args,
-            train_dataset=train_dataset,
-            processing_class=tokenizer,
-            data_collator=data_collator,
-        )
-        trainer.train()
-
-        predictions = trainer.predict(test_dataset)
-        y_pred = np.argmax(predictions.predictions, axis=1)
-        metrics = compute_metrics(y_test, y_pred)
-
-        os.makedirs(BASELINE_DIR, exist_ok=True)
-        out_path = os.path.join(BASELINE_DIR, f"bert_{args.dataset}.json")
-        
-        payload = {
-            "metrics": metrics,
-            "args": return_args(args),
-        }
-        
-        with open(out_path, "w") as f:
-            json.dump(payload, f, indent=2)
-
 
 def main():
     parser = ArgumentParser()
@@ -156,10 +54,66 @@ def main():
         raise ValueError("prefix must be 0 or 1")
     args.prefix = bool(args.prefix)
 
+    # select base models 
+    if args.smoke_test:
+        args.base_model_1 = "Qwen/Qwen3-0.6B-Base"
+        args.base_model_2 = "Qwen/Qwen3-0.6B"
+    else:
+        args.base_model_1 = "meta-llama/Meta-Llama-3-8B"
+        args.base_model_2 = "meta-llama/Meta-Llama-3-8B-instruct"
+
+    # prep data
+    splits = prepare_dataset(args) # x_train, x_test, y_train, y_test
+    labels = splits[3]  # y_test
     
+    if args.model == "encoder":
+        from baselines.enc import EncoderBaseline
+        baseline = EncoderBaseline(model_name="google-bert/bert-base-uncased", device=DEVICE)
+        scores = baseline.run(args=args, splits=splits)
+        
+    if args.model == "binoculars":
+        from baselines.binoculars import Binoculars
+        baseline = Binoculars(observer_name_or_path=args.base_model_1, 
+                              performer_name_or_path=args.base_model_2)
+        scores = baseline.run(input_text=splits[2])
     
-    baseline = BERTBaseline(model_name=MODE_DICT[args.model])
-    baseline.run(args)
+    if args.model == "llr":
+        from baselines.llr import LLR
+        baseline = LLR(model_name=args.base_model_1, device=DEVICE)
+        scores = baseline.run(texts=splits[2])
+
+    if args.model == "rank":
+        from baselines.rank import Rank
+        baseline = Rank(model_name=args.base_model_1, device=DEVICE)
+        scores = baseline.run(texts=splits[2])
+
+    if args.model == "entropy":
+        from baselines.entropy import Entropy
+        baseline = Entropy(model_name=args.base_model_1, device=DEVICE)
+        scores = baseline.run(texts=splits[2])
+
+    if args.model == "fastdetectgpt":
+        from baselines.fastdetectgpt import FastDetectGPT
+        baseline = FastDetectGPT(scoring_model=args.base_model_1, 
+                                 reference_model=args.base_model_1,
+                                 device=DEVICE)
+        scores = baseline.run(texts=splits[2])
+
+    metrics = compute_auc(
+        labels=labels,
+        values=scores,
+    )
+
+    #save results
+    out_path = os.path.join(BASELINE_DIR, f"{args.model}_{args.dataset}.json")
+    payload = {
+        "metrics": metrics,
+        "args": return_args(args),
+        }
+        
+    with open(out_path, "w") as f:
+        json.dump(payload, f, indent=2)
+
 
 if __name__ == "__main__":
     main()
