@@ -1,3 +1,5 @@
+git pull --rebase
+
 # Hanqi Qs
 - Check with her whether the length ratio makes sense.
 - How to find optimal normalization? Empirically?

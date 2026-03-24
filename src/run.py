@@ -559,8 +559,9 @@ def main():
             out=out,
             args=args,
             score_keys=[
-                "difference_change_mean",
-                "addition_change_mean",
+                "diff_diff_change_mean",
+                "diff_add_change_mean",
+                "feature_space_change_mean",
             ],
         )
         print("=" * 50)

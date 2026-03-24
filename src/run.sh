@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=coe_scoring_llama
+#SBATCH --job-name=coe_zero_shot
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
-#SBATCH --time=02:30:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=15GB
@@ -20,7 +20,7 @@ nvidia-smi
 # MODELS=("qwen_06b" "qwen_8b" "llama_8b") # "qwen_32b"
 # MODELS=("qwen_32b") # "qwen_32b"
 
-DATASETS=("arxiv_chatgpt" "reddit_chatgpt" "wikihow_chatgpt") # "wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" 
+DATASETS=("wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" "wikihow_chatgpt") # "wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" 
 MODELS=("llama_8b") # "qwen_8b" "llama_8b" "qwen_06b"
 SCORING=0
 

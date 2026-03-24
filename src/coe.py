@@ -135,20 +135,24 @@ class Metrics:
         mag_tensor = torch.stack(magnitudes)
         ang_tensor = torch.stack(angles)
         ratio_tensor = torch.stack(ratios)
-    
-        diff_tensor = mag_tensor - ang_tensor - ratio_tensor
-        add_tensor = mag_tensor - ang_tensor + ratio_tensor
+
+        # scores
+        diff_diff_tensor = mag_tensor - ang_tensor - ratio_tensor
+        diff_add_tensor = mag_tensor - ang_tensor + ratio_tensor
+        feature_space_tensor = torch.sqrt(mag_tensor**2 + ang_tensor**2 + ratio_tensor**2)
 
         def pack(scores: torch.Tensor) -> dict[str, Any]:
             return {
                 "scores": scores.tolist(),
                 "mean": scores.mean().item(),
                 "std": scores.std(unbiased=False).item(),
+                "max": scores.max().item(),
             }
 
         return {
-            "difference": pack(diff_tensor),
-            "addition": pack(add_tensor),
+            "difference": pack(diff_diff_tensor),
+            "addition": pack(diff_add_tensor),
+            "feature_space": pack(feature_space_tensor),
         }
 
     def run(
@@ -174,10 +178,16 @@ class Metrics:
             "length_change_scores": length_scores["scores"],
             "length_change_mean": length_scores["mean"],
             "length_change_std": length_scores["std"],
-            "difference_change_scores": cross_layer["difference"]["scores"],
-            "difference_change_mean": cross_layer["difference"]["mean"],
-            "difference_change_std": cross_layer["difference"]["std"],
-            "addition_change_scores": cross_layer["addition"]["scores"],
-            "addition_change_mean": cross_layer["addition"]["mean"],
-            "addition_change_std": cross_layer["addition"]["std"],
+            "diff_diff_change_scores": cross_layer["difference"]["scores"],
+            "diff_diff_change_mean": cross_layer["difference"]["mean"],
+            "diff_diff_change_std": cross_layer["difference"]["std"],
+            "diff_diff_change_max": cross_layer["difference"]["max"],
+            "diff_add_change_scores": cross_layer["addition"]["scores"],
+            "diff_add_change_mean": cross_layer["addition"]["mean"],
+            "diff_add_change_std": cross_layer["addition"]["std"],
+            "diff_add_change_max": cross_layer["addition"]["max"],
+            "feature_space_change_scores": cross_layer["feature_space"]["scores"],
+            "feature_space_change_mean": cross_layer["feature_space"]["mean"],
+            "feature_space_change_std": cross_layer["feature_space"]["std"],
+            "feature_space_change_max": cross_layer["feature_space"]["max"],
         }
