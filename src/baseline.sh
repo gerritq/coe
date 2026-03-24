@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=baselines_bin
+#SBATCH --job-name=baselines
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
 #SBATCH --time=01:30:00
@@ -16,15 +16,15 @@ nvidia-smi
 # "wikihow_chatgpt" "wikihow_cohere" "wikihow_bloomz"
 # "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz"
 
-# DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
+DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
 # DATASETS=("wikipedia_chatgpt")
 MODELS=(
-        # "encoder" 
-        # "llr" 
-        # "fastdetectgpt" 
-        # "rank" 
-        # "entropy"
-        "binoculars" 
+        "encoder" 
+        "llr" 
+        "fastdetectgpt" 
+        "rank" 
+        "entropy"
+        # "binoculars" 
         )        
 
 SMOKE_TEST=0
