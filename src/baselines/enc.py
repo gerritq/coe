@@ -44,7 +44,7 @@ class EncoderBaseline:
         self.seed = seed
 
     def run(self, args: Namespace,
-            dataset: Dataset
+            data: Dataset
             ) -> dict[str, Any]:
         set_seed(self.seed)
 
@@ -55,6 +55,11 @@ class EncoderBaseline:
             num_labels=2,
         )
         model.to(self.device)
+
+        def tokenize_function(examples):
+                    return tokenizer(examples["text"], truncation=True, max_length=self.max_length)
+
+        ds_tok = data.map(tokenize_function, batched=True)
 
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
@@ -73,17 +78,17 @@ class EncoderBaseline:
         trainer = Trainer(
             model=model,
             args=training_args,
-            train_dataset=dataset["train"],
+            train_dataset=ds_tok["train"],
             processing_class=tokenizer,
             data_collator=data_collator,
         )
         trainer.train()
 
         
-        predictions = trainer.predict(dataset["test"])
+        predictions = trainer.predict(ds_tok["test"])
         # precited labels --- what to do with them
         y_pred = np.argmax(predictions.predictions, axis=1)
-        metrics = compute_metrics(dataset["test"]["labels"], y_pred)
+        metrics = compute_metrics(ds_tok["test"]["labels"], y_pred)
 
         # get probs
         logits = torch.from_numpy(predictions.predictions)

@@ -10,6 +10,10 @@ git pull --rebase
 
 # To do
 
+# Baselines
+- Add NPR
+- Understand why Binoculars fails
+
 **Papers**
 - Actually read and understand the two papers
 

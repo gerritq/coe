@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from typing import Any
 from argparse import Namespace
-from datasets import load_from_disk
+from datasets import load_from_disk, DatasetDict
 
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score, roc_curve
 
@@ -23,10 +23,11 @@ def load_dataset(args: Namespace):
         data = data.map(lambda x: {"text": f"{TEXT_PREFIX} {x['text']}", "label": x["label"]})
 
     if args.smoke_test:
-        data = {
-            split: d.shuffle(seed=42).select(range(30)) 
-            for split, d in data.items()
-        }
+            # We wrap the dict comprehension in DatasetDict() to maintain the type
+            data = DatasetDict({
+                split: d.shuffle(seed=42).select(range(min(len(d), 30))) 
+                for split, d in data.items()
+            })
 
     return data
 

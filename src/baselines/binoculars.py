@@ -91,8 +91,8 @@ class Binoculars(object):
     # OG implementation is "tiiuae/falcon-7b" and "tiiuae/falcon-7b-instruct"
     # but falcon does not support VI nor PT
     def __init__(self,
-                 observer_name_or_path: str = "tiiuae/falcon-7b", # "tiiuae/falcon-7b"
-                 performer_name_or_path: str = "tiiuae/falcon-7b-instruct", # "tiiuae/falcon-7b-instruct"
+                 observer_name_or_path: str = "Qwen/Qwen2.5-7B", # "tiiuae/falcon-7b"
+                 performer_name_or_path: str = "Qwen/Qwen2.5-7B-Instruct", # "tiiuae/falcon-7b-instruct"
                  use_bfloat16: bool = True,
                  max_token_observed: int = 512,
                  mode: str = "low-fpr",

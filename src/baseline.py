@@ -73,11 +73,6 @@ def main():
     if args.model == "llr":
         from baselines.llr import LLR
         baseline = LLR(model_name=args.base_model_1, device=DEVICE)
-        scores = baseline.run(texts=test_x)
-
-    if args.model == "llr":
-        from baselines.llr import LLR
-        baseline = LLR(model_name=args.base_model_1, device=DEVICE)
         scores = baseline.run(texts=test_x, args=args)
 
     if args.model == "likelihood":
