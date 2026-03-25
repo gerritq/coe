@@ -137,10 +137,12 @@ class Metrics:
         ratio_tensor = torch.stack(ratios)
 
         # scores
+        diff_tensor = mag_tensor - ang_tensor
         diff_diff_tensor = mag_tensor - ang_tensor - ratio_tensor
         diff_add_tensor = mag_tensor - ang_tensor + ratio_tensor
-        feature_space_tensor = torch.sqrt(mag_tensor**2 + ang_tensor**2 + ratio_tensor**2)
-        feature_avg_tensor = torch.sqrt(mag_tensor.mean()**2 + ang_tensor.mean()**2 + ratio_tensor.mean()**2)
+
+        fs_layer_wise_tensor = torch.sqrt(mag_tensor**2 + ang_tensor**2 + ratio_tensor**2)
+        fs_avg_tensor = torch.sqrt(mag_tensor.mean()**2 + ang_tensor.mean()**2 + ratio_tensor.mean()**2)
 
         def pack(scores: torch.Tensor) -> dict[str, Any]:
             return {
@@ -151,10 +153,11 @@ class Metrics:
             }
 
         return {
-            "difference": pack(diff_diff_tensor),
-            "addition": pack(diff_add_tensor),
-            "feature_space": pack(feature_space_tensor),
-            "feature_average": pack(feature_avg_tensor),
+            "diff": pack(diff_tensor),
+            "diff_diff": pack(diff_diff_tensor),
+            "diff_add": pack(diff_add_tensor),
+            "fs_layer_wise": pack(fs_layer_wise_tensor),
+            "fs_avg": pack(fs_avg_tensor),
         }
 
     def run(
@@ -180,20 +183,29 @@ class Metrics:
             "length_change_scores": length_scores["scores"],
             "length_change_mean": length_scores["mean"],
             "length_change_std": length_scores["std"],
-            "diff_diff_change_scores": cross_layer["difference"]["scores"],
-            "diff_diff_change_mean": cross_layer["difference"]["mean"],
-            "diff_diff_change_std": cross_layer["difference"]["std"],
-            "diff_diff_change_max": cross_layer["difference"]["max"],
-            "diff_add_change_scores": cross_layer["addition"]["scores"],
-            "diff_add_change_mean": cross_layer["addition"]["mean"],
-            "diff_add_change_std": cross_layer["addition"]["std"],
-            "diff_add_change_max": cross_layer["addition"]["max"],
-            "feature_space_change_scores": cross_layer["feature_space"]["scores"],
-            "feature_space_change_mean": cross_layer["feature_space"]["mean"],
-            "feature_space_change_std": cross_layer["feature_space"]["std"],
-            "feature_space_change_max": cross_layer["feature_space"]["max"],
-            "feature_average_change_scores": cross_layer["feature_average"]["scores"],
-            "feature_average_change_mean": cross_layer["feature_average"]["mean"],
-            "feature_average_change_std": cross_layer["feature_average"]["std"],
-            "feature_average_change_max": cross_layer["feature_average"]["max"],
+
+            "diff_change_scores": cross_layer["diff"]["scores"],
+            "diff_change_mean": cross_layer["diff"]["mean"],
+            "diff_change_std": cross_layer["diff"]["std"],
+            "diff_change_max": cross_layer["diff"]["max"],
+
+            "diff_diff_change_scores": cross_layer["diff_diff"]["scores"],
+            "diff_diff_change_mean": cross_layer["diff_diff"]["mean"],
+            "diff_diff_change_std": cross_layer["diff_diff"]["std"],
+            "diff_diff_change_max": cross_layer["diff_diff"]["max"],
+            
+            "diff_add_change_scores": cross_layer["diff_add"]["scores"],
+            "diff_add_change_mean": cross_layer["diff_add"]["mean"],
+            "diff_add_change_std": cross_layer["diff_add"]["std"],
+            "diff_add_change_max": cross_layer["diff_add"]["max"],
+            
+            "fs_layer_wise_change_scores": cross_layer["fs_layer_wise"]["scores"],
+            "fs_layer_wise_change_mean": cross_layer["fs_layer_wise"]["mean"],
+            "fs_layer_wise_change_std": cross_layer["fs_layer_wise"]["std"],
+            "fs_layer_wise_change_max": cross_layer["fs_layer_wise"]["max"],
+            
+            "fs_avg_change_scores": cross_layer["fs_avg"]["scores"],
+            "fs_avg_change_mean": cross_layer["fs_avg"]["mean"],
+            "fs_avg_change_std": cross_layer["fs_avg"]["std"],
+            "fs_avg_change_max": cross_layer["fs_avg"]["max"],
         }
