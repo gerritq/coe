@@ -594,6 +594,8 @@ def main():
     data = load_dataset(args=args)
     data = list(data['test'])
 
+    args.n = len(data)
+
     # saving suffix and title info 
     suffix = f"{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}_NO{int(args.normalize)}{'_ST' if args.smoke_test else ''}.pdf"
     title_info = f"{args.model} | {args.dataset} | N={len(data)} | Mode {args.mode} | DV {int(args.diff_vectors)} | Pre {int(args.prefix)} | Norm {int(args.normalize)}"

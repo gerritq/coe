@@ -73,8 +73,10 @@ def main():
         
     if args.model == "binoculars":
         from baselines.binoculars import Binoculars
-        baseline = Binoculars(observer_name_or_path=args.base_model_1, 
-                              performer_name_or_path=args.base_model_2)
+        baseline = Binoculars(
+                            #   observer_name_or_path=args.base_model_1, 
+                            #   performer_name_or_path=args.base_model_2
+                              )
         scores = baseline.run(input_text=splits[1])
     
     if args.model == "llr":

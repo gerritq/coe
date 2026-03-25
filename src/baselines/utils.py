@@ -84,7 +84,6 @@ def compute_auc(labels: list[int],
     valid_scores: list[float] = []
     invalid_count = 0
 
-
     for label, value in zip(labels, values):
         try:
             score = float(value)
@@ -108,10 +107,9 @@ def compute_auc(labels: list[int],
 
     return {
         "auc": auc_val,
-        "n": int(len(valid_scores)),
+        "n_total": int(len(values)),
         "n_valid": int(len(valid_scores)),
         "n_invalid": int(invalid_count),
-        "n_total": int(len(values)),
     }
 
     

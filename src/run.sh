@@ -20,11 +20,11 @@ nvidia-smi
 # MODELS=("qwen_06b" "qwen_8b" "llama_8b") # "qwen_32b"
 # MODELS=("qwen_32b") # "qwen_32b"
 
-DATASETS=("wikipedia_chatgpt") # "wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" 
-MODELS=("qwen_06b") # "qwen_8b" "llama_8b" "qwen_06b"
+DATASETS=("wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" "wikihow_chatgpt") # "wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" 
+MODELS=("llama_8b") # "qwen_8b" "llama_8b" "qwen_06b"
 SAVE_VIZ=0
 CLASSIFIER=0
-SCORE=0
+SCORE=1
 
 # Fixed parameters
 MODES=("last_token") #  "logits" "last_token" "pooling" "horizontal"
@@ -32,7 +32,7 @@ DIFF_VECTORS=(0)
 NORMALIZE=(1)
 
 PREFIX=(0)
-SMOKE_TEST=1
+SMOKE_TEST=0
 
 # Nested loop to run every model on every dataset
 for DATASET in "${DATASETS[@]}"; do

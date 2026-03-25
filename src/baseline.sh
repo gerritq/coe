@@ -19,12 +19,12 @@ nvidia-smi
 DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
 # DATASETS=("wikipedia_chatgpt")
 MODELS=(
-        "encoder" 
-        "llr" 
-        "fastdetectgpt" 
-        "rank" 
-        "entropy"
-        # "binoculars" 
+        # "encoder" 
+        # "llr" 
+        # "fastdetectgpt" 
+        # "rank" 
+        # "entropy"
+        "binoculars" 
         )        
 
 SMOKE_TEST=0
