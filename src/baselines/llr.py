@@ -49,15 +49,18 @@ class LLR:
     # def compute_llrs(self, texts):
     #     return [self.compute_llr(text) for text in texts]
 
-    def run(self, texts: list[str]):
-        results = []
+    def run(self, texts: list[str], args):
+        results= []
         for i, text in enumerate(texts):
             try:
                 if i > 0 and i % 20 == 0:
                     torch.cuda.empty_cache()
                     
-                result = self.compute_llr(text)
-                results.append(result)
+                if args.model == "llr":
+                # llr
+                    results.append(self.compute_llr(text))
+                if args.model == "likelihood":
+                    results.append(self.get_ll(text))
                 
             except Exception as e:
                 print(f"Error processing text {i}: {str(e)}")

@@ -16,19 +16,18 @@ nvidia-smi
 # "wikihow_chatgpt" "wikihow_cohere" "wikihow_bloomz"
 # "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz"
 
-DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
-# DATASETS=("wikipedia_chatgpt")
+DATASETS=("wikipedia_chatgpt")
 MODELS=(
         # "encoder" 
         # "llr" 
         # "fastdetectgpt" 
         # "rank" 
-        # "entropy"
-        "binoculars" 
+        "entropy"
+        "likelihood"
+        # "binoculars" 
         )        
 
-SMOKE_TEST=0
-N=2000
+SMOKE_TEST=1
 
 # Nested loop to run every model on every dataset
 for DATASET in "${DATASETS[@]}"; do
@@ -40,8 +39,7 @@ for DATASET in "${DATASETS[@]}"; do
             uv run baseline.py \
                 --dataset "$DATASET" \
                 --model "$MODEL" \
-                --smoke_test "$SMOKE_TEST" \
-                --n "$N"
+                --smoke_test "$SMOKE_TEST"
     done
 done
 

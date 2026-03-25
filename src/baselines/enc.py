@@ -3,7 +3,7 @@ import numpy as np
 from utils import compute_metrics
 from typing import Any
 import torch
-
+from datasets import Dataset
 
 from transformers import (
     AutoModelForSequenceClassification,
@@ -21,24 +21,6 @@ EPOCHS = 2
 LEARNING_RATE = 2e-5
 WEIGHT_DECAY = 0.01
 SEED = 42
-
-def build_dataset(
-    texts: list[str],
-    labels: list[int],
-    tokenizer: Any,
-    max_length: int,
-) -> list[dict[str, Any]]:
-    dataset = []
-    for text, label in zip(texts, labels, strict=True):
-        encoded = tokenizer(
-            text,
-            truncation=True,
-            max_length=max_length,
-        )
-        encoded["labels"] = int(label)
-        dataset.append(encoded)
-    return dataset
-
 
 class EncoderBaseline:
     def __init__(
@@ -62,12 +44,11 @@ class EncoderBaseline:
         self.seed = seed
 
     def run(self, args: Namespace,
-            splits: tuple[Any, Any, Any, Any]
+            dataset: Dataset
             ) -> dict[str, Any]:
         set_seed(self.seed)
 
-        x_train, x_test, y_train, y_test = splits
-
+    
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         model = AutoModelForSequenceClassification.from_pretrained(
             self.model_name,
@@ -76,9 +57,6 @@ class EncoderBaseline:
         model.to(self.device)
 
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-
-        train_dataset = build_dataset(x_train, y_train, tokenizer, self.max_length)
-        test_dataset = build_dataset(x_test, y_test, tokenizer, self.max_length)
 
         training_args = TrainingArguments(
             output_dir=None,
@@ -95,17 +73,17 @@ class EncoderBaseline:
         trainer = Trainer(
             model=model,
             args=training_args,
-            train_dataset=train_dataset,
+            train_dataset=dataset["train"],
             processing_class=tokenizer,
             data_collator=data_collator,
         )
         trainer.train()
 
         
-        predictions = trainer.predict(test_dataset)
+        predictions = trainer.predict(dataset["test"])
         # precited labels --- what to do with them
         y_pred = np.argmax(predictions.predictions, axis=1)
-        metrics = compute_metrics(y_test, y_pred)
+        metrics = compute_metrics(dataset["test"]["labels"], y_pred)
 
         # get probs
         logits = torch.from_numpy(predictions.predictions)
