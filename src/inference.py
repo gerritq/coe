@@ -3,7 +3,7 @@ import sys
 from typing import Any
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
 MODEL_DIR = {
     "qwen_06b": "Qwen/Qwen3-0.6B",
@@ -29,8 +29,11 @@ class Inference:
         self.model_id = MODEL_DIR[model_name]
         self.device = device or self._resolve_device()
 
+        config = AutoConfig.from_pretrained(self.model_id)
+        config.tie_word_embeddings = False
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
-        self.model = AutoModelForCausalLM.from_pretrained(self.model_id)
+        self.model = AutoModelForCausalLM.from_pretrained(self.model_id, config=config)
         self.model.to(self.device)
         self.model.eval()
 
@@ -53,8 +56,7 @@ class Inference:
         with torch.no_grad():
             outputs = self.model(**inputs, 
                                  output_hidden_states=True, 
-                                 use_cache=False,
-                                 output_attentions=True)
+                                 use_cache=False)
 
         if args.mode == "last_token":
             hidden_states = tuple(
