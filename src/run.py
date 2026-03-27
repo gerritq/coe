@@ -509,10 +509,11 @@ def run(args, data) -> None:
                 out=out,
                 args=args,
                 score_keys=[
+                    "diff_change_mean",
                     "diff_diff_change_mean",
                     "diff_add_change_mean",
-                    "feature_space_change_mean",
-                    "feature_average_change_mean"
+                    "fs_layer_wise_change_mean",
+                    "fs_avg_change_mean"
                 ],
             )
             print("=" * 50)
