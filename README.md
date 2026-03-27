@@ -10,6 +10,8 @@ git pull --rebase
 
 # To do
 
+- add ideas of latent thinking to the overleaf
+
 # Baselines
 - Add NPR
 - Understand why Binoculars fails

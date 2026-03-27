@@ -177,9 +177,11 @@ class Metrics:
             "magnitude_change_scores": magnitude_scores["scores"],
             "magnitude_change_mean": magnitude_scores["mean"],
             "magnitude_change_std": magnitude_scores["std"],
+
             "angle_change_scores": angle_scores["scores"],
             "angle_change_mean": angle_scores["mean"],
             "angle_change_std": angle_scores["std"],
+            
             "length_change_scores": length_scores["scores"],
             "length_change_mean": length_scores["mean"],
             "length_change_std": length_scores["std"],

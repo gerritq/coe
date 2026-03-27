@@ -509,6 +509,9 @@ def run(args, data) -> None:
                 out=out,
                 args=args,
                 score_keys=[
+                    "magnitude_change_mean",
+                    "angle_change_mean",
+                    "length_change_mean",
                     "diff_change_mean",
                     "diff_diff_change_mean",
                     "diff_add_change_mean",
