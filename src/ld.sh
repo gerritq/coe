@@ -2,7 +2,7 @@
 #SBATCH --job-name=ld_pca
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
-#SBATCH --time=02:00:00
+#SBATCH --time=00:30:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -10,14 +10,14 @@
 
 nvidia-smi
 
-DATASETS=("wikipedia_chatgpt")
-MODELS=("qwen_06b") # qwen_06b
+DATASETS=("wikihow_chatgpt" "reddit_chatgpt")
+MODELS=("llama_8b") # qwen_06b
 
 SPLIT="test"
 MODE="last_token"
-N=200
+N=500
 PREFIX=0
-SMOKE_TEST=1
+SMOKE_TEST=0
 
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do

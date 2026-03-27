@@ -44,7 +44,22 @@ git pull --rebase
 
 **22.03.26**
 - Added three scorers mlp, gmm, and logistic and ran them on the three feature vectors => results are strong compared to bert baseline on actual texts
-- 
+
+**26.03.2026 - Meeting with Hanqi**
+- Do descriptives later
+- Overall, we need to show better performance gains over existing methods
+    - Classifier: this means testing OOD, OO Generator, OO language transferability, text length
+- We need a harder task
+    - The motivation should be to show that other methods perform worse on a given task
+    - We can use, e.g., paraphrasing: see chat
+    - We can also inlcude perturbations: paraphrasing, random noise (or I guess just take other datasets than M4, e.g., our own?)
+- New method: top-k and rank as in the reducing overthinking paper
+    - Listen to the audio what she means by rank
+    - recalculate embedding based on top-k svd
+- PCA visualizations: maybe we can see from there what method we should develop
+- Review of AI detection tools
+
+
 
 # Brain dump
 

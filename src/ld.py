@@ -21,12 +21,13 @@ class LayerPCAAnalyzer:
         self.inference = Inference(model_name=model_name)
 
     def pca_by_layer(self, hidden_states: np.ndarray) -> np.ndarray:
-        n_samples, n_layers, _ = hidden_states.shape
+        n_samples, n_layers, dimension_size = hidden_states.shape # n_samples x n_layers x dimension_size
         components = np.zeros((n_layers, n_samples, 2), dtype=np.float32)
 
         for layer_idx in range(n_layers):
-            layer_vectors = hidden_states[:, layer_idx, :]
-            layer_pca = PCA(n_components=2)
+            # apply pca for a given layer, across samples on the hidden dim
+            layer_vectors = hidden_states[:, layer_idx, :] # n_samples x dimension_size
+            layer_pca = PCA(n_components=2) # n_samples x 2
             components[layer_idx] = layer_pca.fit_transform(layer_vectors)
 
         return components
@@ -157,14 +158,17 @@ class LayerPCAAnalyzer:
                 layer_vector = layer_tensor.detach().float().cpu().numpy().reshape(-1)
                 sample_layers.append(layer_vector.astype(np.float32))
 
+            # n_layers x n_dimension
             collected_hidden_states.append(np.stack(sample_layers, axis=0))
             labels.append(int(item["label"]))
 
         if not collected_hidden_states:
             raise ValueError("No hidden states collected. Check mode and dataset.")
 
+        # n_samples x n_layers x n_dimension
         hidden_state_array = np.stack(collected_hidden_states, axis=0)
         label_array = np.array(labels, dtype=np.int32)
+        
         pca_components = self.pca_by_layer(hidden_state_array)
 
         dist_path = self._plot_selected_layer_distributions(pca_components, label_array, args)
