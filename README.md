@@ -56,9 +56,11 @@ git pull --rebase
 - New method: top-k and rank as in the reducing overthinking paper
     - Listen to the audio what she means by rank
     - recalculate embedding based on top-k svd
+    - We should test the optimal number of top-k, varying the number and checking for how much variance they account similar to the overthinking paper
 - PCA visualizations: maybe we can see from there what method we should develop
 - Review of AI detection tools
 
+- Can we use the dot-product of the feature vector as a measure?
 
 
 # Brain dump

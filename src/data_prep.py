@@ -23,8 +23,8 @@ def prepare_M4_data(
     def pairs(subset: list[dict[str, Any]]) -> list[dict[str, Any]]:
         result: list[dict[str, Any]] = []
         for item in subset:
-            human_text = item.get("human_text", item.get("abstract", item.get("text")))
-            machine_text = item.get("machine_text", item.get("machine_abstract", item.get("machine_answer")))
+            human_text = item.get("human_text", item.get("abstract", item.get("text", item.get('trgt'))))
+            machine_text = item.get("machine_text", item.get("machine_abstract", item.get("machine_answer", item.get("mgt"))))
             if human_text and machine_text:
                 result.append({"text": human_text, "label": 0})
                 result.append({"text": machine_text, "label": 1})
@@ -122,7 +122,11 @@ def main() -> None:
         print("=" * 50)
         if not filename.endswith(".jsonl"):
             continue
-        if "counterfact"  in filename:
+        if "counterfact" in filename:
+            continue
+
+        # only for tsm test
+        if not "tsm" in filename:
             continue
 
         input_path = os.path.join(RAW_DATA_DIR, filename)

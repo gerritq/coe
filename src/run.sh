@@ -20,10 +20,10 @@ nvidia-smi
 # MODELS=("qwen_06b" "qwen_8b" "llama_8b") # "qwen_32b"
 # MODELS=("qwen_32b") # "qwen_32b"
 
-DATASETS=("wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" "wikihow_chatgpt") # "wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" 
+DATASETS=("tsm_sums_en_gpt4o") # "wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" 
 MODELS=("llama_8b") # "qwen_8b" "llama_8b" "qwen_06b"
 SAVE_VIZ=0
-CLASSIFIER=0
+CLASSIFIER=1
 SCORE=1
 
 # Fixed parameters
