@@ -581,11 +581,9 @@ def main():
     
     # dirs
     if args.save_viz:
-        OUT_DIR = os.path.join(OUT_DIR, "test")
         os.makedirs(OUT_DIR, exist_ok=True)
 
     if args.classifier:
-        CLASSIFIER_DIR = os.path.join(OUT_DIR, "classifier")
         os.makedirs(CLASSIFIER_DIR, exist_ok=True)
 
     print("=" * 50)

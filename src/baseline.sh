@@ -2,9 +2,9 @@
 #SBATCH --job-name=baselines_bin
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
-#SBATCH --time=01:30:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:2
 #SBATCH --mem=30GB
 # SBATCH --constraint=a100
 
@@ -17,15 +17,15 @@ nvidia-smi
 # "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz"
 
 # DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
-DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
+DATASETS=("tsm_sums_en_gpt4o")
 MODELS=(
-        # "encoder" 
-        "llr" 
-        "fastdetectgpt" 
-        "rank" 
-        "entropy"
-        "likelihood"
-        # "binoculars" 
+        "encoder" 
+        # "llr" 
+        # "fastdetectgpt" 
+        # "rank" 
+        # "entropy"
+        # "likelihood"
+        "binoculars" 
         )        
 
 SMOKE_TEST=0
