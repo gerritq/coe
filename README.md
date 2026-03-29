@@ -65,6 +65,17 @@ git pull --rebase
 
 - Can we use the dot-product of the feature vector as a measure?
 
+- Steering projection
+    - Can we identify whether this is a general machineness subspace? Like domain independent direction?
+    - Can we zero out the domain of the steetring vector? 
+        - pair innputs, why is this not already done?
+        - We can ue svd on the steering vector to denoise; but then how do we reconstruct/use this vector
+
+    - combine domains and the use svd 
+    - we can use the projection score for classification; or to compare the cleaning and whether it improves separability
+    - can we build the maniold with n domains, and test domains that were not used to find that space?
+    - rather than projecting x on the activation vecgor, we could project into the subspace; and then get the score as the norm in the subspace
+
 
 # Brain dump
 

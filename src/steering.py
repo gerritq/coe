@@ -44,6 +44,50 @@ def steering_vector(
     return normalized_vectors.astype(np.float32)
 
 
+def manifold_components_by_layer(
+    hidden_states: np.ndarray,
+    n_components: int = 10,
+) -> np.ndarray:
+    n_samples, n_layers, d_model = hidden_states.shape
+    if n_samples < 2:
+        raise ValueError("Need at least 2 samples for PCA manifold estimation.")
+
+    effective_k = min(n_components, n_samples - 1, d_model)
+    components = np.zeros((n_layers, d_model, effective_k), dtype=np.float32)
+
+    for layer_idx in range(n_layers):
+        layer_states = hidden_states[:, layer_idx, :]  # n_samples x d_model
+        centered = layer_states - layer_states.mean(axis=0, keepdims=True)
+        # centered = U S V^T, rows of V^T are principal directions in feature space.
+        _, _, vt = np.linalg.svd(centered, full_matrices=False)
+        layer_basis = vt[:effective_k].T  # d_model x k
+        components[layer_idx] = layer_basis.astype(np.float32)
+
+    return components
+
+
+def denoise_steering_vector(
+    steering_vectors: np.ndarray,
+    manifold_components: np.ndarray,
+    eps: float = 1e-12,
+) -> np.ndarray:
+    if steering_vectors.shape[0] != manifold_components.shape[0]:
+        raise ValueError("Layer count mismatch between steering vectors and manifold.")
+    if steering_vectors.shape[1] != manifold_components.shape[1]:
+        raise ValueError("Hidden dimension mismatch between steering vectors and manifold.")
+
+    denoised = np.zeros_like(steering_vectors, dtype=np.float32)
+    for layer_idx in range(steering_vectors.shape[0]):
+        r = steering_vectors[layer_idx]  # d_model
+        u_eff = manifold_components[layer_idx]  # d_model x k
+        # s_flat = U_eff (U_eff^T r)
+        denoised[layer_idx] = u_eff @ (u_eff.T @ r)
+
+    norms = np.linalg.norm(denoised, axis=1, keepdims=True)
+    denoised = denoised / np.clip(norms, eps, None)
+    return denoised.astype(np.float32)
+
+
 def steering_projection(
     hidden_states: np.ndarray,
     normalized_steering_vectors: np.ndarray,
@@ -105,6 +149,7 @@ class SteeringAnalyzer:
         model: str,
         steering_domain: str,
         eval_domain: str,
+        manifold: bool,
     ) -> str:
         fig, axis = plt.subplots(figsize=(10, 6))
         layers = np.arange(1, projections.shape[1] + 1)
@@ -136,7 +181,7 @@ class SteeringAnalyzer:
             )
 
         axis.set_title(
-            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain}"
+            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | manifold={int(manifold)}"
         )
         axis.set_xlabel("Layer")
         axis.set_ylabel("Projection Score")
@@ -145,7 +190,7 @@ class SteeringAnalyzer:
 
         out_path = os.path.join(
             OUT_DIR,
-            f"steering_projection_{model}_{steering_domain}_on_{eval_domain}.png",
+            f"steering_projection_{model}_{steering_domain}_on_{eval_domain}_manifold_{int(manifold)}.png",
         )
         fig.tight_layout()
         fig.savefig(out_path, dpi=300, bbox_inches="tight")
@@ -171,6 +216,12 @@ class SteeringAnalyzer:
             n_limit=args.n_val,
         )
         steering_vec = steering_vector(val_hidden, val_labels)
+        if args.manifold:
+            manifold_components = manifold_components_by_layer(
+                hidden_states=val_hidden,
+                n_components=10,
+            )
+            steering_vec = denoise_steering_vector(steering_vec, manifold_components)
 
         test_hidden, test_labels = self._collect_hidden_states(
             split_data=dataset[args.test_split],
@@ -185,6 +236,7 @@ class SteeringAnalyzer:
             model=args.model,
             steering_domain=args.data,
             eval_domain=args.data,
+            manifold=args.manifold,
         )
 
         ood_plots: dict[str, str] = {}
@@ -216,6 +268,7 @@ class SteeringAnalyzer:
                     model=args.model,
                     steering_domain=args.data,
                     eval_domain=ood_dataset_name,
+                    manifold=args.manifold,
                 )
                 ood_plots[ood_dataset_name] = ood_plot
 
@@ -231,6 +284,7 @@ class SteeringAnalyzer:
             "plot_path": plot_path,
             "ood": bool(args.ood),
             "ood_plots": ood_plots,
+            "manifold": bool(args.manifold),
         }
 
 
@@ -246,6 +300,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--prefix", type=int, default=0)
     parser.add_argument("--smoke_test", type=int, default=0)
     parser.add_argument("--ood", type=int, default=0)
+    parser.add_argument("--manifold", type=int, default=0)
     return parser.parse_args()
 
 
@@ -257,12 +312,15 @@ def main() -> None:
         raise ValueError("smoke_test must be 0 or 1")
     if args.ood not in (0, 1):
         raise ValueError("ood must be 0 or 1")
+    if args.manifold not in (0, 1):
+        raise ValueError("manifold must be 0 or 1")
     if args.mode != "last_token":
         raise ValueError("This script expects --mode last_token.")
 
     args.prefix = bool(args.prefix)
     args.smoke_test = bool(args.smoke_test)
     args.ood = bool(args.ood)
+    args.manifold = bool(args.manifold)
 
     analyzer = SteeringAnalyzer(model_name=args.model)
     result = analyzer.run(args)
