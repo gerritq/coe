@@ -17,6 +17,8 @@ if BASE_DIR is None:
 OUT_DIR = os.path.join(BASE_DIR, "steering")
 os.makedirs(OUT_DIR, exist_ok=True)
 
+OOD_SETS = ["wikihow_chatgpt", "reddit_chatgpt", "wikipedia_chatgpt", "arxiv_chatgpt"]
+
 
 def steering_vector(
     hidden_states: np.ndarray,
@@ -101,7 +103,8 @@ class SteeringAnalyzer:
         projections: np.ndarray,
         labels: np.ndarray,
         model: str,
-        dataset: str,
+        steering_domain: str,
+        eval_domain: str,
     ) -> str:
         fig, axis = plt.subplots(figsize=(10, 6))
         layers = np.arange(1, projections.shape[1] + 1)
@@ -132,13 +135,18 @@ class SteeringAnalyzer:
                 linewidth=2.5,
             )
 
-        axis.set_title(f"Steering Projection by Layer | {model} | {dataset}")
+        axis.set_title(
+            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain}"
+        )
         axis.set_xlabel("Layer")
         axis.set_ylabel("Projection Score")
         axis.grid(alpha=0.25)
         axis.legend()
 
-        out_path = os.path.join(OUT_DIR, f"steering_projection_{model}_{dataset}.png")
+        out_path = os.path.join(
+            OUT_DIR,
+            f"steering_projection_{model}_{steering_domain}_on_{eval_domain}.png",
+        )
         fig.tight_layout()
         fig.savefig(out_path, dpi=300, bbox_inches="tight")
         plt.close(fig)
@@ -175,8 +183,41 @@ class SteeringAnalyzer:
             projections=test_projection,
             labels=test_labels,
             model=args.model,
-            dataset=args.data,
+            steering_domain=args.data,
+            eval_domain=args.data,
         )
+
+        ood_plots: dict[str, str] = {}
+        if args.ood:
+            for ood_dataset_name in OOD_SETS:
+                if ood_dataset_name == args.data:
+                    continue
+
+                ood_data_args = Namespace(
+                    dataset=ood_dataset_name,
+                    prefix=bool(args.prefix),
+                    smoke_test=bool(args.smoke_test),
+                )
+                ood_dataset = load_dataset(ood_data_args)
+                if args.test_split not in ood_dataset:
+                    raise ValueError(
+                        f"Test split '{args.test_split}' not found in OOD dataset '{ood_dataset_name}'."
+                    )
+
+                ood_hidden, ood_labels = self._collect_hidden_states(
+                    split_data=ood_dataset[args.test_split],
+                    mode=args.mode,
+                    n_limit=args.n_test,
+                )
+                ood_projection = steering_projection(ood_hidden, steering_vec)
+                ood_plot = self._plot_test_projections(
+                    projections=ood_projection,
+                    labels=ood_labels,
+                    model=args.model,
+                    steering_domain=args.data,
+                    eval_domain=ood_dataset_name,
+                )
+                ood_plots[ood_dataset_name] = ood_plot
 
         return {
             "model": args.model,
@@ -188,6 +229,8 @@ class SteeringAnalyzer:
             "n_layers": int(steering_vec.shape[0]),
             "d_model": int(steering_vec.shape[1]),
             "plot_path": plot_path,
+            "ood": bool(args.ood),
+            "ood_plots": ood_plots,
         }
 
 
@@ -202,6 +245,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--n_test", type=int, default=-1)
     parser.add_argument("--prefix", type=int, default=0)
     parser.add_argument("--smoke_test", type=int, default=0)
+    parser.add_argument("--ood", type=int, default=0)
     return parser.parse_args()
 
 
@@ -211,11 +255,14 @@ def main() -> None:
         raise ValueError("prefix must be 0 or 1")
     if args.smoke_test not in (0, 1):
         raise ValueError("smoke_test must be 0 or 1")
+    if args.ood not in (0, 1):
+        raise ValueError("ood must be 0 or 1")
     if args.mode != "last_token":
         raise ValueError("This script expects --mode last_token.")
 
     args.prefix = bool(args.prefix)
     args.smoke_test = bool(args.smoke_test)
+    args.ood = bool(args.ood)
 
     analyzer = SteeringAnalyzer(model_name=args.model)
     result = analyzer.run(args)

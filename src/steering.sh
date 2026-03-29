@@ -24,12 +24,13 @@ N_VAL=-1
 N_TEST=-1
 PREFIX=0
 SMOKE_TEST=0
+OOD=0
 
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
         echo "------------------------------------------------"
         echo "Running Steering: Dataset=$DATASET, Model=$MODEL, Mode=$MODE"
-        echo "ValSplit=$VAL_SPLIT, TestSplit=$TEST_SPLIT, NVal=$N_VAL, NTest=$N_TEST, Prefix=$PREFIX, SmokeTest=$SMOKE_TEST"
+        echo "ValSplit=$VAL_SPLIT, TestSplit=$TEST_SPLIT, NVal=$N_VAL, NTest=$N_TEST, Prefix=$PREFIX, SmokeTest=$SMOKE_TEST, OOD=$OOD"
         echo "------------------------------------------------"
 
         uv run steering.py \
@@ -41,6 +42,7 @@ for DATASET in "${DATASETS[@]}"; do
             --n_val "$N_VAL" \
             --n_test "$N_TEST" \
             --prefix "$PREFIX" \
-            --smoke_test "$SMOKE_TEST"
+            --smoke_test "$SMOKE_TEST" \
+            --ood "$OOD"
     done
 done
