@@ -25,6 +25,7 @@ def steering_vector(
     labels: np.ndarray,
     machine_label: int = 1,
     human_label: int = 0,
+    normalize: bool = True,
     eps: float = 1e-12,
 ) -> np.ndarray:
     machine_mask = labels == machine_label
@@ -39,9 +40,17 @@ def steering_vector(
     human_mean = hidden_states[human_mask].mean(axis=0)  # n_layers x d_model
     vectors = machine_mean - human_mean
 
+    if not normalize:
+        return vectors.astype(np.float32)
+
     norms = np.linalg.norm(vectors, axis=1, keepdims=True)
     normalized_vectors = vectors / np.clip(norms, eps, None)
     return normalized_vectors.astype(np.float32)
+
+
+def normalize_vectors(vectors: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    norms = np.linalg.norm(vectors, axis=1, keepdims=True)
+    return (vectors / np.clip(norms, eps, None)).astype(np.float32)
 
 
 def manifold_components_by_layer(
@@ -69,7 +78,6 @@ def manifold_components_by_layer(
 def denoise_steering_vector(
     steering_vectors: np.ndarray,
     manifold_components: np.ndarray,
-    eps: float = 1e-12,
 ) -> np.ndarray:
     if steering_vectors.shape[0] != manifold_components.shape[0]:
         raise ValueError("Layer count mismatch between steering vectors and manifold.")
@@ -83,8 +91,6 @@ def denoise_steering_vector(
         # s_flat = U_eff (U_eff^T r)
         denoised[layer_idx] = u_eff @ (u_eff.T @ r)
 
-    norms = np.linalg.norm(denoised, axis=1, keepdims=True)
-    denoised = denoised / np.clip(norms, eps, None)
     return denoised.astype(np.float32)
 
 
@@ -215,13 +221,14 @@ class SteeringAnalyzer:
             mode=args.mode,
             n_limit=args.n_val,
         )
-        steering_vec = steering_vector(val_hidden, val_labels)
+        steeringcd_vec = steering_vector(val_hidden, val_labels, normalize=False)
         if args.manifold:
             manifold_components = manifold_components_by_layer(
                 hidden_states=val_hidden,
                 n_components=10,
             )
             steering_vec = denoise_steering_vector(steering_vec, manifold_components)
+        steering_vec = normalize_vectors(steering_vec)
 
         test_hidden, test_labels = self._collect_hidden_states(
             split_data=dataset[args.test_split],
