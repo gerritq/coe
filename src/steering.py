@@ -14,7 +14,7 @@ BASE_DIR = os.getenv("BASE_COE")
 if BASE_DIR is None:
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-OUT_DIR = os.path.join(BASE_DIR, "steering")
+OUT_DIR = os.path.join(BASE_DIR, "steering", "test")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 OOD_SETS = ["wikihow_chatgpt", "reddit_chatgpt", "wikipedia_chatgpt", "arxiv_chatgpt"]

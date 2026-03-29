@@ -14,7 +14,7 @@ nvidia-smi
 # DATASETS=("wikipedia_chatgpt" "arxiv_chatgpt")
 # MODELS=("llama_8b" "qwen_8b")
 
-DATASETS=("wikipedia_chatgpt")
+DATASETS=("wikipedia_chatgpt" "wikihow_chatgpt")
 MODELS=("llama_8b")  # "llama_8b"
 
 MODE="last_token"
@@ -25,7 +25,7 @@ N_TEST=-1
 PREFIX=0
 SMOKE_TEST=0
 OOD=1
-MANIFOLD=q
+MANIFOLD=0
 
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
