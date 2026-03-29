@@ -49,6 +49,9 @@ git pull --rebase
 - Do descriptives later
 - Overall, we need to show better performance gains over existing methods
     - Classifier: this means testing OOD, OO Generator, OO language transferability, text length
+    - TSM: upload correct data + explanations
+    - Bin check with easy data + implement acc metrics
+    - Add TSM + multisocial + another and compare to our
 - We need a harder task
     - The motivation should be to show that other methods perform worse on a given task
     - We can use, e.g., paraphrasing: see chat

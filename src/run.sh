@@ -28,7 +28,7 @@ SCORE=1
 
 # Fixed parameters
 MODES=("last_token") #  "logits" "last_token" "pooling" "horizontal"
-DIFF_VECTORS=(0)
+DIFF_VECTORS=(0)git s
 NORMALIZE=(1)
 
 PREFIX=(0)
