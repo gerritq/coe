@@ -4,7 +4,7 @@
 #SBATCH --error=../logs/%j.err
 #SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --mem=30GB
 # SBATCH --constraint=a100
 
@@ -17,15 +17,15 @@ nvidia-smi
 # "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz"
 
 # DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
-DATASETS=("multisocial_full")
+DATASETS=("multisocial_full" "multisocial_en")
 MODELS=(
         # "encoder" 
-        # "llr" 
-        # "fastdetectgpt" 
-        # "rank" 
-        # "entropy"
-        # "likelihood"
-        "binoculars" 
+        "llr" 
+        "fastdetectgpt" 
+        "rank" 
+        "entropy"
+        "likelihood"
+        # "binoculars" 
         )        
 
 SMOKE_TEST=0

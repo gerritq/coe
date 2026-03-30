@@ -20,7 +20,7 @@ nvidia-smi
 # MODELS=("qwen_06b" "qwen_8b" "llama_8b") # "qwen_32b"
 # MODELS=("qwen_32b") # "qwen_32b"
 
-DATASETS=("multisocial_full") # "wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" 
+DATASETS=("multisocial_full" "multisocial_en") # "wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" 
 MODELS=("llama_8b") # "qwen_8b" "llama_8b" "qwen_06b"
 SAVE_VIZ=0
 CLASSIFIER=0
@@ -30,7 +30,6 @@ SCORE=1
 MODES=("last_token") #  "logits" "last_token" "pooling" "horizontal"
 DIFF_VECTORS=(0)
 NORMALIZE=(1)
-DENOISE=(0)
 
 PREFIX=(0)
 SMOKE_TEST=0
@@ -42,23 +41,21 @@ for DATASET in "${DATASETS[@]}"; do
             for DIFF_VECTOR in "${DIFF_VECTORS[@]}"; do
                 for PREFIX_FLAG in "${PREFIX[@]}"; do
                     for NORMALIZE_FLAG in "${NORMALIZE[@]}"; do
-                        for DENOISE_FLAG in "${DENOISE[@]}"; do
-                            echo "------------------------------------------------"
-                            echo "Running Experiment: Dataset=$DATASET, Model=$MODEL, Mode=$MODE, DiffVec=$DIFF_VECTOR, Prefix=$PREFIX_FLAG, Normalize=$NORMALIZE_FLAG, Denoise=$DENOISE_FLAG"
-                            echo "------------------------------------------------"
+                        echo "------------------------------------------------"
+                        echo "Running Experiment: Dataset=$DATASET, Model=$MODEL, Mode=$MODE, DiffVec=$DIFF_VECTOR, Prefix=$PREFIX_FLAG, Normalize=$NORMALIZE_FLAG"
+                        echo "------------------------------------------------"
 
-                            uv run run.py \
-                                --dataset "$DATASET" \
-                                --model "$MODEL" \
-                                --smoke_test "$SMOKE_TEST" \
-                                --mode "$MODE" \
-                                --diff_vectors "$DIFF_VECTOR" \
-                                --prefix "$PREFIX_FLAG" \
-                                --normalize "$NORMALIZE_FLAG" \
-                                --denoise "$DENOISE_FLAG" \
-                                --save_viz "$SAVE_VIZ" \
-                                --classifier "$CLASSIFIER" \
-                                --score "$SCORE"
+                        uv run run.py \
+                            --dataset "$DATASET" \
+                            --model "$MODEL" \
+                            --smoke_test "$SMOKE_TEST" \
+                            --mode "$MODE" \
+                            --diff_vectors "$DIFF_VECTOR" \
+                            --prefix "$PREFIX_FLAG" \
+                            --normalize "$NORMALIZE_FLAG" \
+                            --save_viz "$SAVE_VIZ" \
+                            --classifier "$CLASSIFIER" \
+                            --score "$SCORE"
                         done
                     done
                 done
