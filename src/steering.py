@@ -5,19 +5,27 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.metrics import roc_auc_score
 from tqdm import tqdm
 
 from inference import Inference
 from utils import load_dataset
 
 BASE_DIR = os.getenv("BASE_COE")
-if BASE_DIR is None:
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 OUT_DIR = os.path.join(BASE_DIR, "steering", "test")
 os.makedirs(OUT_DIR, exist_ok=True)
 
-OOD_SETS = ["wikihow_chatgpt", "reddit_chatgpt", "wikipedia_chatgpt", "arxiv_chatgpt"]
+# OOD_SETS = ["wikihow_chatgpt", 
+#             "reddit_chatgpt", 
+#             "wikipedia_chatgpt", 
+#             "arxiv_chatgpt"
+#             ]
+
+OOD_SETS = ["multisocial_full", 
+            "multisocial_en",
+            "wikipedia_chatgpt"
+            ]
 
 
 def steering_vector(
@@ -186,13 +194,52 @@ class SteeringAnalyzer:
                 linewidth=2.5,
             )
 
+        # Layer-wise AUROC using projection score at each layer.
+        layer_aurocs: list[float] = []
+        if np.unique(labels).size == 2:
+            for layer_idx in range(projections.shape[1]):
+                auc = roc_auc_score(labels, projections[:, layer_idx])
+                layer_aurocs.append(float(auc))
+        else:
+            layer_aurocs = [float("nan")] * projections.shape[1]
+
+        auc_axis = axis.twinx()
+        auc_axis.plot(
+            layers,
+            layer_aurocs,
+            color="black",
+            linestyle="--",
+            linewidth=2.0,
+            label="AUROC",
+        )
+        auc_axis.set_ylabel("AUROC")
+        auc_axis.set_ylim(0.0, 1.0)
+
+        last_layer_auc = layer_aurocs[-1] if layer_aurocs else float("nan")
+        last_layer_auc_text = f"{last_layer_auc:.3f}" if not np.isnan(last_layer_auc) else "NA"
+
         axis.set_title(
-            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | manifold={int(manifold)}"
+            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | manifold={int(manifold)} | last-layer AUROC={last_layer_auc_text}"
         )
         axis.set_xlabel("Layer")
         axis.set_ylabel("Projection Score")
         axis.grid(alpha=0.25)
-        axis.legend()
+        mean_auc = np.nanmean(layer_aurocs)
+        if not np.isnan(mean_auc):
+            axis.text(
+                0.01,
+                0.98,
+                f"Mean AUROC: {mean_auc:.3f}",
+                transform=axis.transAxes,
+                va="top",
+                ha="left",
+                fontsize=10,
+                bbox={"boxstyle": "round,pad=0.2", "facecolor": "white", "alpha": 0.8},
+            )
+
+        lines_1, labels_1 = axis.get_legend_handles_labels()
+        lines_2, labels_2 = auc_axis.get_legend_handles_labels()
+        axis.legend(lines_1 + lines_2, labels_1 + labels_2, loc="best")
 
         out_path = os.path.join(
             OUT_DIR,
