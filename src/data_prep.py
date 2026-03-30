@@ -1,7 +1,7 @@
 import json
 import os
 import random
-from datasets import Dataset, DatasetDict
+from datasets import Dataset, DatasetDict, concatenate_datasets
 from typing import Any
 
 BASE_DIR = os.getenv("BASE_COE")
@@ -122,10 +122,25 @@ def prepare_multisocial_data() -> None:
         train_rows = rows.filter(lambda x: x["split"] == "train")
         test_rows = rows.filter(lambda x: x["split"] == "test")
 
-        sampled_train = train_rows.shuffle(seed=SEED).select(range(TRAINING_N + VALIDATION_N))
-        final_train = sampled_train.select(range(TRAINING_N))
-        final_val = sampled_train.select(range(TRAINING_N, TRAINING_N + VALIDATION_N))
-        final_test = test_rows.shuffle(seed=SEED).select(range(TESTING_N))
+        train_per_label = TRAINING_N // 2
+        val_per_label = VALIDATION_N // 2
+        test_per_label = TESTING_N // 2
+
+        train_parts: list[Dataset] = []
+        val_parts: list[Dataset] = []
+        test_parts: list[Dataset] = []
+
+        for label in ["0", "1"]:
+            train_label_rows = train_rows.filter(lambda x, label=label: str(x["label"]) == label).shuffle(seed=SEED)
+            test_label_rows = test_rows.filter(lambda x, label=label: str(x["label"]) == label).shuffle(seed=SEED)
+
+            train_parts.append(train_label_rows.select(range(train_per_label)))
+            val_parts.append(train_label_rows.select(range(train_per_label, train_per_label + val_per_label)))
+            test_parts.append(test_label_rows.select(range(test_per_label)))
+
+        final_train = concatenate_datasets(train_parts).shuffle(seed=SEED)
+        final_val = concatenate_datasets(val_parts).shuffle(seed=SEED)
+        final_test = concatenate_datasets(test_parts).shuffle(seed=SEED)
 
         output = DatasetDict({
             "train": final_train,

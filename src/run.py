@@ -479,6 +479,7 @@ def run(args, data) -> None:
                 hidden_states=hs_dict["hidden_states"],
                 use_diff_vectors=args.diff_vectors,
                 normalize=args.normalize,
+                denoise=args.denoise,
             )
             hs_dict.update(metrics_dict)
             del hs_dict["hidden_states"]
@@ -556,6 +557,7 @@ def main():
     parser.add_argument("--diff_vectors", type=int, default=0)
     parser.add_argument("--prefix", type=int, default=0)
     parser.add_argument("--normalize", type=int, default=0)
+    parser.add_argument("--denoise", type=int, default=0)
     parser.add_argument("--save_viz", type=int, default=0)
     parser.add_argument("--classifier", type=int, default=0)
     parser.add_argument("--score", type=int, default=0)
@@ -571,6 +573,8 @@ def main():
     args.prefix = bool(args.prefix)
     assert args.normalize in (0, 1), "normalize must be 0 or 1"
     args.normalize = bool(args.normalize)
+    assert args.denoise in (0, 1), "denoise must be 0 or 1"
+    args.denoise = bool(args.denoise)
     assert args.save_viz in (0, 1), "save_viz must be 0 or 1"
     args.save_viz = bool(args.save_viz)
     assert args.classifier in (0, 1), "classifier must be 0 or 1"
@@ -599,8 +603,8 @@ def main():
     args.n = len(data)
 
     # saving suffix and title info 
-    suffix = f"{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}_NO{int(args.normalize)}{'_ST' if args.smoke_test else ''}.pdf"
-    title_info = f"{args.model} | {args.dataset} | N={len(data)} | Mode {args.mode} | DV {int(args.diff_vectors)} | Pre {int(args.prefix)} | Norm {int(args.normalize)}"
+    suffix = f"{args.model}_{args.dataset}_MODE{args.mode}_DV{int(args.diff_vectors)}_PF{int(args.prefix)}_NO{int(args.normalize)}_DN{int(args.denoise)}{'_ST' if args.smoke_test else ''}.pdf"
+    title_info = f"{args.model} | {args.dataset} | N={len(data)} | Mode {args.mode} | DV {int(args.diff_vectors)} | Pre {int(args.prefix)} | Norm {int(args.normalize)} | Denoise {int(args.denoise)}"
     args.suffix = suffix
     args.title_info = title_info
 
