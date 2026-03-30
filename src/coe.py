@@ -39,37 +39,6 @@ class Metrics:
 
         return [hidden_states[i + 1] - hidden_states[i] for i in range(len(hidden_states) - 1)]
 
-    def pca_reconstruct_hidden_states(
-        self,
-        hidden_states: tuple[torch.Tensor, ...],
-        n_components: int = 10,
-    ) -> tuple[torch.Tensor, ...]:
-
-        flat_states = torch.stack(
-            [state.float().reshape(-1) for state in hidden_states],
-            dim=0,
-        )  # n_states x d
-
-        n_states, d_model = flat_states.shape
-        k = min(n_components, n_states, d_model)
-        if k < 1:
-            return hidden_states
-
-        mean = flat_states.mean(dim=0, keepdim=True)
-        centered = flat_states - mean
-        if torch.allclose(centered, torch.zeros_like(centered)):
-            return hidden_states
-
-        _, _, vh = torch.linalg.svd(centered, full_matrices=False)
-        basis = vh[:k]  # k x d
-        projected = centered @ basis.T  # n_states x k
-        reconstructed = (projected @ basis) + mean  # n_states x d
-
-        return tuple(
-            reconstructed[i].reshape_as(hidden_states[i]).to(hidden_states[i].dtype)
-            for i in range(len(hidden_states))
-        )
-
     def _layer_pairs(
         self, vectors: list[torch.Tensor]
     ) -> list[tuple[torch.Tensor, torch.Tensor]]:
@@ -196,16 +165,9 @@ class Metrics:
         hidden_states: tuple[torch.Tensor, ...],
         use_diff_vectors: bool,
         normalize: bool = False,
-        denoise: bool = False,
     ) -> dict[str, Any]:
-        working_hidden_states = hidden_states
-        if denoise:
-            working_hidden_states = self.pca_reconstruct_hidden_states(
-                hidden_states=hidden_states,
-                n_components=10,
-            )
 
-        states = self._states(hidden_states=working_hidden_states, use_diff_vectors=use_diff_vectors)
+        states = self._states(hidden_states=hidden_states, use_diff_vectors=use_diff_vectors)
         magnitude_scores = self.magnitude(states, normalize=normalize)
         angle_scores = self.angle(states, normalize=normalize)
         length_scores = self.length(states)
