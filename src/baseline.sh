@@ -17,9 +17,9 @@ nvidia-smi
 # "arxiv_chatgpt" "arxiv_cohere" "arxiv_bloomz"
 
 # DATASETS=("wikipedia_chatgpt" "reddit_chatgpt" "wikihow_chatgpt" "arxiv_chatgpt")
-DATASETS=("tsm_sums_en_gpt4o")
+DATASETS=("multisocial_full")
 MODELS=(
-        "encoder" 
+        # "encoder" 
         # "llr" 
         # "fastdetectgpt" 
         # "rank" 

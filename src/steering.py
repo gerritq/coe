@@ -221,7 +221,7 @@ class SteeringAnalyzer:
             mode=args.mode,
             n_limit=args.n_val,
         )
-        steeringcd_vec = steering_vector(val_hidden, val_labels, normalize=False)
+        steering_vec = steering_vector(val_hidden, val_labels, normalize=False)
         if args.manifold:
             manifold_components = manifold_components_by_layer(
                 hidden_states=val_hidden,
