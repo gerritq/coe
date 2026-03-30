@@ -250,6 +250,52 @@ class SteeringAnalyzer:
         plt.close(fig)
         return out_path
 
+    @staticmethod
+    def _plot_component_variance(
+        hidden_states: np.ndarray,
+        model: str,
+        dataset: str,
+        max_components: int = 30,
+    ) -> str:
+        n_samples, n_layers, d_model = hidden_states.shape
+        max_k = min(max_components, n_samples - 1, d_model)
+        if max_k < 1:
+            raise ValueError("Not enough samples/features to compute PCA variance plot.")
+
+        layer_indices = [0, n_layers // 2, n_layers - 1]
+        layer_labels = ["first", "middle", "last"]
+
+        fig, axis = plt.subplots(figsize=(8, 5))
+        x = np.arange(1, max_k + 1)
+
+        for layer_idx, layer_name in zip(layer_indices, layer_labels):
+            layer_states = hidden_states[:, layer_idx, :]
+            centered = layer_states - layer_states.mean(axis=0, keepdims=True)
+            singular_values = np.linalg.svd(centered, full_matrices=False, compute_uv=False)
+            variance = singular_values ** 2
+            total_variance = np.clip(variance.sum(), 1e-12, None)
+            cumulative_ratio = np.cumsum(variance)[:max_k] / total_variance
+
+            axis.plot(
+                x,
+                cumulative_ratio,
+                linewidth=2.0,
+                label=f"{layer_name} (L{layer_idx + 1})",
+            )
+
+        axis.set_xlabel("Number of Components")
+        axis.set_ylabel("Cumulative Explained Variance Ratio")
+        axis.set_ylim(0.0, 1.0)
+        axis.grid(alpha=0.25)
+        axis.legend()
+        axis.set_title(f"PCA Variance by Components | {model} | {dataset}")
+
+        out_path = os.path.join(OUT_DIR, f"comp_variance_{model}_{dataset}.png")
+        fig.tight_layout()
+        fig.savefig(out_path, dpi=300, bbox_inches="tight")
+        plt.close(fig)
+        return out_path
+
     def run(self, args: Namespace) -> dict[str, Any]:
         data_args = Namespace(
             dataset=args.data,
@@ -267,6 +313,12 @@ class SteeringAnalyzer:
             split_data=dataset[args.val_split],
             mode=args.mode,
             n_limit=args.n_val,
+        )
+        comp_plot_path = self._plot_component_variance(
+            hidden_states=val_hidden,
+            model=args.model,
+            dataset=args.data,
+            max_components=30,
         )
         steering_vec = steering_vector(val_hidden, val_labels, normalize=False)
         if args.manifold:
@@ -336,6 +388,7 @@ class SteeringAnalyzer:
             "n_layers": int(steering_vec.shape[0]),
             "d_model": int(steering_vec.shape[1]),
             "plot_path": plot_path,
+            "comp_plot_path": comp_plot_path,
             "ood": bool(args.ood),
             "ood_plots": ood_plots,
             "manifold": bool(args.manifold),
