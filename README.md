@@ -80,6 +80,21 @@ git pull --rebase
 
 3. "Denoising" via PCA (The "Common Signal" approach)Often, the first Principal Component (PC1) of your difference vectors is the "General Machine Style," while PC2 or PC3 are "Domain Noise."Collect many difference vectors $\mathbf{s}_i = x_{m,i} - x_{h,i}$ across many different topics.Run PCA on these difference vectors.The First Principal Component is your "Denoised Steering Vector." It represents the shared signal that exists across all domains.
 
+- WHY: does not lok like steering is working at all?
+
+- COE as OOD with mahambolis distance
+    - formulate as a OOD task of human text similar to the neurips paper
+    -  same motivation; bc OOD issues, we should especially test this in our case
+    - we need a reference distributions
+    - then we only need machine texts and not human texts
+    - can show first with pca 
+
+NEXT
+- denoise the activations for coe
+- ood gaussian fit 
+    - we can have one machine and then a mix of machine attacks + normal human - > then fit gaussian on machine and rest is ood
+- check bin
+- check why denoising steering does not work
 
 # Brain dump
 

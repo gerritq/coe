@@ -1,4 +1,3 @@
-from fileinput import filename
 import json
 import os
 import random
@@ -8,18 +7,38 @@ from typing import Any
 BASE_DIR = os.getenv("BASE_COE")
 RAW_DATA_DIR = os.path.join(BASE_DIR, "data", "raw")
 DATA_DIR = os.path.join(BASE_DIR, "data")
+M4_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "m4")
+MULTISOCIAL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "multisocial")
+
 os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(RAW_DATA_DIR, exist_ok=True)
 
-"""reddit cohere machine text is almost completely empty"""
+"""
+M4
+- reddit cohere machine text is almost completely empty
+- this is parallel corpora; we keep it parallel bc we may wanna try mean difference steering vectors
 
-def prepare_M4_data(
-    input_path: str,
-    filename: str,
-    train_n: int = 1000,
-    val_n: int = 250,
-    test_n: int = 250,
-    seed: int = 42,
-) -> dict[str, dict[str, int]]:
+Multisocial
+- 
+
+"""
+
+TRAINING_N = 2000
+VALIDATION_N = 500
+TESTING_N = 500
+SEED=42
+
+random.seed(SEED)
+
+def prepare_M4_data() -> None:
+
+
+    train_n = TRAINING_N // 2
+    val_n = VALIDATION_N // 2
+    test_n = TESTING_N // 2 
+
+    random.seed(SEED)
+    
     def pairs(subset: list[dict[str, Any]]) -> list[dict[str, Any]]:
         result: list[dict[str, Any]] = []
         for item in subset:
@@ -29,45 +48,101 @@ def prepare_M4_data(
                 result.append({"text": human_text, "label": 0})
                 result.append({"text": machine_text, "label": 1})
             else:
-                print(f"[Warning] Missing human_text or machine_text in item: {item.get("human_text")}, {item.get("machine_text")}")
+                print(f"[Warning] Missing human_text or machine_text in item.")
         return result
 
-    random.seed(seed)
+    if not os.path.isdir(M4_RAW_DATA_DIR):
+        raise FileNotFoundError(f"Could not find M4 folder at: {M4_RAW_DATA_DIR}")
 
-    with open(input_path, "r", encoding="utf-8") as f:
-        raw_data: list[dict[str, Any]] = []
-        for line in f:
-            try:
-                raw_data.append(json.loads(line))
-            except json.JSONDecodeError as error:
-                print(f"[Error]: {error}")
-                continue
+    summaries: dict[str, dict[str, int]] = {}
 
-    random.shuffle(raw_data)
+    for filename in sorted(os.listdir(M4_RAW_DATA_DIR)):
+        if not filename.endswith(".jsonl"):
+            continue
 
-    train_raw_data = raw_data[:train_n]
-    val_raw_data = raw_data[train_n : train_n + val_n]
-    test_raw_data = raw_data[train_n + val_n : train_n + val_n + test_n]
+        print("=" * 50)
+        print(f"Processing file: {filename}")
+        print("=" * 50)
 
-    train_data = pairs(train_raw_data)
-    val_data = pairs(val_raw_data)
-    test_data = pairs(test_raw_data)
+        input_path = os.path.join(M4_RAW_DATA_DIR, filename)
+        with open(input_path, "r", encoding="utf-8") as f:
+            raw_data: list[dict[str, Any]] = []
+            for line in f:
+                try:
+                    raw_data.append(json.loads(line))
+                except json.JSONDecodeError as error:
+                    print(f"[Error]: {error}")
+                    continue
 
-    dataset_data = {
-        "train": train_data,
-        "val": val_data,
-        "test": test_data,
-    }
-    dataset = DatasetDict({split: Dataset.from_list(data) for split, data in dataset_data.items()})
-    summary = {split: len(data) for split, data in dataset.items()}
+        random.shuffle(raw_data)
 
-    stem = os.path.splitext(filename)[0]
-    output_path = os.path.join(DATA_DIR, f"{stem}")
-    dataset.save_to_disk(output_path)
+        train_raw_data = raw_data[:train_n]
+        val_raw_data = raw_data[train_n : train_n + val_n]
+        test_raw_data = raw_data[train_n + val_n : train_n + val_n + test_n]
 
-    return {stem: summary}
+        train_data = pairs(train_raw_data)
+        val_data = pairs(val_raw_data)
+        test_data = pairs(test_raw_data)
 
-	
+        dataset_data = {
+            "train": train_data,
+            "val": val_data,
+            "test": test_data,
+        }
+        dataset = DatasetDict({split: Dataset.from_list(data) for split, data in dataset_data.items()})
+        summary = {split: len(data) for split, data in dataset.items()}
+
+        stem = os.path.splitext(filename)[0]
+        output_path = os.path.join(DATA_DIR, stem)
+        dataset.save_to_disk(output_path)
+        summaries[stem] = summary
+
+    print("\nSummary of dataset splits:")
+    for dataset_name, summary in summaries.items():
+        print(f"{dataset_name}: {summary}")
+
+
+def prepare_multisocial_data() -> None:
+    """prep mutlisocial data. two subsets
+    1) random sample from full train, test sets
+    2) random samples by language
+    
+    """
+
+    random.seed(SEED)
+    
+    input_path = os.path.join(MULTISOCIAL_RAW_DATA_DIR, "multisocial_anonymized.csv")
+
+    dataset = Dataset.from_csv(input_path)
+
+    def build_subset(rows: Dataset, 
+                     name: str
+                     ) -> None:
+        
+        train_rows = rows.filter(lambda x: x["split"] == "train")
+        test_rows = rows.filter(lambda x: x["split"] == "test")
+
+        sampled_train = train_rows.shuffle(seed=SEED).select(range(TRAINING_N + VALIDATION_N))
+        final_train = sampled_train.select(range(TRAINING_N))
+        final_val = sampled_train.select(range(TRAINING_N, TRAINING_N + VALIDATION_N))
+        final_test = test_rows.shuffle(seed=SEED).select(range(TESTING_N))
+
+        output = DatasetDict({
+            "train": final_train,
+            "val": final_val,
+            "test": final_test,
+        })
+
+        print(f"SUMMARY for {name}:")
+        for split, data in output.items():
+            print(f"  {split.capitalize()}: {len(data)}")
+        output.save_to_disk(os.path.join(DATA_DIR, name))
+
+    build_subset(dataset, "multisocial_full")
+
+    for lang in ["en", "de", "ar", "nl", "pt"]:
+        lang_rows = dataset.filter(lambda x, lang=lang: x["language"] == lang)
+        build_subset(lang_rows, f"multisocial_{lang}")
 
 
 # def counterfact_data() -> None:
@@ -114,26 +189,16 @@ def prepare_M4_data(
 
 
 def main() -> None:
-    summaries: dict[str, dict[str, int]] = {}
-
-    for filename in sorted(os.listdir(RAW_DATA_DIR)):
-        print("=" * 50)
-        print(f"Processing file: {filename}")
-        print("=" * 50)
-        if not filename.endswith(".jsonl"):
-            continue
-        if "counterfact" in filename:
-            continue
-
-        # only for tsm test
-        if not "tsm" in filename:
-            continue
-
-        input_path = os.path.join(RAW_DATA_DIR, filename)
-        result = prepare_M4_data(input_path=input_path, filename=filename)
-        summaries.update(result)
-
-    print(json.dumps(summaries, indent=2))
+    
+    
+    # M4
+    # need to halve bc one instance contains both machine and human text
+    print("Preparing M4 data...")
+    prepare_M4_data()
+    
+    # MULTISOCIAL
+    print("Preparing Multisocial data...")
+    prepare_multisocial_data()
 
 
 if __name__ == "__main__":
