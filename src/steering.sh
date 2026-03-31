@@ -14,7 +14,7 @@ nvidia-smi
 # DATASETS=("wikipedia_chatgpt" "arxiv_chatgpt")
 # MODELS=("llama_8b" "qwen_8b")
 
-DATASETS=("multisocial_full")
+DATASETS=("wikihow_chatgpt" "reddit_chatgpt")  # "wikipedia_chatgpt" "arxiv_chatgpt"
 MODELS=("llama_8b")  # "llama_8b"
 
 MODE="last_token"

@@ -9,9 +9,11 @@ RAW_DATA_DIR = os.path.join(BASE_DIR, "data", "raw")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 M4_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "m4")
 MULTISOCIAL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "multisocial")
+TSM_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "tsm")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(RAW_DATA_DIR, exist_ok=True)
+os.makedirs(TSM_RAW_DATA_DIR, exist_ok=True)
 
 """
 M4
@@ -29,6 +31,76 @@ TESTING_N = 500
 SEED=42
 
 random.seed(SEED)
+
+def prepare_TSM_data() -> None:
+    
+    train_n = TRAINING_N // 2
+    val_n = VALIDATION_N // 2
+    test_n = TESTING_N // 2 
+
+    random.seed(SEED)
+    
+    def pairs(subset: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        result: list[dict[str, Any]] = []
+        for item in subset:
+            human_text = item.get("trgt", None)
+            machine_text = item.get("mgt", None)
+            if human_text and machine_text:
+                result.append({"text": human_text, "label": 0})
+                result.append({"text": machine_text, "label": 1})
+            else:
+                print(f"[Warning] Missing human_text or machine_text in item.")
+        return result
+
+    if not os.path.isdir(TSM_RAW_DATA_DIR):
+        raise FileNotFoundError(f"Could not find TSM folder at: {TSM_RAW_DATA_DIR}")
+
+    summaries: dict[str, dict[str, int]] = {}
+
+    for filename in sorted(os.listdir(TSM_RAW_DATA_DIR)):
+        if not filename.endswith(".jsonl"):
+            continue
+
+        print("=" * 50)
+        print(f"Processing file: {filename}")
+        print("=" * 50)
+
+        input_path = os.path.join(TSM_RAW_DATA_DIR, filename)
+        with open(input_path, "r", encoding="utf-8") as f:
+            raw_data: list[dict[str, Any]] = []
+            for line in f:
+                try:
+                    raw_data.append(json.loads(line))
+                except json.JSONDecodeError as error:
+                    print(f"[Error]: {error}")
+                    continue
+
+        random.shuffle(raw_data)
+
+        train_raw_data = raw_data[:train_n]
+        val_raw_data = raw_data[train_n : train_n + val_n]
+        test_raw_data = raw_data[train_n + val_n : train_n + val_n + test_n]
+
+        train_data = pairs(train_raw_data)
+        val_data = pairs(val_raw_data)
+        test_data = pairs(test_raw_data)
+
+        dataset_data = {
+            "train": train_data,
+            "val": val_data,
+            "test": test_data,
+        }
+        dataset = DatasetDict({split: Dataset.from_list(data) for split, data in dataset_data.items()})
+        summary = {split: len(data) for split, data in dataset.items()}
+
+        stem = os.path.splitext(filename)[0]
+        output_path = os.path.join(DATA_DIR, stem)
+        dataset.save_to_disk(output_path)
+        summaries[stem] = summary
+
+    print("\nSummary of dataset splits:")
+    for dataset_name, summary in summaries.items():
+        print(f"{dataset_name}: {summary}")
 
 def prepare_M4_data() -> None:
 
@@ -214,6 +286,9 @@ def main() -> None:
     # MULTISOCIAL
     print("Preparing Multisocial data...")
     prepare_multisocial_data()
+
+    # TSM
+    prepare_TSM_data()
 
 
 if __name__ == "__main__":

@@ -43,12 +43,10 @@ class LayerPCAAnalyzer:
         args: Namespace,
     ) -> str:
         n_layers = pca_components.shape[0]
-        selected_layers = np.unique(np.linspace(0, n_layers - 1, num=5, dtype=int))
-        selected_layers = selected_layers.tolist()
+        selected_layers = np.unique(np.linspace(0, n_layers - 1, num=10, dtype=int)).tolist()
 
-        fig, axes = plt.subplots(1, len(selected_layers), figsize=(4 * len(selected_layers), 4))
-        if len(selected_layers) == 1:
-            axes = np.array([axes])
+        fig, axes = plt.subplots(2, 5, figsize=(20, 8))
+        axes = axes.flatten()
 
         colors = {0: "tab:blue", 1: "tab:orange"}
 
@@ -80,6 +78,9 @@ class LayerPCAAnalyzer:
             axis.set_ylabel("PC2")
             axis.legend()
             axis.grid(alpha=0.2)
+
+        for empty_idx in range(len(selected_layers), len(axes)):
+            axes[empty_idx].axis("off")
 
         fig.suptitle(f"PCA Scatter by Layer | {args.model} | {args.data}", y=1.02)
         fig.tight_layout()
