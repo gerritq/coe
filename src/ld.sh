@@ -10,7 +10,7 @@
 
 nvidia-smi
 
-DATASETS=("wikihow_chatgpt" "reddit_chatgpt")
+DATASETS=("wikihow_chatgpt" "multisocial_full")
 MODELS=("llama_8b") # qwen_06b
 
 SPLIT="test"

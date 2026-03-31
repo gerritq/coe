@@ -22,9 +22,11 @@ os.makedirs(OUT_DIR, exist_ok=True)
 #             "arxiv_chatgpt"
 #             ]
 
-OOD_SETS = ["multisocial_full", 
-            "multisocial_en",
-            "wikipedia_chatgpt"
+OOD_SETS = [ 
+            "multisocial_de",
+            "multisocial_ar",
+            "multisocial_pt",
+            "multisocial_nl",
             ]
 
 
