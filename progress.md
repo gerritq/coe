@@ -1,0 +1,43 @@
+
+# Progress
+
+**21.03.26**
+
+- coe:
+    - Added flag for norm normalization change / no norm => rm seems to lead to more separable blobs
+    - prefix => for Wikipedia, it leads to differences; but not for other domains. Need to compare results of scoring model with and w/o prefix; but this is an empircial question at the end
+
+    - difference between first and last
+    - something dimension based (with squared differences)
+    
+- chain of logits
+    - Implemented mean/std entropy across tokens + mean/std of diff entropy across tokens; done this on full and top-k tokens => it could work, need to interpret and analyse results further
+    - Implemented TVD => does also work to some extend but needs closer inspection + check whether this is correcty implemented
+
+
+**22.03.26**
+- Added three scorers mlp, gmm, and logistic and ran them on the three feature vectors => results are strong compared to bert baseline on actual texts
+
+**26.03.2026 - Meeting with Hanqi**
+- Do descriptives later
+- Overall, we need to show better performance gains over existing methods
+    - Classifier: this means testing OOD, OO Generator, OO language transferability, text length
+    - TSM: upload correct data + explanations
+    - Bin check with easy data + implement acc metrics
+    - Add TSM + multisocial + another and compare to our
+- We need a harder task
+    - The motivation should be to show that other methods perform worse on a given task
+    - We can use, e.g., paraphrasing: see chat
+    - We can also inlcude perturbations: paraphrasing, random noise (or I guess just take other datasets than M4, e.g., our own?)
+- New method: top-k and rank as in the reducing overthinking paper
+    - Listen to the audio what she means by rank
+    - recalculate embedding based on top-k svd
+    - We should test the optimal number of top-k, varying the number and checking for how much variance they account similar to the overthinking paper
+- PCA visualizations: maybe we can see from there what method we should develop
+- Review of AI detection tools
+    - See also the latest ones in Zotero
+    
+
+**01.04.2026**
+- added m4 multilingual 
+- added tsm data and detectrl

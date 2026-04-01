@@ -7,9 +7,12 @@ from typing import Any
 BASE_DIR = os.getenv("BASE_COE")
 RAW_DATA_DIR = os.path.join(BASE_DIR, "data", "raw")
 DATA_DIR = os.path.join(BASE_DIR, "data")
+
 M4_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "m4")
+M4_MULTILINGUAL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "m4_multi")
 MULTISOCIAL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "multisocial")
 TSM_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "tsm")
+DETECT_RL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "detectrl")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(RAW_DATA_DIR, exist_ok=True)
@@ -32,6 +35,141 @@ SEED=42
 
 random.seed(SEED)
 
+
+def to_binary_label(label: Any) -> int:
+    label_str = str(label).strip().lower()
+    if label_str in {"human", "0"}:
+        return 0
+    if label_str in {"llm", "machine", "1"}:
+        return 1
+    raise ValueError(f"Unsupported label value: {label}")
+
+
+def prepare_M4_multilingual_data() -> None:
+    train_per_label = TRAINING_N // 2
+    val_per_label = VALIDATION_N // 2
+    test_per_label = TESTING_N // 2
+
+    split_files = {
+        "train": os.path.join(M4_MULTILINGUAL_RAW_DATA_DIR, "subtaskA_train_multilingual.jsonl"),
+        "val": os.path.join(M4_MULTILINGUAL_RAW_DATA_DIR, "subtaskA_dev_multilingual.jsonl"),
+        "test": os.path.join(M4_MULTILINGUAL_RAW_DATA_DIR, "subtaskA_multilingual.jsonl"),
+    }
+
+    target_per_label = {
+        "train": train_per_label,
+        "val": val_per_label,
+        "test": test_per_label,
+    }
+
+    dataset_data: dict[str, list[dict[str, Any]]] = {}
+
+    for split_name, path in split_files.items():
+        by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError as error:
+                    print(f"[Error] {split_name}: {error}")
+                    continue
+
+                text = row.get("text")
+                if not text:
+                    continue
+
+                label = to_binary_label(row.get("label"))
+                by_label[label].append({"text": text, "label": label})
+
+        needed = target_per_label[split_name]
+
+        random.Random(SEED).shuffle(by_label[0])
+        random.Random(SEED).shuffle(by_label[1])
+
+        split_data = by_label[0][:needed] + by_label[1][:needed]
+        random.Random(SEED).shuffle(split_data)
+        dataset_data[split_name] = split_data
+
+    dataset = DatasetDict({
+        "train": Dataset.from_list(dataset_data["train"]),
+        "val": Dataset.from_list(dataset_data["val"]),
+        "test": Dataset.from_list(dataset_data["test"]),
+    })
+
+    output_name = "m4_multilingual"
+    dataset.save_to_disk(os.path.join(DATA_DIR, output_name))
+
+    print("\nSummary of M4 multilingual splits:")
+    print({split: len(data) for split, data in dataset.items()})
+
+
+def prepare_DetectRL_task_1_data() -> None:
+
+    train_per_label = TRAINING_N // 2
+    val_per_label = VALIDATION_N // 2
+    test_per_label = TESTING_N // 2
+
+    task_1_dir = os.path.join(DETECT_RL_RAW_DATA_DIR, "task_1")
+
+    domains = ["arxiv", "xsum"]
+    summaries: dict[str, dict[str, int]] = {}
+
+    for domain in domains:
+        train_path = os.path.join(task_1_dir, f"multi_domains_{domain}_train.json")
+        test_path = os.path.join(task_1_dir, f"multi_domains_{domain}_test.json")
+
+        with open(train_path, "r", encoding="utf-8") as f:
+            train_rows: list[dict[str, Any]] = json.load(f)
+        with open(test_path, "r", encoding="utf-8") as f:
+            test_rows: list[dict[str, Any]] = json.load(f)
+
+        train_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+        test_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+
+        for row in train_rows:
+            text = row['text']
+            label = to_binary_label(row['label'])
+            train_by_label[label].append({"text": text, "label": label})
+
+        for row in test_rows:
+            text = row['text']
+            label = to_binary_label(row['label'])
+            test_by_label[label].append({"text": text, "label": label})
+
+        random.Random(SEED).shuffle(train_by_label[0])
+        random.Random(SEED).shuffle(train_by_label[1])
+        random.Random(SEED).shuffle(test_by_label[0])
+        random.Random(SEED).shuffle(test_by_label[1])
+
+        train_data = train_by_label[0][:train_per_label] + train_by_label[1][:train_per_label]
+        val_data = (
+            train_by_label[0][train_per_label:train_per_label + val_per_label]
+            + train_by_label[1][train_per_label:train_per_label + val_per_label]
+        )
+        test_data = test_by_label[0][:test_per_label] + test_by_label[1][:test_per_label]
+
+        random.Random(SEED).shuffle(train_data)
+        random.Random(SEED).shuffle(val_data)
+        random.Random(SEED).shuffle(test_data)
+
+        dataset = DatasetDict({
+            "train": Dataset.from_list(train_data),
+            "val": Dataset.from_list(val_data),
+            "test": Dataset.from_list(test_data),
+        })
+
+        subset_name = f"detectrl_task_1_{domain}"
+        dataset.save_to_disk(os.path.join(DATA_DIR, subset_name))
+        summaries[subset_name] = {split: len(split_data) for split, split_data in dataset.items()}
+
+    print("\nSummary of DetectRL task_1 splits:")
+    for name, summary in summaries.items():
+        print(f"{name}: {summary}")
+
+
 def prepare_TSM_data() -> None:
     
     train_n = TRAINING_N // 2
@@ -51,9 +189,6 @@ def prepare_TSM_data() -> None:
             else:
                 print(f"[Warning] Missing human_text or machine_text in item.")
         return result
-
-    if not os.path.isdir(TSM_RAW_DATA_DIR):
-        raise FileNotFoundError(f"Could not find TSM folder at: {TSM_RAW_DATA_DIR}")
 
     summaries: dict[str, dict[str, int]] = {}
 
@@ -85,6 +220,10 @@ def prepare_TSM_data() -> None:
         val_data = pairs(val_raw_data)
         test_data = pairs(test_raw_data)
 
+        random.shuffle(train_data)
+        random.shuffle(val_data)
+        random.shuffle(test_data)
+
         dataset_data = {
             "train": train_data,
             "val": val_data,
@@ -93,7 +232,7 @@ def prepare_TSM_data() -> None:
         dataset = DatasetDict({split: Dataset.from_list(data) for split, data in dataset_data.items()})
         summary = {split: len(data) for split, data in dataset.items()}
 
-        stem = os.path.splitext(filename)[0]
+        stem = "tsm_" + os.path.splitext(filename)[0]
         output_path = os.path.join(DATA_DIR, stem)
         dataset.save_to_disk(output_path)
         summaries[stem] = summary
@@ -101,6 +240,7 @@ def prepare_TSM_data() -> None:
     print("\nSummary of dataset splits:")
     for dataset_name, summary in summaries.items():
         print(f"{dataset_name}: {summary}")
+
 
 def prepare_M4_data() -> None:
 
@@ -122,9 +262,6 @@ def prepare_M4_data() -> None:
             else:
                 print(f"[Warning] Missing human_text or machine_text in item.")
         return result
-
-    if not os.path.isdir(M4_RAW_DATA_DIR):
-        raise FileNotFoundError(f"Could not find M4 folder at: {M4_RAW_DATA_DIR}")
 
     summaries: dict[str, dict[str, int]] = {}
 
@@ -156,6 +293,10 @@ def prepare_M4_data() -> None:
         val_data = pairs(val_raw_data)
         test_data = pairs(test_raw_data)
 
+        random.shuffle(train_data)
+        random.shuffle(val_data)
+        random.shuffle(test_data)
+
         dataset_data = {
             "train": train_data,
             "val": val_data,
@@ -164,7 +305,7 @@ def prepare_M4_data() -> None:
         dataset = DatasetDict({split: Dataset.from_list(data) for split, data in dataset_data.items()})
         summary = {split: len(data) for split, data in dataset.items()}
 
-        stem = os.path.splitext(filename)[0]
+        stem = "m4_" + os.path.splitext(filename)[0]
         output_path = os.path.join(DATA_DIR, stem)
         dataset.save_to_disk(output_path)
         summaries[stem] = summary
@@ -281,14 +422,24 @@ def main() -> None:
     # M4
     # need to halve bc one instance contains both machine and human text
     print("Preparing M4 data...")
-    prepare_M4_data()
+    # prepare_M4_data()
+
+    # M4 multilingual
+    # need to halve bc one instance contains both machine and human text
+    print("Preparing M4 data...")
+    prepare_M4_multilingual_data()
     
     # MULTISOCIAL
     print("Preparing Multisocial data...")
-    prepare_multisocial_data()
+    # prepare_multisocial_data()
 
     # TSM
-    prepare_TSM_data()
+    print("Preparing TSM task_2 data...")
+    # prepare_TSM_data()
+    
+    # DetectRL task_1
+    print("Preparing DetectRL task_1 data...")
+    # prepare_DetectRL_task_1_data()
 
 
 if __name__ == "__main__":

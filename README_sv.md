@@ -1,0 +1,76 @@
+git pull --rebase
+
+# Today
+- clean notes, written ones
+- add tsm, and update hf
+- email preksha
+- fix bin with env
+- poster and order
+
+- add detect rl as a third corpus
+
+- split projection scores across 10 layers
+- include new metrics, the one in the paper AUC positive? 
+    - Also include f1 and acc from true labels using the optimal threshold
+    - inlcude this also for the baselines + new data loading
+- create mulit-language version of M4
+    - implemend ood flag and list of domains
+
+- check why manifold is not working
+
+- What is the idea of the steering in a manifold? Projection on different directions does this work?
+- Cross-lingual, cross-domain, and cross-generator vs bert baseline
+    - classifier new loading and OO-x implementation; should define the oo-x in the sh file
+    - implement oo-x in steering
+
+- Descriptives folder
+    - Can we compute the similarity of SVs across languages and domains?
+    - Can we do low dim projections of similarities
+    - Can we compute sim of SVs in high and low manifold?
+    - Can this be 3 plots?
+
+    - sim of SVs in manifold vs SVs in high dim?
+        - if we do this across langs and domans, and sim is higher in low-dim, we have successfully denoised
+
+# Brain dump
+
+## Density idea
+
+4. Implementation Idea: "Manifold Density"Instead of a simple dot product, you can use Mahalanobis Distance on the manifold.Project all validation samples into the $k$-dim PCA space.Calculate the Mean and Covariance of the Machine cluster in that low-dim space.For a test sample, calculate its distance to that cluster.Why this is better than a steering vector: A steering vector assumes the clusters are "blobs." A manifold density approach accounts for the fact that the "Machine" cluster might be "long and skinny" in some directions and "short" in others.
+
+## Universal steering vector?
+
+- Can we test whether the steering vector hold across domains, languages, and generators?
+    - Test by obtaining a SV on one data dimension, and then generalizing to new ones. Compare this to bert.
+
+- Can we do this for language with perfect parallel data?
+    - We get parallel data and check whether the SV is the same for en, de, etc.
+    - get sv from non-parallel data
+    - if denoising shifts the SV closer to the true SV in 1, the we have evidence it works
+
+## Denoise steering vector
+
+- Idea to reduce the inteference noise that comes with the steering vector
+- Via manifold -> why does this not work at the moment?
+- Can we achieve this with a more diverse dataset?
+- higher auroc if the denoising works
+- can we obtain many steering vectors, there is also the idea on how to obtain the best one in the paper?
+- or can we average the sv over layers and then get a single one at the end?
+- or can we use the val set to obtain the most robust one? Eg we can use pca on the collected activations>
+
+3. "Denoising" via PCA (The "Common Signal" approach)Often, the first Principal Component (PC1) of your difference vectors is the "General Machine Style," while PC2 or PC3 are "Domain Noise."Collect many difference vectors $\mathbf{s}_i = x_{m,i} - x_{h,i}$ across many different topics.Run PCA on these difference vectors.The First Principal Component is your "Denoised Steering Vector." It represents the shared signal that exists across all domains.
+
+
+## Lower-dim projection
+
+- Can we not only project on the steering vector, but on a low-dim manifold? On each PC? Or in the low-dim space?
+    - And then get the norm in the subspace for example
+- Gemini suggestions that we only look at the human or machine manifold?
+
+## Effectiveness of SV
+
+- Can we fool the model with the SV we obtained? Like llr, fast-detect, ppl: can we drop their performance with interventions?
+
+# Learning
+
+- Blog about manifolds: https://colah.github.io/posts/2014-03-NN-Manifolds-Topology/
