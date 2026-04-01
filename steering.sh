@@ -18,6 +18,7 @@ MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
 MODE="last_token"
 
 CENTERING=(0)
+PCA_COMPONENTS=(1 3 5 7 10)
 SMOKE_TEST=0
 OOD=0
 OOD_SETS=("")
@@ -26,9 +27,10 @@ MANIFOLD=0
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
         for CENTERING_FLAG in "${CENTERING[@]}"; do
+            for PCA_COMPONENTS_FLAG in "${PCA_COMPONENTS[@]}"; do
             
         echo "------------------------------------------------"
-        echo "Running Steering: Dataset=$DATASET, Model=$MODEL, Mode=$MODE, Centering=$CENTERING_FLAG"
+        echo "Running Steering: Dataset=$DATASET, Model=$MODEL, Mode=$MODE, Centering=$CENTERING_FLAG, PCA=$PCA_COMPONENTS_FLAG"
         echo "ValSplit=$VAL_SPLIT, SmokeTest=$SMOKE_TEST, OOD=$OOD, MANIFOLD=$MANIFOLD"
         echo "------------------------------------------------"
 
@@ -38,9 +40,11 @@ for DATASET in "${DATASETS[@]}"; do
             --dataset "$DATASET" \
             --mode "$MODE" \
             --centering "$CENTERING_FLAG" \
+            --pca_components "$PCA_COMPONENTS_FLAG" \
             --smoke_test "$SMOKE_TEST" \
             --ood "$OOD" \
             --manifold "$MANIFOLD"
+            done
         done
     done
 done
