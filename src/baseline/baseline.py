@@ -7,13 +7,11 @@ import torch
 import sys
 
 from transformers import set_seed
-from sklearn.model_selection import train_test_split
 
-from utils import load_dataset, return_args
-from baselines.utils import compute_auc
+from src.utils import load_dataset, evaluation, return_args
 
 BASE_DIR = os.getenv("BASE_COE")
-BASELINE_DIR = os.path.join(BASE_DIR, "baselines", "test")
+BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
 os.makedirs(BASELINE_DIR, exist_ok=True)
 
 if torch.cuda.is_available():
@@ -25,6 +23,7 @@ else:
 
 TEST_SIZE = 0.2
 SEED = 42
+set_seed(SEED)
 
 
 def main():
@@ -58,12 +57,12 @@ def main():
     args.n = len(test_x)
     
     if args.model == "encoder":
-        from baselines.enc import EncoderBaseline
+        from src.baseline.enc import EncoderBaseline
         baseline = EncoderBaseline(model_name="google-bert/bert-base-uncased", device=DEVICE)
         scores = baseline.run(args=args, data=data)
         
     if args.model == "binoculars":
-        from baselines.binoculars import Binoculars
+        from src.baseline.binoculars import Binoculars
         baseline = Binoculars(
                             #   observer_name_or_path=args.base_model_1, 
                             #   performer_name_or_path=args.base_model_2
@@ -71,35 +70,35 @@ def main():
         scores = baseline.run(input_text=test_x)
     
     if args.model == "llr":
-        from baselines.llr import LLR
+        from src.baseline.llr import LLR
         baseline = LLR(model_name=args.base_model_1, device=DEVICE)
         scores = baseline.run(texts=test_x, args=args)
 
     if args.model == "likelihood":
-        from baselines.llr import LLR
+        from src.baseline.llr import LLR
         baseline = LLR(model_name=args.base_model_1, device=DEVICE)
         scores = baseline.run(texts=test_x, args=args)
 
     if args.model == "rank":
-        from baselines.rank import Rank
+        from src.baseline.rank import Rank
         baseline = Rank(model_name=args.base_model_1, device=DEVICE)
         scores = baseline.run(texts=test_x)
 
     if args.model == "entropy":
-        from baselines.entropy import Entropy
+        from src.baseline.entropy import Entropy
         baseline = Entropy(model_name=args.base_model_1, device=DEVICE)
         scores = baseline.run(texts=test_x)
 
     if args.model == "fastdetectgpt":
-        from baselines.fastdetectgpt import FastDetectGPT
+        from src.baseline.fastdetectgpt import FastDetectGPT
         baseline = FastDetectGPT(scoring_model=args.base_model_1, 
                                  reference_model=args.base_model_1,
                                  device=DEVICE)
         scores = baseline.run(texts=test_x)
 
-    metrics = compute_auc(
-        labels=test_y,
-        values=scores,
+    metrics = evaluation(
+        y_true=test_y,
+        y_predict=scores,
     )
 
     #save results

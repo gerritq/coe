@@ -162,3 +162,12 @@ def return_args(args: Any | None) -> dict[str, Any] | None:
 #         json.dump(results, f, indent=2)
 
 #     return results
+
+def return_args(args: Any | None) -> dict[str, Any] | None:
+    if args is None:
+        return None
+    if isinstance(args, dict):
+        return args
+    if hasattr(args, "__dict__"):
+        return vars(args)
+    return {"value": str(args)}

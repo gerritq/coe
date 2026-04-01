@@ -1,6 +1,5 @@
 from argparse import Namespace
 import numpy as np
-from utils import compute_metrics
 from typing import Any
 import torch
 from datasets import Dataset
@@ -86,9 +85,6 @@ class EncoderBaseline:
 
         
         predictions = trainer.predict(ds_tok["test"])
-        # precited labels --- what to do with them
-        y_pred = np.argmax(predictions.predictions, axis=1)
-        metrics = compute_metrics(ds_tok["test"]["labels"], y_pred)
 
         # get probs
         logits = torch.from_numpy(predictions.predictions)
