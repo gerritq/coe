@@ -13,11 +13,11 @@ nvidia-smi
 # ROOT_DIR="${BASE_COE:-$(pwd)}"
 # cd "${ROOT_DIR}"
 
-DATASETS=("multisocial_full" "m4_multilingual")  # "multisocial_full" "m4_multilingual"
+DATASETS=("m4_multilingual")  # "multisocial_full" "m4_multilingual"
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
 MODE="last_token"
 
-CENTERING=(0 1)
+CENTERING=(0)
 SMOKE_TEST=0
 OOD=0
 OOD_SETS=("")

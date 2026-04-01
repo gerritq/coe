@@ -1,24 +1,24 @@
 {
   "metrics": {
-    "n_total": 30,
-    "n_valid": 30,
-    "acc": 0.7333333333333333,
-    "f1": 0.7142857142857143,
-    "pre": 0.7142857142857143,
-    "recall": 0.7142857142857143,
-    "auroc": 0.75,
-    "optimal_threshold": 0.6062119603157043,
-    "tpr_at_fpr_0_01": 0.42857142857142855,
-    "fpr95": 0.9375,
-    "aupr": 0.7961483695344207
+    "n_total": 500,
+    "n_valid": 500,
+    "acc": 0.862,
+    "f1": 0.8611670020120724,
+    "pre": 0.8663967611336032,
+    "recall": 0.856,
+    "auroc": 0.908752,
+    "optimal_threshold": 0.518505871295929,
+    "tpr_at_fpr_0_01": 0.168,
+    "fpr95": 0.412,
+    "aupr": 0.8983949967994858
   },
   "args": {
     "dataset": "multisocial_full",
     "model": "encoder",
-    "smoke_test": true,
+    "smoke_test": false,
     "prefix": false,
-    "base_model_1": "Qwen/Qwen3-0.6B-Base",
-    "base_model_2": "Qwen/Qwen3-0.6B",
-    "n": 30
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "n": 500
   }
 }

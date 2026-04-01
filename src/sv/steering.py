@@ -149,7 +149,7 @@ class SteeringAnalyzer:
 
         out_path = os.path.join(
             OUT_DIR,
-            f"svp_scores_{args.model}_{steering_domain}_on_{eval_domain}_M{int(args.manifold)}_C{int(args.centering)}.json",
+            f"svp_scores_{args.model}_{steering_domain}_on_{eval_domain}_C{int(args.centering)}_M{int(args.manifold)}.json",
         )
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
@@ -162,6 +162,7 @@ class SteeringAnalyzer:
         steering_domain: str,
         eval_domain: str,
         manifold: bool,
+        centering: bool,
     ) -> None:
         fig = plt.figure(figsize=(20, 12))
         grid = fig.add_gridspec(3, 5, height_ratios=[1.5, 1, 1])
@@ -219,7 +220,7 @@ class SteeringAnalyzer:
         last_layer_auc_text = f"{last_layer_auc:.3f}" if not np.isnan(last_layer_auc) else "NA"
 
         axis.set_title(
-            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | manifold={int(manifold)} | last-layer AUROC={last_layer_auc_text}"
+            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | C{int(centering)} | last-layer AUROC={last_layer_auc_text}"
         )
         axis.set_xlabel("Layer")
         axis.set_ylabel("Projection Score")
@@ -297,7 +298,7 @@ class SteeringAnalyzer:
 
         out_path = os.path.join(
             OUT_DIR,
-            f"psp_{model}_{steering_domain}_on_{eval_domain}_manifold_{int(manifold)}.png",
+            f"psp_{model}_{steering_domain}_on_{eval_domain}_C{int(manifold)}_M{int(manifold)}.png",
         )
         fig.tight_layout()
         fig.savefig(out_path, dpi=300, bbox_inches="tight")
@@ -318,7 +319,7 @@ class SteeringAnalyzer:
         if args.manifold:
             manifold_components = manifold_components_by_layer(
                 hidden_states=val_hidden,
-                n_components=50,
+                n_components=5,
             )
             steering_vec = denoise_steering_vector(steering_vec, manifold_components)
         
@@ -349,6 +350,7 @@ class SteeringAnalyzer:
             steering_domain=args.dataset,
             eval_domain=args.dataset,
             manifold=args.manifold,
+            centering=args.centering,
         )
 
         for ood_dataset_name in args.ood_set:

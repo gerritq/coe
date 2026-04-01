@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=baselines_bin
-#SBATCH --output=../logs/%j.out
-#SBATCH --error=../logs/%j.err
+#SBATCH --output=logs/%j.out
+#SBATCH --error=logs/%j.err
 #SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
@@ -14,18 +14,18 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-DATASETS=("multisocial_full")  # "multisocial_full" "m4_multilingual"
+DATASETS=("multisocial_full" "m4_multilingual")  # "multisocial_full" "m4_multilingual"
 MODELS=(
         "encoder" 
-        # "llr" 
-        # "fastdetectgpt" 
-        # "rank" 
-        # "entropy"
-        # "likelihood"
+        "llr" 
+        "fastdetectgpt" 
+        "rank" 
+        "entropy"
+        "likelihood"
         # "binoculars" 
         )        
 
-SMOKE_TEST=1
+SMOKE_TEST=0
 
 # Nested loop to run every model on every dataset
 for DATASET in "${DATASETS[@]}"; do
