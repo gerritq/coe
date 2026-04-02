@@ -2,18 +2,18 @@
 #SBATCH --job-name=coe_steering
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=02:30:00
+#SBATCH --time=01:30:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
-# SBATCH --constraint=a100
+# SBATCH --constraint=h200|b200
 
 nvidia-smi
 
-# ROOT_DIR="${BASE_COE:-$(pwd)}"
-# cd "${ROOT_DIR}"
+ROOT_DIR="${BASE_COE:-$(pwd)}"
+cd "${ROOT_DIR}"
 
-DATASETS=("tsm_multi" "m4_multi" "")  # "multisocial_full" "m4_multilingual"
+DATASETS=("drl_t1_perturbation")  # "tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full"
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
 MODE="last_token"
 
@@ -26,7 +26,7 @@ MANIFOLD=0
 if [ "$MANIFOLD" -eq 1 ]; then
     PCA_COMPONENTS=(1 3 5 7 10)
 else
-    PCA_COMPONENTS=(10)
+    PCA_COMPONENTS=(0)
 fi
 
 for DATASET in "${DATASETS[@]}"; do
@@ -39,8 +39,8 @@ for DATASET in "${DATASETS[@]}"; do
         echo "ValSplit=$VAL_SPLIT, SmokeTest=$SMOKE_TEST, OOD=$OOD, MANIFOLD=$MANIFOLD"
         echo "------------------------------------------------"
 
-        # PYTHONPATH="${ROOT_DIR}"  
-        uv run -m src.sv.steering \
+        
+        PYTHONPATH="${ROOT_DIR}"  uv run -m src.sv.steering \
             --model "$MODEL" \
             --dataset "$DATASET" \
             --mode "$MODE" \

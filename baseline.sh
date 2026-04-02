@@ -6,14 +6,14 @@
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=30GB
-# SBATCH --constraint=a100
+# SBATCH --constraint=h200|b200
 
 nvidia-smi
 
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-DATASETS=("tsm_mulit")  # "multisocial_full" "m4_multilingual"
+DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")  # "tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full"
 MODELS=(
         "encoder" 
         "llr" 
