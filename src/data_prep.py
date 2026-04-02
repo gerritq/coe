@@ -210,7 +210,7 @@ def prepare_M4_multi_data() -> None:
     random.Random(SEED).shuffle(val_data)
     random.Random(SEED).shuffle(test_data)
 
-    output_name = "m4_multi_ood"
+    output_name = "m4_multi"
     split_data = {"train": train_data, "val": val_data, "test": test_data}
     save_jsonl_splits(output_name, split_data)
 
