@@ -94,6 +94,16 @@ def steering_projection(val_hidden_states: np.ndarray,
     return np.einsum("sld,ld->sl", test_hidden_states, steering_vectors)
 
 
+def avg_projection_div_std(projections: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    """
+    projections: n_samples x n_layers
+    returns per-sample aggregated score: mean(layer scores) / std(layer scores)
+    """
+    avg_projection = projections.mean(axis=1)
+    std_projection = projections.std(axis=1)
+    return avg_projection / np.clip(std_projection, eps, None)
+
+
 class SteeringAnalyzer:
     def __init__(self, model_name: str) -> None:
         self.inference = Inference(model_name=model_name)
@@ -151,6 +161,14 @@ class SteeringAnalyzer:
             y_val_true=val_labels,
             y_val_predict=avg_val_projection,
         )
+        avg_div_std_projection = avg_projection_div_std(projections)
+        avg_div_std_val_projection = avg_projection_div_std(val_projections)
+        avg_div_std_projection_metrics = evaluation(
+            y_true=labels,
+            y_predict=avg_div_std_projection,
+            y_val_true=val_labels,
+            y_val_predict=avg_div_std_val_projection,
+        )
 
         result = {
             "args": vars(args),
@@ -160,6 +178,7 @@ class SteeringAnalyzer:
             "n_layers": int(projections.shape[1]),
             "metrics_per_layer": per_layer,
             "metrics_avg_projection": avg_projection_metrics,
+            "metrics_avg_projection_div_std": avg_div_std_projection_metrics,
         }
 
         out_path = os.path.join(
@@ -246,9 +265,21 @@ class SteeringAnalyzer:
         avg_projection_auc_text = (
             f"{avg_projection_auc:.3f}" if np.isfinite(avg_projection_auc) else "NA"
         )
+        avg_div_std_projection_metrics = evaluation(
+            y_true=labels,
+            y_predict=avg_projection_div_std(projections),
+            y_val_true=val_labels,
+            y_val_predict=avg_projection_div_std(val_projections),
+        )
+        avg_div_std_projection_auc = avg_div_std_projection_metrics.get("auroc", float("nan"))
+        avg_div_std_projection_auc_text = (
+            f"{avg_div_std_projection_auc:.3f}"
+            if np.isfinite(avg_div_std_projection_auc)
+            else "NA"
+        )
 
         axis.set_title(
-            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | C{int(centering)} | P{int(pca_components)} | last-layer AUROC={last_layer_auc_text} | avg-proj AUROC={avg_projection_auc_text}"
+            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | C{int(centering)} | P{int(pca_components)} | last-layer AUROC={last_layer_auc_text} | avg-proj AUROC={avg_projection_auc_text} | avg/std AUROC={avg_div_std_projection_auc_text}"
         )
         axis.set_xlabel("Layer")
         axis.set_ylabel("Projection Score")
