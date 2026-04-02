@@ -2,7 +2,7 @@
 #SBATCH --job-name=coe_steering
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=00:30:00
+#SBATCH --time=02:30:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -13,16 +13,21 @@ nvidia-smi
 # ROOT_DIR="${BASE_COE:-$(pwd)}"
 # cd "${ROOT_DIR}"
 
-DATASETS=("m4_multilingual")  # "multisocial_full" "m4_multilingual"
+DATASETS=("m4_multilingual" "multisocial_full" "tsm_paras_en_first_deepseek" "tsm_sums_en_deepseek")  # "multisocial_full" "m4_multilingual"
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
 MODE="last_token"
 
 CENTERING=(0)
-PCA_COMPONENTS=(1 3 5 7 10)
 SMOKE_TEST=0
 OOD=0
 OOD_SETS=("")
 MANIFOLD=0
+
+if [ "$MANIFOLD" -eq 1 ]; then
+    PCA_COMPONENTS=(1 3 5 7 10 12)
+else
+    PCA_COMPONENTS=(0)
+fi
 
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do

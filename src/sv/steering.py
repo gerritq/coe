@@ -439,8 +439,6 @@ def main() -> None:
         raise ValueError("ood must be 0 or 1")
     if args.manifold not in (0, 1):
         raise ValueError("manifold must be 0 or 1")
-    if args.pca_components < 1:
-        raise ValueError("pca_components must be >= 1")
     if args.mode != "last_token":
         raise ValueError("This script expects --mode last_token.")
 
