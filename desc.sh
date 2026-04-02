@@ -10,14 +10,17 @@
 
 nvidia-smi
 
-DATASETS=("wikihow_chatgpt" "multisocial_full")
-MODELS=("llama_8b") # qwen_06b
+ROOT_DIR="${BASE_COE:-$(pwd)}"
+cd "${ROOT_DIR}"
 
-SPLIT="test"
+DATASETS=("multisocial_full")
+MODELS=("qwen_06b") # qwen_06b
+ANALYSIS="sv"  # "ld", "sv", "all"
+SPLIT="val"
 MODE="last_token"
 N=500
 PREFIX=0
-SMOKE_TEST=0
+SMOKE_TEST=1
 
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
@@ -25,13 +28,14 @@ for DATASET in "${DATASETS[@]}"; do
         echo "Running LD PCA: Dataset=$DATASET, Model=$MODEL, Split=$SPLIT, Mode=$MODE, N=$N"
         echo "------------------------------------------------"
 
-        uv run ld.py \
+        PYTHONPATH="${ROOT_DIR}"  uv run src/descriptives/descriptives.py \
             --model "$MODEL" \
             --data "$DATASET" \
             --split "$SPLIT" \
             --mode "$MODE" \
             --n "$N" \
             --prefix "$PREFIX" \
+            --analysis "$ANALYSIS" \
             --smoke_test "$SMOKE_TEST"
     done
 done

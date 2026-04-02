@@ -1,4 +1,6 @@
 git pull --rebase
+:wq
+
 
 # Today
 - clean notes, written ones
@@ -33,6 +35,10 @@ git pull --rebase
         - if we do this across langs and domans, and sim is higher in low-dim, we have successfully denoised
 
 # Brain dump
+
+## Average projection position?
+
+- get the average projection position, instead of the last layer
 
 ## Density idea
 
