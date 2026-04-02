@@ -127,6 +127,8 @@ class SteeringAnalyzer:
     def _save_projection_metrics(
         projections: np.ndarray,
         labels: np.ndarray,
+        val_projections: np.ndarray,
+        val_labels: np.ndarray,
         args: Namespace,
         steering_domain: str,
         eval_domain: str,
@@ -136,6 +138,8 @@ class SteeringAnalyzer:
             per_layer[f"layer_{layer_idx + 1}"] = evaluation(
                 y_true=labels,
                 y_predict=projections[:, layer_idx],
+                y_val_true=val_labels,
+                y_val_predict=val_projections[:, layer_idx],
             )
 
         result = {
@@ -158,6 +162,8 @@ class SteeringAnalyzer:
     def _plot_test_projections(
         projections: np.ndarray,
         labels: np.ndarray,
+        val_projections: np.ndarray,
+        val_labels: np.ndarray,
         model: str,
         steering_domain: str,
         eval_domain: str,
@@ -281,7 +287,12 @@ class SteeringAnalyzer:
                     ax=ax,
                 )
 
-            metrics = evaluation(y_true=labels, y_predict=layer_scores)
+            metrics = evaluation(
+                y_true=labels,
+                y_predict=layer_scores,
+                y_val_true=val_labels,
+                y_val_predict=val_projections[:, layer_idx],
+            )
             auroc = metrics.get("auroc", float("nan"))
             f1 = metrics.get("f1", float("nan"))
             acc = metrics.get("acc", float("nan"))
@@ -328,6 +339,14 @@ class SteeringAnalyzer:
         steering_vec = normalize_vectors(steering_vec)
 
         # get test set hidden states and the projection score
+        val_projection = steering_projection(
+            val_hidden_states=val_hidden,
+            test_hidden_states=val_hidden,
+            steering_vectors=steering_vec,
+            args=args,
+        )
+
+        # get test set hidden states and the projection score
         test_hidden, test_labels = self._collect_hidden_states(data=dataset['test'], mode=args.mode)
         test_projection = steering_projection(val_hidden_states=val_hidden,
                                               test_hidden_states=test_hidden,
@@ -338,6 +357,8 @@ class SteeringAnalyzer:
         self._save_projection_metrics(
             projections=test_projection,
             labels=test_labels,
+            val_projections=val_projection,
+            val_labels=val_labels,
             args=args,
             steering_domain=args.dataset,
             eval_domain=args.dataset,
@@ -347,6 +368,8 @@ class SteeringAnalyzer:
         self._plot_test_projections(
             projections=test_projection,
             labels=test_labels,
+            val_projections=val_projection,
+            val_labels=val_labels,
             model=args.model,
             steering_domain=args.dataset,
             eval_domain=args.dataset,
@@ -382,6 +405,8 @@ class SteeringAnalyzer:
             self._plot_test_projections(
                 projections=ood_projection,
                 labels=ood_labels,
+                val_projections=val_projection,
+                val_labels=val_labels,
                 model=args.model,
                 steering_domain=args.dataset,
                 eval_domain=ood_dataset_name,
@@ -393,6 +418,8 @@ class SteeringAnalyzer:
             self._save_projection_metrics(
                 projections=ood_projection,
                 labels=ood_labels,
+                val_projections=val_projection,
+                val_labels=val_labels,
                 args=args,
                 steering_domain=args.dataset,
                 eval_domain=ood_dataset_name,

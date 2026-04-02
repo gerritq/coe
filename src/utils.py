@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from typing import Any
 from argparse import Namespace
-from datasets import load_from_disk, DatasetDict
+from datasets import Dataset, DatasetDict
 
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score, roc_curve, average_precision_score
 
@@ -17,7 +17,10 @@ TEXT_PREFIX = "Is this text human- or LLM-written?"
 def load_dataset(args: Namespace):
     
     data_path = os.path.join(DATA_DIR, f"{args.dataset}")
-    data = load_from_disk(data_path)
+    data = DatasetDict({
+        split: Dataset.from_json(os.path.join(data_path, f"{split}.jsonl"))
+        for split in ["train", "val", "test"]
+    })
 
     if args.prefix:
         data = data.map(lambda x: {"text": f"{TEXT_PREFIX} {x['text']}", "label": x["label"]})
@@ -31,30 +34,50 @@ def load_dataset(args: Namespace):
 
     return data
 
+def optimal_threshold(y_true: np.ndarray, y_predict: np.ndarray) -> float:
+    """used with the dev set to determine the optimal threshold"""
+    y_true_arr = np.asarray(y_true).astype(int).reshape(-1)
+    y_score_arr = np.asarray(y_predict).astype(float).reshape(-1)
+    fpr, tpr, thresholds = roc_curve(y_true_arr, y_score_arr)
+    best_idx = int(np.argmax(tpr - fpr))
+    return float(thresholds[best_idx])
 
-def evaluation(y_true: np.ndarray, y_predict: np.ndarray) -> dict[str, float]:
-    y_true_raw = np.asarray(y_true).reshape(-1)
-    y_pred_raw = np.asarray(y_predict, dtype=object).reshape(-1)
 
-    n_total = int(len(y_true_raw))
+def evaluation(
+    y_true: np.ndarray,
+    y_predict: np.ndarray,
+    y_val_true: np.ndarray | None = None,
+    y_val_predict: np.ndarray | None = None,
+) -> dict[str, float]:
+    
+    def _valid_arrays(labels: np.ndarray, scores: np.ndarray) -> tuple[np.ndarray, np.ndarray, int, int]:
+        labels_raw = np.asarray(labels).reshape(-1)
+        scores_raw = np.asarray(scores, dtype=object).reshape(-1)
+        n_total_local = int(len(labels_raw))
+        valid_labels_local: list[int] = []
+        valid_scores_local: list[float] = []
 
-    valid_labels: list[int] = []
-    valid_scores: list[float] = []
+        for idx in range(n_total_local):
+            if idx >= len(scores_raw):
+                continue
+            try:
+                score = float(scores_raw[idx])
+                label = int(labels_raw[idx])
+            except (TypeError, ValueError):
+                continue
+            if not np.isfinite(score):
+                continue
+            valid_labels_local.append(label)
+            valid_scores_local.append(score)
 
-    for idx in range(n_total):
-        if idx >= len(y_pred_raw):
-            continue
-        try:
-            score = float(y_pred_raw[idx])
-            label = int(y_true_raw[idx])
-        except (TypeError, ValueError):
-            continue
-        if not np.isfinite(score):
-            continue
-        valid_labels.append(label)
-        valid_scores.append(score)
+        return (
+            np.asarray(valid_labels_local, dtype=int),
+            np.asarray(valid_scores_local, dtype=float),
+            n_total_local,
+            int(len(valid_scores_local)),
+        )
 
-    n_valid = int(len(valid_scores))
+    y_true_arr, y_score_arr, n_total, n_valid = _valid_arrays(y_true, y_predict)
     if n_valid == 0:
         return {
             "n_total": n_total,
@@ -70,14 +93,19 @@ def evaluation(y_true: np.ndarray, y_predict: np.ndarray) -> dict[str, float]:
             "aupr": float("nan"),
         }
 
-    y_true_arr = np.asarray(valid_labels, dtype=int)
-    y_score_arr = np.asarray(valid_scores, dtype=float)
+    if y_val_true is not None and y_val_predict is not None:
+        y_val_true_arr, y_val_score_arr, n_val_total, n_val_valid = _valid_arrays(y_val_true, y_val_predict)
+    else:
+        y_val_true_arr, y_val_score_arr = y_true_arr, y_score_arr
+        n_val_total, n_val_valid = n_total, n_valid
 
-    fpr, tpr, thresholds = roc_curve(y_true_arr, y_score_arr)
-    best_idx = int(np.argmax(tpr - fpr))
-    optimal_threshold = float(thresholds[best_idx])
+    fpr, tpr, _ = roc_curve(y_true_arr, y_score_arr)
+    if n_val_valid > 0 and len(np.unique(y_val_true_arr)) > 1:
+        optimal_thresh = optimal_threshold(y_val_true_arr, y_val_score_arr)
+    else:
+        optimal_thresh = optimal_threshold(y_true_arr, y_score_arr)
 
-    y_pred_arr = (y_score_arr >= optimal_threshold).astype(int)
+    y_pred_arr = (y_score_arr >= optimal_thresh).astype(int)
 
     fpr_target = 0.01
     mask_fpr = fpr <= fpr_target
@@ -90,12 +118,14 @@ def evaluation(y_true: np.ndarray, y_predict: np.ndarray) -> dict[str, float]:
     return {
         "n_total": n_total,
         "n_valid": n_valid,
+        "n_val_total": n_val_total,
+        "n_val_valid": n_val_valid,
         "acc": float(accuracy_score(y_true_arr, y_pred_arr)),
         "f1": float(f1_score(y_true_arr, y_pred_arr, average="binary", zero_division=0)),
         "pre": float(precision_score(y_true_arr, y_pred_arr, average="binary", zero_division=0)),
         "recall": float(recall_score(y_true_arr, y_pred_arr, average="binary", zero_division=0)),
         "auroc": float(roc_auc_score(y_true_arr, y_score_arr)),
-        "optimal_threshold": optimal_threshold,
+        "optimal_threshold": optimal_thresh,
         "tpr_at_fpr_0_01": tpr_at_fpr_0_01,
         "fpr95": fpr95,
         "aupr": float(average_precision_score(y_true_arr, y_score_arr)),

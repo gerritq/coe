@@ -51,15 +51,22 @@ def main():
 
     # get data
     data = load_dataset(args=args)
+    val_x = data["val"]["text"]
+    val_y = data["val"]["label"]
     test_x = data["test"]["text"]
     test_y = data["test"]["label"]
 
     args.n = len(test_x)
     
+    val_scores = None
+    test_scores = None
+
     if args.model == "encoder":
         from src.baseline.enc import EncoderBaseline
         baseline = EncoderBaseline(model_name="google-bert/bert-base-uncased", device=DEVICE)
         scores = baseline.run(args=args, data=data)
+        val_scores = scores["val_scores"]
+        test_scores = scores["test_scores"]
         
     if args.model == "binoculars":
         from src.baseline.binoculars import Binoculars
@@ -67,38 +74,47 @@ def main():
                             #   observer_name_or_path=args.base_model_1, 
                             #   performer_name_or_path=args.base_model_2
                               )
-        scores = baseline.run(input_text=test_x)
+        val_scores = baseline.run(input_text=val_x)
+        test_scores = baseline.run(input_text=test_x)
     
     if args.model == "llr":
         from src.baseline.llr import LLR
         baseline = LLR(model_name=args.base_model_1, device=DEVICE)
-        scores = baseline.run(texts=test_x, args=args)
+        val_scores = baseline.run(texts=val_x, args=args)
+        test_scores = baseline.run(texts=test_x, args=args)
 
     if args.model == "likelihood":
         from src.baseline.llr import LLR
         baseline = LLR(model_name=args.base_model_1, device=DEVICE)
-        scores = baseline.run(texts=test_x, args=args)
+        val_scores = baseline.run(texts=val_x, args=args)
+        test_scores = baseline.run(texts=test_x, args=args)
 
     if args.model == "rank":
         from src.baseline.rank import Rank
         baseline = Rank(model_name=args.base_model_1, device=DEVICE)
-        scores = baseline.run(texts=test_x)
+        val_scores = baseline.run(texts=val_x)
+        test_scores = baseline.run(texts=test_x)
 
     if args.model == "entropy":
         from src.baseline.entropy import Entropy
         baseline = Entropy(model_name=args.base_model_1, device=DEVICE)
-        scores = baseline.run(texts=test_x)
+        val_scores = baseline.run(texts=val_x)
+        test_scores = baseline.run(texts=test_x)
 
     if args.model == "fastdetectgpt":
         from src.baseline.fastdetectgpt import FastDetectGPT
         baseline = FastDetectGPT(scoring_model=args.base_model_1, 
                                  reference_model=args.base_model_1,
                                  device=DEVICE)
-        scores = baseline.run(texts=test_x)
+        val_scores = baseline.run(texts=val_x)
+        test_scores = baseline.run(texts=test_x)
+
 
     metrics = evaluation(
         y_true=test_y,
-        y_predict=scores,
+        y_predict=test_scores,
+        y_val_true=val_y,
+        y_val_predict=val_scores,
     )
 
     #save results

@@ -1,7 +1,7 @@
 import json
 import os
 import random
-from datasets import Dataset, DatasetDict, concatenate_datasets
+from datasets import Dataset, concatenate_datasets
 from typing import Any
 
 BASE_DIR = os.getenv("BASE_COE")
@@ -43,6 +43,77 @@ def to_binary_label(label: Any) -> int:
     if label_str in {"llm", "machine", "1"}:
         return 1
     raise ValueError(f"Unsupported label value: {label}")
+
+def save_jsonl_splits(name: str, splits: dict[str, list[dict[str, Any]]]) -> None:
+    output_dir = os.path.join(DATA_DIR, name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    for split_name, rows in splits.items():
+        output_path = os.path.join(output_dir, f"{split_name}.jsonl")
+        with open(output_path, "w", encoding="utf-8") as f:
+            for row in rows:
+                f.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+def prepare_detectrl_task_1()-> None:
+    train_per_label = TRAINING_N // 2
+    val_per_label = VALIDATION_N // 2
+    test_per_label = TESTING_N // 2
+
+    task_dir = os.path.join(DETECT_RL_RAW_DATA_DIR, "task_1")
+    variants = ["paraphrase", "perturbation"]
+
+    summaries: dict[str, dict[str, int]] = {}
+
+    for variant in variants:
+        train_path = os.path.join(task_dir, f"{variant}_attacks_llm_train.json")
+        test_path = os.path.join(task_dir, f"{variant}_attacks_llm_test.json")
+
+        with open(train_path, "r", encoding="utf-8") as f:
+            train_rows: list[dict[str, Any]] = json.load(f)
+        with open(test_path, "r", encoding="utf-8") as f:
+            test_rows: list[dict[str, Any]] = json.load(f)
+
+        train_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+        test_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+
+        for row in train_rows:
+            text = row.get("text")
+            if not text:
+                continue
+            label = to_binary_label(row.get("label"))
+            train_by_label[label].append({"text": text, "label": label})
+
+        for row in test_rows:
+            text = row.get("text")
+            if not text:
+                continue
+            label = to_binary_label(row.get("label"))
+            test_by_label[label].append({"text": text, "label": label})
+
+        random.Random(SEED).shuffle(train_by_label[0])
+        random.Random(SEED).shuffle(train_by_label[1])
+        random.Random(SEED).shuffle(test_by_label[0])
+        random.Random(SEED).shuffle(test_by_label[1])
+
+        train_data = train_by_label[0][:train_per_label] + train_by_label[1][:train_per_label]
+        val_data = (
+            train_by_label[0][train_per_label:train_per_label + val_per_label]
+            + train_by_label[1][train_per_label:train_per_label + val_per_label]
+        )
+        test_data = test_by_label[0][:test_per_label] + test_by_label[1][:test_per_label]
+
+        random.Random(SEED).shuffle(train_data)
+        random.Random(SEED).shuffle(val_data)
+        random.Random(SEED).shuffle(test_data)
+
+        dataset_name = f"drl_t1_{variant}"
+        split_data = {"train": train_data, "val": val_data, "test": test_data}
+        save_jsonl_splits(dataset_name, split_data)
+        summaries[dataset_name] = {split: len(rows) for split, rows in split_data.items()}
+
+    print("\nSummary of DetectRL task_1 attack splits:")
+    for name, summary in summaries.items():
+        print(f"{name}: {summary}")
 
 def prepare_tsm_multi()-> None:
     train_per_label = TRAINING_N // 2
@@ -91,26 +162,19 @@ def prepare_tsm_multi()-> None:
     random.Random(SEED).shuffle(val_data)
     random.Random(SEED).shuffle(test_data)
 
-    dataset = DatasetDict({
-        "train": Dataset.from_list(train_data),
-        "val": Dataset.from_list(val_data),
-        "test": Dataset.from_list(test_data),
-    })
+    split_data = {"train": train_data, "val": val_data, "test": test_data}
+    save_jsonl_splits("tsm_multi", split_data)
+    print("\nSummary of tsm_multi splits:")
+    print({split: len(data) for split, data in split_data.items()})
 
-    dataset.save_to_disk(os.path.join(DATA_DIR, "tsm_mulit"))
-    print("\nSummary of tsm_mulit splits:")
-    print({split: len(data) for split, data in dataset.items()})
-
-def prepare_M4_multilingual_data() -> None:
+def prepare_M4_multi_data() -> None:
     train_per_label = TRAINING_N // 2
     val_per_label = VALIDATION_N // 2
     test_per_label = TESTING_N // 2
 
     train_path = os.path.join(M4_MULTILINGUAL_RAW_DATA_DIR, "subtaskA_train_multilingual.jsonl")
-    test_path = os.path.join(M4_MULTILINGUAL_RAW_DATA_DIR, "subtaskA_multilingual.jsonl")
 
     train_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
-    test_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
 
     with open(train_path, "r", encoding="utf-8") as f:
         for line in f:
@@ -129,115 +193,29 @@ def prepare_M4_multilingual_data() -> None:
             label = to_binary_label(row.get("label"))
             train_by_label[label].append({"text": text, "label": label})
 
-    with open(test_path, "r", encoding="utf-8") as f:
-        for line in f:
-            if not line.strip():
-                continue
-            try:
-                row = json.loads(line)
-            except json.JSONDecodeError as error:
-                print(f"[Error] test: {error}")
-                continue
-
-            text = row.get("text")
-            if not text:
-                continue
-
-            label = to_binary_label(row.get("label"))
-            test_by_label[label].append({"text": text, "label": label})
-
     random.Random(SEED).shuffle(train_by_label[0])
     random.Random(SEED).shuffle(train_by_label[1])
-    random.Random(SEED).shuffle(test_by_label[0])
-    random.Random(SEED).shuffle(test_by_label[1])
 
     train_data = train_by_label[0][:train_per_label] + train_by_label[1][:train_per_label]
     val_data = (
         train_by_label[0][train_per_label:train_per_label + val_per_label]
         + train_by_label[1][train_per_label:train_per_label + val_per_label]
     )
-    test_data = test_by_label[0][:test_per_label] + test_by_label[1][:test_per_label]
+    test_data = (
+        train_by_label[0][train_per_label + val_per_label:train_per_label + val_per_label + test_per_label]
+        + train_by_label[1][train_per_label + val_per_label:train_per_label + val_per_label + test_per_label]
+    )
 
     random.Random(SEED).shuffle(train_data)
     random.Random(SEED).shuffle(val_data)
     random.Random(SEED).shuffle(test_data)
 
-    dataset = DatasetDict({
-        "train": Dataset.from_list(train_data),
-        "val": Dataset.from_list(val_data),
-        "test": Dataset.from_list(test_data),
-    })
-
-    output_name = "m4_multilingual"
-    dataset.save_to_disk(os.path.join(DATA_DIR, output_name))
+    output_name = "m4_multi_ood"
+    split_data = {"train": train_data, "val": val_data, "test": test_data}
+    save_jsonl_splits(output_name, split_data)
 
     print("\nSummary of M4 multilingual splits:")
-    print({split: len(data) for split, data in dataset.items()})
-
-
-def prepare_DetectRL_task_1_data() -> None:
-
-    train_per_label = TRAINING_N // 2
-    val_per_label = VALIDATION_N // 2
-    test_per_label = TESTING_N // 2
-
-    task_1_dir = os.path.join(DETECT_RL_RAW_DATA_DIR, "task_1")
-
-    domains = ["arxiv", "xsum"]
-    summaries: dict[str, dict[str, int]] = {}
-
-    for domain in domains:
-        train_path = os.path.join(task_1_dir, f"multi_domains_{domain}_train.json")
-        test_path = os.path.join(task_1_dir, f"multi_domains_{domain}_test.json")
-
-        with open(train_path, "r", encoding="utf-8") as f:
-            train_rows: list[dict[str, Any]] = json.load(f)
-        with open(test_path, "r", encoding="utf-8") as f:
-            test_rows: list[dict[str, Any]] = json.load(f)
-
-        train_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
-        test_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
-
-        for row in train_rows:
-            text = row['text']
-            label = to_binary_label(row['label'])
-            train_by_label[label].append({"text": text, "label": label})
-
-        for row in test_rows:
-            text = row['text']
-            label = to_binary_label(row['label'])
-            test_by_label[label].append({"text": text, "label": label})
-
-        random.Random(SEED).shuffle(train_by_label[0])
-        random.Random(SEED).shuffle(train_by_label[1])
-        random.Random(SEED).shuffle(test_by_label[0])
-        random.Random(SEED).shuffle(test_by_label[1])
-
-        train_data = train_by_label[0][:train_per_label] + train_by_label[1][:train_per_label]
-        val_data = (
-            train_by_label[0][train_per_label:train_per_label + val_per_label]
-            + train_by_label[1][train_per_label:train_per_label + val_per_label]
-        )
-        test_data = test_by_label[0][:test_per_label] + test_by_label[1][:test_per_label]
-
-        random.Random(SEED).shuffle(train_data)
-        random.Random(SEED).shuffle(val_data)
-        random.Random(SEED).shuffle(test_data)
-
-        dataset = DatasetDict({
-            "train": Dataset.from_list(train_data),
-            "val": Dataset.from_list(val_data),
-            "test": Dataset.from_list(test_data),
-        })
-
-        subset_name = f"detectrl_task_1_{domain}"
-        dataset.save_to_disk(os.path.join(DATA_DIR, subset_name))
-        summaries[subset_name] = {split: len(split_data) for split, split_data in dataset.items()}
-
-    print("\nSummary of DetectRL task_1 splits:")
-    for name, summary in summaries.items():
-        print(f"{name}: {summary}")
-
+    print({split: len(data) for split, data in split_data.items()})
 
 def prepare_TSM_data() -> None:
     
@@ -293,17 +271,15 @@ def prepare_TSM_data() -> None:
         random.shuffle(val_data)
         random.shuffle(test_data)
 
-        dataset_data = {
+        split_data = {
             "train": train_data,
             "val": val_data,
             "test": test_data,
         }
-        dataset = DatasetDict({split: Dataset.from_list(data) for split, data in dataset_data.items()})
-        summary = {split: len(data) for split, data in dataset.items()}
+        summary = {split: len(data) for split, data in split_data.items()}
 
         stem = "tsm_" + os.path.splitext(filename)[0]
-        output_path = os.path.join(DATA_DIR, stem)
-        dataset.save_to_disk(output_path)
+        save_jsonl_splits(stem, split_data)
         summaries[stem] = summary
 
     print("\nSummary of dataset splits:")
@@ -366,17 +342,15 @@ def prepare_M4_data() -> None:
         random.shuffle(val_data)
         random.shuffle(test_data)
 
-        dataset_data = {
+        split_data = {
             "train": train_data,
             "val": val_data,
             "test": test_data,
         }
-        dataset = DatasetDict({split: Dataset.from_list(data) for split, data in dataset_data.items()})
-        summary = {split: len(data) for split, data in dataset.items()}
+        summary = {split: len(data) for split, data in split_data.items()}
 
         stem = "m4_" + os.path.splitext(filename)[0]
-        output_path = os.path.join(DATA_DIR, stem)
-        dataset.save_to_disk(output_path)
+        save_jsonl_splits(stem, split_data)
         summaries[stem] = summary
 
     print("\nSummary of dataset splits:")
@@ -424,16 +398,16 @@ def prepare_multisocial_data() -> None:
         final_val = concatenate_datasets(val_parts).shuffle(seed=SEED)
         final_test = concatenate_datasets(test_parts).shuffle(seed=SEED)
 
-        output = DatasetDict({
-            "train": final_train,
-            "val": final_val,
-            "test": final_test,
-        })
+        split_data = {
+            "train": [final_train[i] for i in range(len(final_train))],
+            "val": [final_val[i] for i in range(len(final_val))],
+            "test": [final_test[i] for i in range(len(final_test))],
+        }
 
         print(f"SUMMARY for {name}:")
-        for split, data in output.items():
+        for split, data in split_data.items():
             print(f"  {split.capitalize()}: {len(data)}")
-        output.save_to_disk(os.path.join(DATA_DIR, name))
+        save_jsonl_splits(name, split_data)
 
     build_subset(dataset, "multisocial_full")
 
@@ -442,73 +416,30 @@ def prepare_multisocial_data() -> None:
         build_subset(lang_rows, f"multisocial_{lang}")
 
 
-# def counterfact_data() -> None:
-#     """Valid function to gen the counterfact data, but we hasn't use it iin the end."""
-
-#     def build_claim(prompt: str, subject: str, target: str) -> str:
-#         base = prompt.format(subject) if "{}" in prompt else f"{subject} {prompt}".strip()
-#         separator = "" if base.endswith((" ", "\n", "\t")) else " "
-#         return f"{base}{separator}{target}".strip()
-
-#     def convert_counterfact_to_jsonl(input_path: str, output_path: str) -> int:
-#         with open(input_path, "r", encoding="utf-8") as f:
-#             records = json.load(f)
-
-#         written = 0
-#         with open(output_path, "w", encoding="utf-8") as out:
-#             for item in records:
-#                 if not item or "requested_rewrite" not in item:
-#                     continue
-
-#                 rewrite = item["requested_rewrite"]
-#                 case_id = item.get("case_id")
-#                 subject = rewrite.get("subject", "")
-#                 prompt = rewrite.get("prompt", "")
-#                 target_true = rewrite.get("target_true", {}).get("str", "")
-#                 target_new = rewrite.get("target_new", {}).get("str", "")
-
-#                 if case_id is None or not prompt or not subject or not target_true or not target_new:
-#                     continue
-
-#                 row = {
-#                     "case_id": case_id,
-#                     "correct": build_claim(prompt, subject, target_true),
-#                     "incorrect": build_claim(prompt, subject, target_new),
-#                 }
-#                 out.write(json.dumps(row, ensure_ascii=False) + "\n")
-#                 written += 1
-#         return written
-
-#     convert_counterfact_to_jsonl(
-#         input_path=os.path.join(DATA_DIR, "counterfact.json"),
-#         output_path=os.path.join(DATA_DIR, "counterfact.jsonl"),
-#     )
-
-
 def main() -> None:
     
     
     # M4
     # need to halve bc one instance contains both machine and human text
-    print("Preparing M4 data...")
-    # prepare_M4_data()
+    # print("Preparing M4 data...")
+    prepare_M4_data()
 
     # M4 multilingual
     # need to halve bc one instance contains both machine and human text
     print("Preparing M4 data...")
-    prepare_M4_multilingual_data()
+    prepare_M4_multi_data()
     
     # MULTISOCIAL
-    print("Preparing Multisocial data...")
-    # prepare_multisocial_data()
+    # print("Preparing Multisocial data...")
+    prepare_multisocial_data()
 
     # TSM
-    print("Preparing TSM task_2 data...")
-    # prepare_TSM_data()
+    # print("Preparing TSM task_2 data...")
+    prepare_TSM_data()
     
     # DetectRL task_1
     print("Preparing DetectRL task_1 data...")
-    # prepare_DetectRL_task_1_data()
+    prepare_detectrl_task_1()
 
     # tsm multi
     print("Preparing TSM multi data...")

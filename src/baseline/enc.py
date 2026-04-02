@@ -1,6 +1,4 @@
 from argparse import Namespace
-import numpy as np
-from typing import Any
 import torch
 from datasets import Dataset
 
@@ -42,9 +40,7 @@ class EncoderBaseline:
         self.weight_decay = weight_decay
         self.seed = seed
 
-    def run(self, args: Namespace,
-            data: Dataset
-            ) -> dict[str, Any]:
+    def run(self, args: Namespace, data: Dataset) -> dict[str, list[float]]:
         set_seed(self.seed)
 
     
@@ -83,12 +79,16 @@ class EncoderBaseline:
         )
         trainer.train()
 
-        
-        predictions = trainer.predict(ds_tok["test"])
+        val_predictions = trainer.predict(ds_tok["val"])
+        test_predictions = trainer.predict(ds_tok["test"])
 
-        # get probs
-        logits = torch.from_numpy(predictions.predictions)
-        probs = torch.nn.functional.softmax(logits, dim=-1).numpy()
-        y_score = probs[:, 1]
+        val_logits = torch.from_numpy(val_predictions.predictions)
+        test_logits = torch.from_numpy(test_predictions.predictions)
 
-        return y_score.tolist()
+        val_probs = torch.nn.functional.softmax(val_logits, dim=-1).numpy()
+        test_probs = torch.nn.functional.softmax(test_logits, dim=-1).numpy()
+
+        return {
+            "val_scores": val_probs[:, 1].tolist(),
+            "test_scores": test_probs[:, 1].tolist(),
+        }
