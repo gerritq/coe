@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=sv_m1
+#SBATCH --job-name=sv_m0
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=03:30:00
+#SBATCH --time=01:30:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -21,7 +21,7 @@ CENTERING=(0)
 SMOKE_TEST=0
 OOD=0
 OOD_SETS=("")
-MANIFOLD=1
+MANIFOLD=0
 
 if [ "$MANIFOLD" -eq 1 ]; then
     PCA_COMPONENTS=(5 10 15 20 25 30)
