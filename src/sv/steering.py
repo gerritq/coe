@@ -41,24 +41,51 @@ def normalize_vectors(vectors: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return (vectors / np.clip(norms, eps, None)).astype(np.float32)
 
 
-def manifold_components_by_layer(hidden_states: np.ndarray, n_components: int = 10) -> np.ndarray:
-    
+def fit_pca_manifold_by_layer(hidden_states: np.ndarray, n_components: int = 10) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     n_samples, n_layers, d_model = hidden_states.shape
+    k = max(1, min(n_components, n_samples, d_model))
 
-    components = np.zeros((n_layers, d_model, n_components), dtype=np.float32)
+    # means needed to center new data before projection
+    means = np.zeros((n_layers, d_model), dtype=np.float32)
+    # components = vt from svd, shape n_layers x d_model x k
+    components = np.zeros((n_layers, d_model, k), dtype=np.float32)
+    # projected 
+    projected = np.zeros((n_samples, n_layers, k), dtype=np.float32)
 
     for layer_idx in range(n_layers):
         layer_states = hidden_states[:, layer_idx, :]  # n_samples x d_model
+        # get mean across samples and subtract each sample 
         centered = layer_states - layer_states.mean(axis=0, keepdims=True)
-        # centered = U S V^T, rows of V^T are principal directions in feature space.
+
+        #  perform svd
         _, _, vt = np.linalg.svd(centered, full_matrices=False)
-        layer_basis = vt[:n_components].T  # d_model x n_components
+        # vt projects from d_model to k
+        layer_basis = vt[:k].T  # d_model x k
+
+        means[layer_idx] = layer_states.mean(axis=0).astype(np.float32)
         components[layer_idx] = layer_basis.astype(np.float32)
+        projected[:, layer_idx, :] = (centered @ layer_basis).astype(np.float32)
 
-    return components
+    return projected.astype(np.float32), means.astype(np.float32), components.astype(np.float32)
 
 
-def denoise_steering_vector(
+def project_hidden_states_with_manifold(
+    hidden_states: np.ndarray,
+    manifold_means: np.ndarray,
+    manifold_components: np.ndarray,
+) -> np.ndarray:
+    if hidden_states.shape[1] != manifold_components.shape[0]:
+        raise ValueError("Layer count mismatch between hidden states and manifold.")
+    if hidden_states.shape[2] != manifold_components.shape[1]:
+        raise ValueError("Hidden dimension mismatch between hidden states and manifold.")
+    if manifold_means.shape != manifold_components.shape[:2]:
+        raise ValueError("Manifold means shape mismatch.")
+
+    centered = hidden_states - manifold_means[None, :, :]
+    return np.einsum("sld,ldk->slk", centered, manifold_components).astype(np.float32)
+
+
+def project_steering_vectors_with_manifold(
     steering_vectors: np.ndarray,
     manifold_components: np.ndarray,
 ) -> np.ndarray:
@@ -67,28 +94,17 @@ def denoise_steering_vector(
     if steering_vectors.shape[1] != manifold_components.shape[1]:
         raise ValueError("Hidden dimension mismatch between steering vectors and manifold.")
 
-    denoised = np.zeros_like(steering_vectors, dtype=np.float32)
-    for layer_idx in range(steering_vectors.shape[0]):
-        r = steering_vectors[layer_idx]  # d_model
-        u_eff = manifold_components[layer_idx]  # d_model x k
-        # s_flat = U_eff (U_eff^T r)
-        denoised[layer_idx] = u_eff @ (u_eff.T @ r)
-
-    return denoised.astype(np.float32)
+    return np.einsum("ld,ldk->lk", steering_vectors, manifold_components).astype(np.float32)
 
 
-def steering_projection(val_hidden_states: np.ndarray,
-                        test_hidden_states: np.ndarray, 
-                        steering_vectors: np.ndarray, 
-                        args: Namespace) -> np.ndarray:
+def steering_projection(
+    test_hidden_states: np.ndarray,
+    steering_vectors: np.ndarray,
+) -> np.ndarray:
     """
     compute projection score 
     
     """
-
-    if args.centering:
-        val_mean = val_hidden_states.mean(axis=0, keepdims=True)
-        test_hidden_states = test_hidden_states - val_mean
 
     # Dot product per sample and per layer: n_samples x n_layers
     return np.einsum("sld,ld->sl", test_hidden_states, steering_vectors)
@@ -153,7 +169,7 @@ class SteeringAnalyzer:
 
         out_path = os.path.join(
             OUT_DIR,
-            f"svp_scores_{args.model}_{steering_domain}_on_{eval_domain}_C{int(args.centering)}_M{int(args.manifold)}_P{int(args.pca_components)}.json",
+            f"svp_scores_{args.model}_{steering_domain}_on_{eval_domain}_M{int(args.manifold)}_P{int(args.pca_components)}.json",
         )
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
@@ -168,7 +184,6 @@ class SteeringAnalyzer:
         steering_domain: str,
         eval_domain: str,
         manifold: bool,
-        centering: bool,
         pca_components: int,
     ) -> None:
         fig = plt.figure(figsize=(20, 12))
@@ -227,7 +242,7 @@ class SteeringAnalyzer:
         last_layer_auc_text = f"{last_layer_auc:.3f}" if not np.isnan(last_layer_auc) else "NA"
 
         axis.set_title(
-            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | C{int(centering)} | P{int(pca_components)} | last-layer AUROC={last_layer_auc_text}"
+            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | P{int(pca_components)} | last-layer AUROC={last_layer_auc_text}"
         )
         axis.set_xlabel("Layer")
         axis.set_ylabel("Projection Score")
@@ -310,7 +325,7 @@ class SteeringAnalyzer:
 
         out_path = os.path.join(
             OUT_DIR,
-            f"psp_{model}_{steering_domain}_on_{eval_domain}_C{int(centering)}_M{int(manifold)}_P{int(pca_components)}.png",
+            f"psp_{model}_{steering_domain}_on_{eval_domain}_M{int(manifold)}_P{int(pca_components)}.png",
         )
         fig.tight_layout()
         fig.savefig(out_path, dpi=300, bbox_inches="tight")
@@ -326,32 +341,43 @@ class SteeringAnalyzer:
 
         # get raw SVs
         steering_vec = raw_steering_vector(hidden_states=val_hidden, labels=val_labels)
-        
-        # denoise 
+
         if args.manifold:
-            manifold_components = manifold_components_by_layer(
+            val_hidden_proj, manifold_means, manifold_components = fit_pca_manifold_by_layer(
                 hidden_states=val_hidden,
                 n_components=args.pca_components,
             )
-            steering_vec = denoise_steering_vector(steering_vec, manifold_components)
-        
-        # norm in any case
+            steering_vec = project_steering_vectors_with_manifold(
+                steering_vectors=steering_vec,
+                manifold_components=manifold_components,
+            )
+            val_hidden_for_projection = val_hidden_proj
+        else:
+            val_hidden_for_projection = val_hidden
+
+        # normalize in the space where the projection is computed
         steering_vec = normalize_vectors(steering_vec)
 
-        # get test set hidden states and the projection score
         val_projection = steering_projection(
-            val_hidden_states=val_hidden,
-            test_hidden_states=val_hidden,
+            test_hidden_states=val_hidden_for_projection,
             steering_vectors=steering_vec,
-            args=args,
         )
 
-        # get test set hidden states and the projection score
+        # get test set hidden states and project in the same space as val
         test_hidden, test_labels = self._collect_hidden_states(data=dataset['test'], mode=args.mode)
-        test_projection = steering_projection(val_hidden_states=val_hidden,
-                                              test_hidden_states=test_hidden,
-                                              steering_vectors=steering_vec, 
-                                              args=args)
+        if args.manifold:
+            test_hidden_for_projection = project_hidden_states_with_manifold(
+                hidden_states=test_hidden,
+                manifold_means=manifold_means,
+                manifold_components=manifold_components,
+            )
+        else:
+            test_hidden_for_projection = test_hidden
+
+        test_projection = steering_projection(
+            test_hidden_states=test_hidden_for_projection,
+            steering_vectors=steering_vec,
+        )
 
         # plots
         self._save_projection_metrics(
@@ -374,7 +400,6 @@ class SteeringAnalyzer:
             steering_domain=args.dataset,
             eval_domain=args.dataset,
             manifold=args.manifold,
-            centering=args.centering,
             pca_components=args.pca_components,
         )
 
@@ -394,11 +419,18 @@ class SteeringAnalyzer:
                 mode=args.mode,
             )
 
+            if args.manifold:
+                ood_hidden_for_projection = project_hidden_states_with_manifold(
+                    hidden_states=ood_hidden,
+                    manifold_means=manifold_means,
+                    manifold_components=manifold_components,
+                )
+            else:
+                ood_hidden_for_projection = ood_hidden
+
             ood_projection = steering_projection(
-                val_hidden_states=val_hidden,
-                test_hidden_states=ood_hidden,
+                test_hidden_states=ood_hidden_for_projection,
                 steering_vectors=steering_vec,
-                args=args,
             )
             
             
@@ -411,7 +443,6 @@ class SteeringAnalyzer:
                 steering_domain=args.dataset,
                 eval_domain=ood_dataset_name,
                 manifold=args.manifold,
-                centering=args.centering,
                 pca_components=args.pca_components,
             )
             
@@ -444,7 +475,6 @@ def parse_args() -> Namespace:
     parser.add_argument("--model", type=str, required=True)
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--mode", type=str, default="last_token")
-    parser.add_argument("--centering", type=int, default=0)
     parser.add_argument("--prefix", type=int, default=0)
     parser.add_argument("--smoke_test", type=int, default=0)
     parser.add_argument("--ood", type=int, default=0)
@@ -456,8 +486,6 @@ def parse_args() -> Namespace:
 
 def main() -> None:
     args = parse_args()
-    if args.centering not in (0, 1):
-        raise ValueError("centering must be 0 or 1")
     if args.prefix not in (0, 1):
         raise ValueError("prefix must be 0 or 1")
     if args.smoke_test not in (0, 1):
@@ -473,7 +501,6 @@ def main() -> None:
         args.ood_set = args.ood_set.split(" ")
         
 
-    args.centering = bool(args.centering)
     args.prefix = bool(args.prefix)
     args.smoke_test = bool(args.smoke_test)
     args.ood = bool(args.ood)
