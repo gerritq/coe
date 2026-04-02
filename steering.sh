@@ -1,32 +1,31 @@
 #!/bin/bash
-#SBATCH --job-name=coe_steering
+#SBATCH --job-name=ldp_sv_m0
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=02:30:00
+#SBATCH --time=00:30:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
-# SBATCH --constraint=a100
+#SBATCH --constraint=h200|b200
 
 nvidia-smi
 
 # ROOT_DIR="${BASE_COE:-$(pwd)}"
 # cd "${ROOT_DIR}"
 
-DATASETS=("tsm_multi" "m4_multi" "")  # "multisocial_full" "m4_multilingual"
+DATASETS=("tsm_multi" "m4_multi")  # "multisocial_full" "m4_multilingual"
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
->>>>>>> 9e85cdf (save before pull)
 MODE="last_token"
 
-SMOKE_TEST=1
+SMOKE_TEST=0
 OOD=0
 OOD_SETS=("")
 MANIFOLD=0
 
 if [ "$MANIFOLD" -eq 1 ]; then
-    PCA_COMPONENTS=(5)
+    PCA_COMPONENTS=(5 10)
 else
-    PCA_COMPONENTS=(10)
+    PCA_COMPONENTS=(0)
 fi
 
 for DATASET in "${DATASETS[@]}"; do
