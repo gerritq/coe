@@ -44,59 +44,128 @@ def to_binary_label(label: Any) -> int:
         return 1
     raise ValueError(f"Unsupported label value: {label}")
 
+def prepare_tsm_multi()-> None:
+    train_per_label = TRAINING_N // 2
+    val_per_label = VALIDATION_N // 2
+    test_per_label = TESTING_N // 2
+
+    by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+
+    for filename in sorted(os.listdir(TSM_RAW_DATA_DIR)):
+        if not filename.endswith(".jsonl"):
+            continue
+
+        input_path = os.path.join(TSM_RAW_DATA_DIR, filename)
+        with open(input_path, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError as error:
+                    print(f"[Error] {filename}: {error}")
+                    continue
+
+                human_text = row.get("trgt")
+                machine_text = row.get("mgt")
+                if not human_text or not machine_text:
+                    continue
+
+                by_label[0].append({"text": human_text, "label": 0})
+                by_label[1].append({"text": machine_text, "label": 1})
+
+    needed = train_per_label + val_per_label + test_per_label
+
+    random.Random(SEED).shuffle(by_label[0])
+    random.Random(SEED).shuffle(by_label[1])
+
+    train_data = by_label[0][:train_per_label] + by_label[1][:train_per_label]
+    val_data = (
+        by_label[0][train_per_label:train_per_label + val_per_label]
+        + by_label[1][train_per_label:train_per_label + val_per_label]
+    )
+    test_data = (
+        by_label[0][train_per_label + val_per_label:train_per_label + val_per_label + test_per_label]
+        + by_label[1][train_per_label + val_per_label:train_per_label + val_per_label + test_per_label]
+    )
+
+    random.Random(SEED).shuffle(train_data)
+    random.Random(SEED).shuffle(val_data)
+    random.Random(SEED).shuffle(test_data)
+
+    dataset = DatasetDict({
+        "train": Dataset.from_list(train_data),
+        "val": Dataset.from_list(val_data),
+        "test": Dataset.from_list(test_data),
+    })
+
+    dataset.save_to_disk(os.path.join(DATA_DIR, "tsm_mulit"))
+    print("\nSummary of tsm_mulit splits:")
+    print({split: len(data) for split, data in dataset.items()})
 
 def prepare_M4_multilingual_data() -> None:
     train_per_label = TRAINING_N // 2
     val_per_label = VALIDATION_N // 2
     test_per_label = TESTING_N // 2
 
-    split_files = {
-        "train": os.path.join(M4_MULTILINGUAL_RAW_DATA_DIR, "subtaskA_train_multilingual.jsonl"),
-        "val": os.path.join(M4_MULTILINGUAL_RAW_DATA_DIR, "subtaskA_dev_multilingual.jsonl"),
-        "test": os.path.join(M4_MULTILINGUAL_RAW_DATA_DIR, "subtaskA_multilingual.jsonl"),
-    }
+    train_path = os.path.join(M4_MULTILINGUAL_RAW_DATA_DIR, "subtaskA_train_multilingual.jsonl")
+    test_path = os.path.join(M4_MULTILINGUAL_RAW_DATA_DIR, "subtaskA_multilingual.jsonl")
 
-    target_per_label = {
-        "train": train_per_label,
-        "val": val_per_label,
-        "test": test_per_label,
-    }
+    train_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+    test_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
 
-    dataset_data: dict[str, list[dict[str, Any]]] = {}
+    with open(train_path, "r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as error:
+                print(f"[Error] train: {error}")
+                continue
 
-    for split_name, path in split_files.items():
-        by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+            text = row.get("text")
+            if not text:
+                continue
 
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                try:
-                    row = json.loads(line)
-                except json.JSONDecodeError as error:
-                    print(f"[Error] {split_name}: {error}")
-                    continue
+            label = to_binary_label(row.get("label"))
+            train_by_label[label].append({"text": text, "label": label})
 
-                text = row.get("text")
-                if not text:
-                    continue
+    with open(test_path, "r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as error:
+                print(f"[Error] test: {error}")
+                continue
 
-                label = to_binary_label(row.get("label"))
-                by_label[label].append({"text": text, "label": label})
+            text = row.get("text")
+            if not text:
+                continue
 
-        needed = target_per_label[split_name]
+            label = to_binary_label(row.get("label"))
+            test_by_label[label].append({"text": text, "label": label})
 
-        random.Random(SEED).shuffle(by_label[0])
-        random.Random(SEED).shuffle(by_label[1])
+    random.Random(SEED).shuffle(train_by_label[0])
+    random.Random(SEED).shuffle(train_by_label[1])
+    random.Random(SEED).shuffle(test_by_label[0])
+    random.Random(SEED).shuffle(test_by_label[1])
 
-        split_data = by_label[0][:needed] + by_label[1][:needed]
-        random.Random(SEED).shuffle(split_data)
-        dataset_data[split_name] = split_data
+    train_data = train_by_label[0][:train_per_label] + train_by_label[1][:train_per_label]
+    val_data = (
+        train_by_label[0][train_per_label:train_per_label + val_per_label]
+        + train_by_label[1][train_per_label:train_per_label + val_per_label]
+    )
+    test_data = test_by_label[0][:test_per_label] + test_by_label[1][:test_per_label]
+
+    random.Random(SEED).shuffle(train_data)
+    random.Random(SEED).shuffle(val_data)
+    random.Random(SEED).shuffle(test_data)
 
     dataset = DatasetDict({
-        "train": Dataset.from_list(dataset_data["train"]),
-        "val": Dataset.from_list(dataset_data["val"]),
-        "test": Dataset.from_list(dataset_data["test"]),
+        "train": Dataset.from_list(train_data),
+        "val": Dataset.from_list(val_data),
+        "test": Dataset.from_list(test_data),
     })
 
     output_name = "m4_multilingual"
@@ -440,6 +509,12 @@ def main() -> None:
     # DetectRL task_1
     print("Preparing DetectRL task_1 data...")
     # prepare_DetectRL_task_1_data()
+
+    # tsm multi
+    print("Preparing TSM multi data...")
+    prepare_tsm_multi()
+
+
 
 
 if __name__ == "__main__":
