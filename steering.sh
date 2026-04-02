@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=coe_steering
+#SBATCH --job-name=sv_m1
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:30:00
+#SBATCH --time=03:30:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -13,7 +13,7 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-DATASETS=("drl_t1_perturbation")  # "tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full"
+DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")  # "tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full"
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
 MODE="last_token"
 
@@ -21,10 +21,10 @@ CENTERING=(0)
 SMOKE_TEST=0
 OOD=0
 OOD_SETS=("")
-MANIFOLD=0
+MANIFOLD=1
 
 if [ "$MANIFOLD" -eq 1 ]; then
-    PCA_COMPONENTS=(1 3 5 7 10)
+    PCA_COMPONENTS=(5 10 15 20 25 30)
 else
     PCA_COMPONENTS=(0)
 fi

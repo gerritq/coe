@@ -13,18 +13,19 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")  # "tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full"
+# DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")  # "tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full"
+DATASETS=("tsm_multi")
 MODELS=(
-        "encoder" 
-        "llr" 
-        "fastdetectgpt" 
-        "rank" 
-        "entropy"
-        "likelihood"
-        # "binoculars" 
+        # "encoder" 
+        # "llr" 
+        # "fastdetectgpt" 
+        # "rank" 
+        # "entropy"
+        # "likelihood"
+        "binoculars" 
         )        
 
-SMOKE_TEST=0
+SMOKE_TEST=1
 
 # Nested loop to run every model on every dataset
 for DATASET in "${DATASETS[@]}"; do
@@ -34,7 +35,8 @@ for DATASET in "${DATASETS[@]}"; do
         echo "------------------------------------------------"
 
         if [[ "$MODEL" == "binoculars" ]]; then
-            UV_PROJECT_ENVIRONMENT=".venv_bo" PYTHONPATH="${ROOT_DIR}" uv run src/baseline/baseline.py \
+            # UV_PROJECT_ENVIRONMENT=".venv_bo" 
+            PYTHONPATH="${ROOT_DIR}" uv run src/baseline/baseline.py \
                     --dataset "$DATASET" \
                     --model "$MODEL" \
                     --smoke_test "$SMOKE_TEST"
