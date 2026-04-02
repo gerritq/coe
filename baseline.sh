@@ -33,10 +33,16 @@ for DATASET in "${DATASETS[@]}"; do
         echo "Running Baseline: Dataset=$DATASET, Model=$MODEL"
         echo "------------------------------------------------"
 
-        PYTHONPATH="${ROOT_DIR}"  uv run src/baseline/baseline.py \
-                --dataset "$DATASET" \
-                --model "$MODEL" \
-                --smoke_test "$SMOKE_TEST"
+        if [[ "$MODEL" == "binoculars" ]]; then
+            UV_PROJECT_ENVIRONMENT=".venv_bo" PYTHONPATH="${ROOT_DIR}" uv run src/baseline/baseline.py \
+                    --dataset "$DATASET" \
+                    --model "$MODEL" \
+                    --smoke_test "$SMOKE_TEST"
+        else
+            PYTHONPATH="${ROOT_DIR}" uv run src/baseline/baseline.py \
+                    --dataset "$DATASET" \
+                    --model "$MODEL" \
+                    --smoke_test "$SMOKE_TEST"
+        fi
     done
 done
-

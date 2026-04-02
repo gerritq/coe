@@ -142,6 +142,16 @@ class SteeringAnalyzer:
                 y_val_predict=val_projections[:, layer_idx],
             )
 
+        # projections: n_samples x n_layers
+        avg_projection = projections.mean(axis=1)
+        avg_val_projection = val_projections.mean(axis=1)
+        avg_projection_metrics = evaluation(
+            y_true=labels,
+            y_predict=avg_projection,
+            y_val_true=val_labels,
+            y_val_predict=avg_val_projection,
+        )
+
         result = {
             "args": vars(args),
             "steering_domain": steering_domain,
@@ -149,6 +159,7 @@ class SteeringAnalyzer:
             "n_samples": int(projections.shape[0]),
             "n_layers": int(projections.shape[1]),
             "metrics_per_layer": per_layer,
+            "metrics_avg_projection": avg_projection_metrics,
         }
 
         out_path = os.path.join(
@@ -225,9 +236,19 @@ class SteeringAnalyzer:
 
         last_layer_auc = layer_aurocs[-1] if layer_aurocs else float("nan")
         last_layer_auc_text = f"{last_layer_auc:.3f}" if not np.isnan(last_layer_auc) else "NA"
+        avg_projection_metrics = evaluation(
+            y_true=labels,
+            y_predict=projections.mean(axis=1),
+            y_val_true=val_labels,
+            y_val_predict=val_projections.mean(axis=1),
+        )
+        avg_projection_auc = avg_projection_metrics.get("auroc", float("nan"))
+        avg_projection_auc_text = (
+            f"{avg_projection_auc:.3f}" if np.isfinite(avg_projection_auc) else "NA"
+        )
 
         axis.set_title(
-            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | C{int(centering)} | P{int(pca_components)} | last-layer AUROC={last_layer_auc_text}"
+            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | C{int(centering)} | P{int(pca_components)} | last-layer AUROC={last_layer_auc_text} | avg-proj AUROC={avg_projection_auc_text}"
         )
         axis.set_xlabel("Layer")
         axis.set_ylabel("Projection Score")
