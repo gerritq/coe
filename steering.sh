@@ -23,7 +23,7 @@ OOD_SETS=("")
 MANIFOLD=0
 
 if [ "$MANIFOLD" -eq 1 ]; then
-    PCA_COMPONENTS=(5 10)
+    PCA_COMPONENTS=(5 10 15 20 25 30)
 else
     PCA_COMPONENTS=(0)
 fi
