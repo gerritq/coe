@@ -24,9 +24,9 @@ OOD_SETS=("")
 MANIFOLD=0
 
 if [ "$MANIFOLD" -eq 1 ]; then
-    PCA_COMPONENTS=(1 3 5 7 10 12)
+    PCA_COMPONENTS=(1 3 5 7 10)
 else
-    PCA_COMPONENTS=(0)
+    PCA_COMPONENTS=(10)
 fi
 
 for DATASET in "${DATASETS[@]}"; do
