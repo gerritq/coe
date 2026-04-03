@@ -9,7 +9,7 @@ from sklearn.decomposition import PCA
 from tqdm import tqdm
 
 from src.inference import Inference
-from src.sv.steering import raw_steering_vector
+from src.sv.sv_main import raw_steering_vector
 from src.utils import load_dataset
 
 BASE_DIR = os.getenv("BASE_COE")
