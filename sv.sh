@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=sv_m1
+#SBATCH --job-name=sv_ood_ldp
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=02:30:00
+#SBATCH --time=00:30:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -16,16 +16,17 @@ cd "${ROOT_DIR}"
 # Full data run
 # DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
 DATASETS=("m4_wikipedia_chatgpt")
-MODELS=("qwen_06b")  # "llama_8b" "qwen_06b"
-SV_MODE="default"   # default | denoise | ldp
+MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
+SV_MODE="ldp"   # default | denoise | ldp
 TOKEN_MODE="last_token"
 
-SMOKE_TEST=1
-OOD=""
+SMOKE_TEST=0
+OOD="m4_wikihow_chatgpt m4_reddit_chatgpt m4_arxiv_chatgpt"
 NORMALIZE_SCORES=1
 
 if [ "$SV_MODE" = "denoise" ] || [ "$SV_MODE" = "ldp" ]; then
-    PCA_COMPONENTS=(5 10 15 20 25 30 40 50)
+    # PCA_COMPONENTS=(5 10 15 20 25 30 40 50)
+    PCA_COMPONENTS=(20)
 else
     PCA_COMPONENTS=(0)
 fi
