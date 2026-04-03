@@ -82,3 +82,5 @@ Metrics for text detection:
 - L2 norm = Eucledian distance = straight line difference between two vectors
 
 - L1 norm = Manhatten distance = distance along grid lines to move between two vectors
+
+- https://aclanthology.org/2026.findings-eacl.41.pdf + https://aclanthology.org/2024.acl-long.828.pdf : says that difference in means and pca on the difference vectors is bascially the same

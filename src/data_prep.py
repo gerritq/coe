@@ -13,6 +13,7 @@ M4_MULTILINGUAL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "m4_multi")
 MULTISOCIAL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "multisocial")
 TSM_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "tsm")
 DETECT_RL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "detectrl")
+MULTITUDE_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "multitude")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(RAW_DATA_DIR, exist_ok=True)
@@ -35,6 +36,75 @@ SEED=42
 
 random.seed(SEED)
 
+
+def prepare_multitude()-> None:
+    languages = ["de", "en", "uk", "pt", "ro", "nl"]
+    allowed_models = {"human", "gpt-3.5-turbo-0125"}
+    train_per_label = TRAINING_N // 2
+    val_per_label = VALIDATION_N // 2
+    test_per_label = TESTING_N // 2
+
+    input_path = os.path.join(MULTITUDE_RAW_DATA_DIR, "multitude_v3_clean.csv")
+    dataset = Dataset.from_csv(input_path)
+
+    print("\nPreparing MULTITUDE subsets:")
+
+    for language in languages:
+        lang_rows = dataset.filter(lambda x, lang=language: str(x["language"]) == lang)
+
+        selected_rows = lang_rows.filter(
+            lambda x: str(x["multi_label"]) in allowed_models and str(x.get("text", "")).strip() != ""
+        )
+
+        train_rows = selected_rows.filter(lambda x: str(x["split"]) == "train").shuffle(seed=SEED)
+        test_rows = selected_rows.filter(lambda x: str(x["split"]) == "test").shuffle(seed=SEED)
+
+        train_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+        test_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+
+        for row in train_rows:
+            label = 0 if str(row["multi_label"]) == "human" else 1
+            train_by_label[label].append({"text": row["text"], "label": label})
+
+        for row in test_rows:
+            label = 0 if str(row["multi_label"]) == "human" else 1
+            test_by_label[label].append({"text": row["text"], "label": label})
+
+        train_h = min(train_per_label, len(train_by_label[0]))
+        train_m = min(train_per_label, len(train_by_label[1]))
+
+        val_h_available = max(0, len(train_by_label[0]) - train_h)
+        val_m_available = max(0, len(train_by_label[1]) - train_m)
+        val_h = min(val_per_label, val_h_available)
+        val_m = min(val_per_label, val_m_available)
+
+        test_h = min(test_per_label, len(test_by_label[0]))
+        test_m = min(test_per_label, len(test_by_label[1]))
+
+        train_data = train_by_label[0][:train_h] + train_by_label[1][:train_m]
+        val_data = (
+            train_by_label[0][train_h:train_h + val_h]
+            + train_by_label[1][train_m:train_m + val_m]
+        )
+        test_data = test_by_label[0][:test_h] + test_by_label[1][:test_m]
+
+        random.Random(SEED).shuffle(train_data)
+        random.Random(SEED).shuffle(val_data)
+        random.Random(SEED).shuffle(test_data)
+
+        dataset_name = f"multitude_{language}"
+        split_data = {
+            "train": train_data,
+            "val": val_data,
+            "test": test_data,
+        }
+        save_jsonl_splits(dataset_name, split_data)
+
+        summary = {
+            split: len(rows)
+            for split, rows in split_data.items()
+        }
+        print(f"{dataset_name}: {summary}")
 
 def to_binary_label(label: Any) -> int:
     label_str = str(label).strip().lower()
@@ -444,6 +514,10 @@ def main() -> None:
     # tsm multi
     print("Preparing TSM multi data...")
     prepare_tsm_multi()
+
+    # prepare multitude
+    print("Preparing MULTITUDE data...")
+    prepare_multitude()
 
 
 
