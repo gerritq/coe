@@ -21,7 +21,7 @@ SV_MODE="ldp"   # default | denoise | ldp
 TOKEN_MODE="last_token"
 
 SMOKE_TEST=0
-OOD="m4_wikihow_chatgpt m4_reddit_chatgpt m4_arxiv_chatgpt"
+OOD="multisocial_de multisocial_nl multisocial_pt multisocial_ar"
 NORMALIZE_SCORES=1
 
 if [ "$SV_MODE" = "denoise" ] || [ "$SV_MODE" = "ldp" ]; then
