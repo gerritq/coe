@@ -77,6 +77,11 @@ git pull --rebase
 
 - Can we fool the model with the SV we obtained? Like llr, fast-detect, ppl: can we drop their performance with interventions?
 
+## Misc
+
+- Can we reverse the label? So that we assume that there is a homogenous machine subspace, but the human one differs?
+    - And then projecting how to any of the human activation subspaces
+
 # Learning
 
 - Blog about manifolds: https://colah.github.io/posts/2014-03-NN-Manifolds-Topology/

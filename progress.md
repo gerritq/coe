@@ -41,3 +41,13 @@
 **01.04.2026**
 - added m4 multilingual 
 - added tsm data and detectrl
+
+**02.04.2026**
+- added the projection in manifold idea
+- added detectrl
+- found that m4 shared task data has an ood test set; changed this to an id one
+    - our approch was poor on OOD; need to investigate
+- ran denoising idea for various pcs -> need to analyse
+    - looks like there are no big effects, but maybe the OOD is better
+- changed data loading to from jsonl instead of ds
+- new eval method with more metrics + trehsold is computed based on val
