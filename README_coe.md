@@ -90,20 +90,6 @@ git pull --rebase
 - Can we do this for AFC?
     - Tried with counterfact data, did not really work, distributions are overlapping af. My suspicion is that this is because the facts are really short 
 
-# Knowledge
-
-- After each attention/FF block it is written to the residual stream, not after one block (see nanogpt)
-
-- hidden states capture all proper hidden states. First is the embedding, and last is before logits.
-
-- Magnitude change: This is the Eucledian distance between two vectors (not change in its length)
-    - This is the Eucledian distance between two vectors (not change in its length)
-
-
-- L2 norm = Eucledian distance = straight line difference between two vectors
-
-- L1 norm = Manhatten distance = distance along grid lines to move between two vectors
-
 # Literature
 
 ## Neurips: https://proceedings.neurips.cc/paper_files/paper/2024/file/4b734e95f0788a030a69caa987516186-Paper-Conference.pdf

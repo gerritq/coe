@@ -51,3 +51,34 @@
     - looks like there are no big effects, but maybe the OOD is better
 - changed data loading to from jsonl instead of ds
 - new eval method with more metrics + trehsold is computed based on val
+
+
+# Learning
+
+- Blog about manifolds: https://colah.github.io/posts/2014-03-NN-Manifolds-Topology/
+
+## Metrics
+
+Metrics for text detection:
+
+- tpr@x_fpr (RepreGuard, Neurips review): does not need a threshold
+
+- false-negative rate (Binoculars)/true-positive rate: need threshold
+
+## OOD
+
+- OOD for zero shot means threshold tuning on a val set, using this threshold on data that has not been used in the val set
+
+
+# Misc
+- After each attention/FF block it is written to the residual stream, not after one block (see nanogpt)
+
+- hidden states capture all proper hidden states. First is the embedding, and last is before logits.
+
+- Magnitude change: This is the Eucledian distance between two vectors (not change in its length)
+    - This is the Eucledian distance between two vectors (not change in its length)
+
+
+- L2 norm = Eucledian distance = straight line difference between two vectors
+
+- L1 norm = Manhatten distance = distance along grid lines to move between two vectors

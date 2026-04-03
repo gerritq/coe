@@ -3,7 +3,10 @@ git pull --rebase
 
 
 # Today
-- clean notes, written ones
+- add notes from todist
+- change the backbone of the models to the og papers
+
+
 - add tsm, and update hf
 - email preksha
 - fix bin with env
@@ -36,6 +39,15 @@ git pull --rebase
 
 # Brain dump
 
+## OOD
+
+### General strategy
+
+- Tune a threshold for a metric of choice (acc, f1, false-negative rate) on the validation set, and use this threshold on the test set
+
+- Idea for OOD: ceteris paribus for domains, languages, generators, and prompting
+
+- Find a way to compare the SV across settings
 ## Average projection position?
 
 - get the average projection position, instead of the last layer
@@ -81,7 +93,3 @@ git pull --rebase
 
 - Can we reverse the label? So that we assume that there is a homogenous machine subspace, but the human one differs?
     - And then projecting how to any of the human activation subspaces
-
-# Learning
-
-- Blog about manifolds: https://colah.github.io/posts/2014-03-NN-Manifolds-Topology/
