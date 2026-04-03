@@ -1,7 +1,5 @@
-import argparse
 import json
 import os
-import sys
 from argparse import Namespace
 from typing import Any
 
@@ -11,137 +9,134 @@ import seaborn as sns
 from sklearn.metrics import roc_auc_score
 from tqdm import tqdm
 
+from src.inference import Inference
+from src.utils import evaluation, load_dataset
+
 BASE_DIR = os.getenv("BASE_COE")
 
-from src.inference import Inference
-from src.utils import load_dataset, evaluation
-
-OUT_DIR = os.path.join(BASE_DIR, "output", "steering", "sandbox")
-os.makedirs(OUT_DIR, exist_ok=True)
-
-def raw_steering_vector(hidden_states: np.ndarray,
-                        labels: np.ndarray,
-                        ) -> np.ndarray:
+class SVBase:
     """
-    hidden states n_samples x n_layers x d_model
+    Base steering analyzer. Subclasses can override projection hooks to change
+    the representation used for steering/projection.
     """
 
-    machine_mask = labels == 1
-    human_mask = labels == 0
-
-    machine_mean = hidden_states[machine_mask].mean(axis=0)  # n_layers x d_model
-    human_mean = hidden_states[human_mask].mean(axis=0)  # n_layers x d_model
-    vectors = machine_mean - human_mean # n_layers x d_model
-
-    return vectors.astype(np.float32)
-
-
-def normalize_vectors(vectors: np.ndarray, eps: float = 1e-12) -> np.ndarray:
-    norms = np.linalg.norm(vectors, axis=1, keepdims=True)
-    return (vectors / np.clip(norms, eps, None)).astype(np.float32)
-
-
-def manifold_components_by_layer(hidden_states: np.ndarray, n_components: int = 10) -> np.ndarray:
-    
-    n_samples, n_layers, d_model = hidden_states.shape
-
-    components = np.zeros((n_layers, d_model, n_components), dtype=np.float32)
-
-    for layer_idx in range(n_layers):
-        layer_states = hidden_states[:, layer_idx, :]  # n_samples x d_model
-        centered = layer_states - layer_states.mean(axis=0, keepdims=True)
-        # centered = U S V^T, rows of V^T are principal directions in feature space.
-        _, _, vt = np.linalg.svd(centered, full_matrices=False)
-        layer_basis = vt[:n_components].T  # d_model x n_components
-        components[layer_idx] = layer_basis.astype(np.float32)
-
-    return components
-
-
-def denoise_steering_vector(
-    steering_vectors: np.ndarray,
-    manifold_components: np.ndarray,
-) -> np.ndarray:
-    if steering_vectors.shape[0] != manifold_components.shape[0]:
-        raise ValueError("Layer count mismatch between steering vectors and manifold.")
-    if steering_vectors.shape[1] != manifold_components.shape[1]:
-        raise ValueError("Hidden dimension mismatch between steering vectors and manifold.")
-
-    denoised = np.zeros_like(steering_vectors, dtype=np.float32)
-    for layer_idx in range(steering_vectors.shape[0]):
-        r = steering_vectors[layer_idx]  # d_model
-        u_eff = manifold_components[layer_idx]  # d_model x k
-        # s_flat = U_eff (U_eff^T r)
-        denoised[layer_idx] = u_eff @ (u_eff.T @ r)
-
-    return denoised.astype(np.float32)
-
-
-def steering_projection(val_hidden_states: np.ndarray,
-                        test_hidden_states: np.ndarray, 
-                        steering_vectors: np.ndarray, 
-                        args: Namespace) -> np.ndarray:
-    """
-    compute projection score 
-    
-    """
-
-    if args.centering:
-        val_mean = val_hidden_states.mean(axis=0, keepdims=True)
-        test_hidden_states = test_hidden_states - val_mean
-
-    # Dot product per sample and per layer: n_samples x n_layers
-    return np.einsum("sld,ld->sl", test_hidden_states, steering_vectors)
-
-
-def avg_projection_div_std(projections: np.ndarray, eps: float = 1e-12) -> np.ndarray:
-    """
-    projections: n_samples x n_layers
-    returns per-sample aggregated score: mean(layer scores) / std(layer scores)
-    """
-    avg_projection = projections.mean(axis=1)
-    std_projection = projections.std(axis=1)
-    return avg_projection / np.clip(std_projection, eps, None)
-
-
-def last_two_thirds_layers(projections: np.ndarray) -> np.ndarray:
-    """
-    projections: n_samples x n_layers
-    keeps the last 2/3 layers (drops the first 1/3)
-    """
-    n_layers = projections.shape[1]
-    start_idx = n_layers // 3
-    return projections[:, start_idx:]
-
-
-class SteeringAnalyzer:
-    def __init__(self, model_name: str) -> None:
+    def __init__(self, 
+                 model_name: str
+                 ) -> None:
+        # inference to obtain hidden stagtes
         self.inference = Inference(model_name=model_name)
 
-    def _collect_hidden_states(self, 
-                               data: Any,
-                               mode: str,
-                                ) -> tuple[np.ndarray, np.ndarray]:
+    @staticmethod
+    def raw_steering_vector(hidden_states: np.ndarray, 
+                            labels: np.ndarray
+                            ) -> np.ndarray:
+        
+        """"
+        Obtain steerting vector as the difference in means 
+        @hidden_states: (n_samples, n_layers, d_model)
+        @labels: (n_samples,)
+        """
+        machine_mask = labels == 1
+        human_mask = labels == 0
 
+        machine_mean = hidden_states[machine_mask].mean(axis=0) # n_layers x d_model
+        human_mean = hidden_states[human_mask].mean(axis=0) # n_layers x d_model
+        vectors = machine_mean - human_mean
+        return vectors.astype(np.float32)
+
+    @staticmethod
+    def normalize_vectors(vectors: np.ndarray, 
+                          eps: float = 1e-12
+                          ) -> np.ndarray:
+        """takes a set of vectors and normalizes them to unit length"""
+        norms = np.linalg.norm(vectors, axis=1, keepdims=True)
+        return (vectors / np.clip(norms, eps, None)).astype(np.float32)
+
+    @staticmethod
+    def avg_projection_div_std(projections: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+        avg_projection = projections.mean(axis=1)
+        std_projection = projections.std(axis=1)
+        return avg_projection / np.clip(std_projection, eps, None)
+
+    @staticmethod
+    def last_two_thirds_layers(projections: np.ndarray) -> np.ndarray:
+        n_layers = projections.shape[1]
+        start_idx = n_layers // 3
+        return projections[:, start_idx:]
+
+    @staticmethod
+    def layer_minmax(
+        val_projections: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        return (
+            val_projections.min(axis=0, keepdims=True),
+            val_projections.max(axis=0, keepdims=True),
+        )
+
+    @staticmethod
+    def apply_layer_minmax(
+        projections: np.ndarray,
+        layer_min: np.ndarray,
+        layer_max: np.ndarray,
+        eps: float = 1e-12,
+    ) -> np.ndarray:
+        denom = np.clip(layer_max - layer_min, eps, None)
+        proj_norm = (projections - layer_min) / denom
+        return np.clip(proj_norm, 0.0, 1.0)
+
+    def _collect_hidden_states(self, data: Any, token_mode: str) -> tuple[np.ndarray, np.ndarray]:
         all_hidden_states: list[np.ndarray] = []
         labels: list[int] = []
 
         for item in tqdm(data, desc="Inference", leave=False):
-            out = self.inference.run(item, args=Namespace(mode=mode))
+            out = self.inference.run(item, args=Namespace(mode=token_mode))
             hidden_states = out["hidden_states"]
-            
-            sample_layers = []
+
+            sample_layers: list[np.ndarray] = []
             for layer_tensor in hidden_states:
                 layer_vec = layer_tensor.detach().float().cpu().numpy().reshape(-1)
                 sample_layers.append(layer_vec.astype(np.float32))
 
-            all_hidden_states.append(np.stack(sample_layers, axis=0)) # n_layers x d_model
+            all_hidden_states.append(np.stack(sample_layers, axis=0))
             labels.append(int(item["label"]))
 
         return (
-            np.stack(all_hidden_states, axis=0),  # n_samples x n_layers x d_model
+            np.stack(all_hidden_states, axis=0),
             np.array(labels, dtype=np.int32),
         )
+
+    def fit_projection_space(
+        self,
+        val_hidden: np.ndarray,
+        steering_vec: np.ndarray,
+        args: Namespace,
+    ) -> tuple[np.ndarray, np.ndarray, Any]:
+        """Default mode: keep hidden states and steering vectors unchanged."""
+        return val_hidden, steering_vec, None
+
+    def transform_hidden_states(
+        self,
+        hidden_states: np.ndarray,
+        projection_state: Any,
+        args: Namespace,
+    ) -> np.ndarray:
+        return hidden_states
+
+    def compute_projection(
+        self,
+        val_hidden_states: np.ndarray,
+        test_hidden_states: np.ndarray,
+        steering_vectors: np.ndarray,
+        args: Namespace,
+    ) -> np.ndarray:
+        return np.einsum("sld,ld->sl", test_hidden_states, steering_vectors)
+
+    @staticmethod
+    def _output_dir(args: Namespace) -> str:
+        subdir = "sv_ood" if bool(args.ood) else "sv_id"
+        out_dir = os.path.join(BASE_DIR, "output", subdir, f"sandbox_{args.mode}")
+        os.makedirs(out_dir, exist_ok=True)
+        return out_dir
 
     @staticmethod
     def _save_projection_metrics(
@@ -152,6 +147,7 @@ class SteeringAnalyzer:
         args: Namespace,
         steering_domain: str,
         eval_domain: str,
+        out_dir: str,
     ) -> None:
         per_layer: dict[str, dict[str, float]] = {}
         for layer_idx in range(projections.shape[1]):
@@ -162,7 +158,6 @@ class SteeringAnalyzer:
                 y_val_predict=val_projections[:, layer_idx],
             )
 
-        # projections: n_samples x n_layers
         avg_projection = projections.mean(axis=1)
         avg_val_projection = val_projections.mean(axis=1)
         avg_projection_metrics = evaluation(
@@ -171,16 +166,18 @@ class SteeringAnalyzer:
             y_val_true=val_labels,
             y_val_predict=avg_val_projection,
         )
-        avg_div_std_projection = avg_projection_div_std(projections)
-        avg_div_std_val_projection = avg_projection_div_std(val_projections)
+
+        avg_div_std_projection = SVBase.avg_projection_div_std(projections)
+        avg_div_std_val_projection = SVBase.avg_projection_div_std(val_projections)
         avg_div_std_projection_metrics = evaluation(
             y_true=labels,
             y_predict=avg_div_std_projection,
             y_val_true=val_labels,
             y_val_predict=avg_div_std_val_projection,
         )
-        projections_last_2_3 = last_two_thirds_layers(projections)
-        val_projections_last_2_3 = last_two_thirds_layers(val_projections)
+
+        projections_last_2_3 = SVBase.last_two_thirds_layers(projections)
+        val_projections_last_2_3 = SVBase.last_two_thirds_layers(val_projections)
         avg_projection_last_2_3_metrics = evaluation(
             y_true=labels,
             y_predict=projections_last_2_3.mean(axis=1),
@@ -189,9 +186,9 @@ class SteeringAnalyzer:
         )
         avg_div_std_projection_last_2_3_metrics = evaluation(
             y_true=labels,
-            y_predict=avg_projection_div_std(projections_last_2_3),
+            y_predict=SVBase.avg_projection_div_std(projections_last_2_3),
             y_val_true=val_labels,
-            y_val_predict=avg_projection_div_std(val_projections_last_2_3),
+            y_val_predict=SVBase.avg_projection_div_std(val_projections_last_2_3),
         )
 
         result = {
@@ -208,8 +205,8 @@ class SteeringAnalyzer:
         }
 
         out_path = os.path.join(
-            OUT_DIR,
-            f"svp_scores_{args.model}_{steering_domain}_on_{eval_domain}_C{int(args.centering)}_M{int(args.manifold)}_P{int(args.pca_components)}.json",
+            out_dir,
+            f"psm_{args.mode}_{args.model}_{steering_domain}_on_{eval_domain}_M{int(args.manifold)}_P{int(args.pca_components)}_NS{int(args.normalize_scores)}.json",
         )
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
@@ -220,13 +217,17 @@ class SteeringAnalyzer:
         labels: np.ndarray,
         val_projections: np.ndarray,
         val_labels: np.ndarray,
-        model: str,
-        steering_domain: str,
-        eval_domain: str,
-        manifold: bool,
-        centering: bool,
-        pca_components: int,
+        args: Namespace,
+        out_dir: str,
+        eval_domain: str | None = None,
     ) -> None:
+        
+        model = args.model
+        steering_domain = args.dataset
+        eval_domain = eval_domain or args.dataset
+        manifold = args.manifold
+        pca_components = args.pca_components
+
         fig = plt.figure(figsize=(20, 12))
         grid = fig.add_gridspec(3, 5, height_ratios=[1.5, 1, 1])
         axis = fig.add_subplot(grid[0, :])
@@ -258,12 +259,10 @@ class SteeringAnalyzer:
                 linewidth=2.5,
             )
 
-        # Layer-wise AUROC using projection score at each layer.
         layer_aurocs: list[float] = []
         if np.unique(labels).size == 2:
             for layer_idx in range(projections.shape[1]):
-                auc = roc_auc_score(labels, projections[:, layer_idx])
-                layer_aurocs.append(float(auc))
+                layer_aurocs.append(float(roc_auc_score(labels, projections[:, layer_idx])))
         else:
             layer_aurocs = [float("nan")] * projections.shape[1]
 
@@ -281,6 +280,7 @@ class SteeringAnalyzer:
 
         last_layer_auc = layer_aurocs[-1] if layer_aurocs else float("nan")
         last_layer_auc_text = f"{last_layer_auc:.3f}" if not np.isnan(last_layer_auc) else "NA"
+
         avg_projection_metrics = evaluation(
             y_true=labels,
             y_predict=projections.mean(axis=1),
@@ -288,23 +288,21 @@ class SteeringAnalyzer:
             y_val_predict=val_projections.mean(axis=1),
         )
         avg_projection_auc = avg_projection_metrics.get("auroc", float("nan"))
-        avg_projection_auc_text = (
-            f"{avg_projection_auc:.3f}" if np.isfinite(avg_projection_auc) else "NA"
-        )
+        avg_projection_auc_text = f"{avg_projection_auc:.3f}" if np.isfinite(avg_projection_auc) else "NA"
+
         avg_div_std_projection_metrics = evaluation(
             y_true=labels,
-            y_predict=avg_projection_div_std(projections),
+            y_predict=SVBase.avg_projection_div_std(projections),
             y_val_true=val_labels,
-            y_val_predict=avg_projection_div_std(val_projections),
+            y_val_predict=SVBase.avg_projection_div_std(val_projections),
         )
         avg_div_std_projection_auc = avg_div_std_projection_metrics.get("auroc", float("nan"))
         avg_div_std_projection_auc_text = (
-            f"{avg_div_std_projection_auc:.3f}"
-            if np.isfinite(avg_div_std_projection_auc)
-            else "NA"
+            f"{avg_div_std_projection_auc:.3f}" if np.isfinite(avg_div_std_projection_auc) else "NA"
         )
-        projections_last_2_3 = last_two_thirds_layers(projections)
-        val_projections_last_2_3 = last_two_thirds_layers(val_projections)
+
+        projections_last_2_3 = SVBase.last_two_thirds_layers(projections)
+        val_projections_last_2_3 = SVBase.last_two_thirds_layers(val_projections)
         avg_projection_last_2_3_metrics = evaluation(
             y_true=labels,
             y_predict=projections_last_2_3.mean(axis=1),
@@ -313,15 +311,14 @@ class SteeringAnalyzer:
         )
         avg_projection_last_2_3_auc = avg_projection_last_2_3_metrics.get("auroc", float("nan"))
         avg_projection_last_2_3_auc_text = (
-            f"{avg_projection_last_2_3_auc:.3f}"
-            if np.isfinite(avg_projection_last_2_3_auc)
-            else "NA"
+            f"{avg_projection_last_2_3_auc:.3f}" if np.isfinite(avg_projection_last_2_3_auc) else "NA"
         )
+
         avg_div_std_projection_last_2_3_metrics = evaluation(
             y_true=labels,
-            y_predict=avg_projection_div_std(projections_last_2_3),
+            y_predict=SVBase.avg_projection_div_std(projections_last_2_3),
             y_val_true=val_labels,
-            y_val_predict=avg_projection_div_std(val_projections_last_2_3),
+            y_val_predict=SVBase.avg_projection_div_std(val_projections_last_2_3),
         )
         avg_div_std_projection_last_2_3_auc = avg_div_std_projection_last_2_3_metrics.get(
             "auroc", float("nan")
@@ -333,11 +330,12 @@ class SteeringAnalyzer:
         )
 
         axis.set_title(
-            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | C{int(centering)} | P{int(pca_components)} | last-layer AUROC={last_layer_auc_text} | avg-proj AUROC={avg_projection_auc_text} | avg/std AUROC={avg_div_std_projection_auc_text} | avg-proj(2/3) AUROC={avg_projection_last_2_3_auc_text} | avg/std(2/3) AUROC={avg_div_std_projection_last_2_3_auc_text}"
+            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | P{int(pca_components)} | NS{int(args.normalize_scores)} | last-layer AUROC={last_layer_auc_text} | avg-proj AUROC={avg_projection_auc_text} | avg/std AUROC={avg_div_std_projection_auc_text} | avg-proj(2/3) AUROC={avg_projection_last_2_3_auc_text} | avg/std(2/3) AUROC={avg_div_std_projection_last_2_3_auc_text}"
         )
         axis.set_xlabel("Layer")
         axis.set_ylabel("Projection Score")
         axis.grid(alpha=0.25)
+
         mean_auc = np.nanmean(layer_aurocs)
         if not np.isnan(mean_auc):
             axis.text(
@@ -415,51 +413,54 @@ class SteeringAnalyzer:
             ax.grid(alpha=0.2, axis="y")
 
         out_path = os.path.join(
-            OUT_DIR,
-            f"psp_{model}_{steering_domain}_on_{eval_domain}_C{int(centering)}_M{int(manifold)}_P{int(pca_components)}.png",
+            out_dir,
+            f"psp_{args.mode}_{model}_{steering_domain}_on_{eval_domain}_M{int(manifold)}_P{int(pca_components)}_NS{int(args.normalize_scores)}.png",
         )
         fig.tight_layout()
         fig.savefig(out_path, dpi=300, bbox_inches="tight")
         plt.close(fig)
 
-    def run(self, args: Namespace) -> None:
-        
-        # load data
+    def run(self, args: Namespace) -> dict[str, Any]:
         dataset = load_dataset(args)
+        out_dir = self._output_dir(args)
 
-        # use the val set for finding SVs
-        val_hidden, val_labels = self._collect_hidden_states(data=dataset['val'], mode=args.mode)
+        val_hidden, val_labels = self._collect_hidden_states(data=dataset["val"], token_mode=args.token_mode)
+        steering_vec = self.raw_steering_vector(hidden_states=val_hidden, labels=val_labels)
 
-        # get raw SVs
-        steering_vec = raw_steering_vector(hidden_states=val_hidden, labels=val_labels)
-        
-        # denoise 
-        if args.manifold:
-            manifold_components = manifold_components_by_layer(
-                hidden_states=val_hidden,
-                n_components=args.pca_components,
-            )
-            steering_vec = denoise_steering_vector(steering_vec, manifold_components)
-        
-        # norm in any case
-        steering_vec = normalize_vectors(steering_vec)
+        val_hidden_proj, steering_vec_proj, projection_state = self.fit_projection_space(
+            val_hidden=val_hidden,
+            steering_vec=steering_vec,
+            args=args,
+        )
+        steering_vec_proj = self.normalize_vectors(steering_vec_proj)
 
-        # get test set hidden states and the projection score
-        val_projection = steering_projection(
-            val_hidden_states=val_hidden,
-            test_hidden_states=val_hidden,
-            steering_vectors=steering_vec,
+        val_projection = self.compute_projection(
+            val_hidden_states=val_hidden_proj,
+            test_hidden_states=val_hidden_proj,
+            steering_vectors=steering_vec_proj,
             args=args,
         )
 
-        # get test set hidden states and the projection score
-        test_hidden, test_labels = self._collect_hidden_states(data=dataset['test'], mode=args.mode)
-        test_projection = steering_projection(val_hidden_states=val_hidden,
-                                              test_hidden_states=test_hidden,
-                                              steering_vectors=steering_vec, 
-                                              args=args)
+        test_hidden, test_labels = self._collect_hidden_states(data=dataset["test"], token_mode=args.token_mode)
+        test_hidden_proj = self.transform_hidden_states(
+            hidden_states=test_hidden,
+            projection_state=projection_state,
+            args=args,
+        )
+        test_projection = self.compute_projection(
+            val_hidden_states=val_hidden_proj,
+            test_hidden_states=test_hidden_proj,
+            steering_vectors=steering_vec_proj,
+            args=args,
+        )
 
-        # plots
+        layer_min: np.ndarray | None = None
+        layer_max: np.ndarray | None = None
+        if args.normalize_scores:
+            layer_min, layer_max = self.layer_minmax(val_projection)
+            val_projection = self.apply_layer_minmax(val_projection, layer_min, layer_max)
+            test_projection = self.apply_layer_minmax(test_projection, layer_min, layer_max)
+
         self._save_projection_metrics(
             projections=test_projection,
             labels=test_labels,
@@ -468,23 +469,19 @@ class SteeringAnalyzer:
             args=args,
             steering_domain=args.dataset,
             eval_domain=args.dataset,
+            out_dir=out_dir,
         )
 
-        # eval
         self._plot_test_projections(
             projections=test_projection,
             labels=test_labels,
             val_projections=val_projection,
             val_labels=val_labels,
-            model=args.model,
-            steering_domain=args.dataset,
-            eval_domain=args.dataset,
-            manifold=args.manifold,
-            centering=args.centering,
-            pca_components=args.pca_components,
+            args=args,
+            out_dir=out_dir,
         )
 
-        for ood_dataset_name in args.ood_set:
+        for ood_dataset_name in args.ood:
             if ood_dataset_name == args.dataset:
                 continue
 
@@ -494,33 +491,35 @@ class SteeringAnalyzer:
                 smoke_test=bool(args.smoke_test),
             )
             ood_dataset = load_dataset(ood_data_args)
-
             ood_hidden, ood_labels = self._collect_hidden_states(
                 data=ood_dataset["test"],
-                mode=args.mode,
+                token_mode=args.token_mode,
             )
-
-            ood_projection = steering_projection(
-                val_hidden_states=val_hidden,
-                test_hidden_states=ood_hidden,
-                steering_vectors=steering_vec,
+            ood_hidden_proj = self.transform_hidden_states(
+                hidden_states=ood_hidden,
+                projection_state=projection_state,
                 args=args,
             )
-            
-            
+            ood_projection = self.compute_projection(
+                val_hidden_states=val_hidden_proj,
+                test_hidden_states=ood_hidden_proj,
+                steering_vectors=steering_vec_proj,
+                args=args,
+            )
+            if args.normalize_scores:
+                if layer_min is None or layer_max is None:
+                    raise ValueError("Layer min/max stats not initialized for score normalization.")
+                ood_projection = self.apply_layer_minmax(ood_projection, layer_min, layer_max)
+
             self._plot_test_projections(
                 projections=ood_projection,
                 labels=ood_labels,
                 val_projections=val_projection,
                 val_labels=val_labels,
-                model=args.model,
-                steering_domain=args.dataset,
+                args=args,
                 eval_domain=ood_dataset_name,
-                manifold=args.manifold,
-                centering=args.centering,
-                pca_components=args.pca_components,
+                out_dir=out_dir,
             )
-            
             self._save_projection_metrics(
                 projections=ood_projection,
                 labels=ood_labels,
@@ -529,6 +528,7 @@ class SteeringAnalyzer:
                 args=args,
                 steering_domain=args.dataset,
                 eval_domain=ood_dataset_name,
+                out_dir=out_dir,
             )
 
         return {
@@ -538,56 +538,8 @@ class SteeringAnalyzer:
             "test_split": "test",
             "n_val": int(val_hidden.shape[0]),
             "n_test": int(test_hidden.shape[0]),
-            "n_layers": int(steering_vec.shape[0]),
-            "d_model": int(steering_vec.shape[1]),
+            "n_layers": int(steering_vec_proj.shape[0]),
+            "d_model": int(steering_vec_proj.shape[1]),
             "ood": bool(args.ood),
             "manifold": bool(args.manifold),
         }
-
-
-def parse_args() -> Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, required=True)
-    parser.add_argument("--dataset", type=str, required=True)
-    parser.add_argument("--mode", type=str, default="last_token")
-    parser.add_argument("--centering", type=int, default=0)
-    parser.add_argument("--prefix", type=int, default=0)
-    parser.add_argument("--smoke_test", type=int, default=0)
-    parser.add_argument("--ood", type=int, default=0)
-    parser.add_argument("--ood_set", type=str, default="")
-    parser.add_argument("--manifold", type=int, default=0)
-    parser.add_argument("--pca_components", type=int, default=10)
-    return parser.parse_args()
-
-
-def main() -> None:
-    args = parse_args()
-    if args.centering not in (0, 1):
-        raise ValueError("centering must be 0 or 1")
-    if args.prefix not in (0, 1):
-        raise ValueError("prefix must be 0 or 1")
-    if args.smoke_test not in (0, 1):
-        raise ValueError("smoke_test must be 0 or 1")
-    if args.ood not in (0, 1):
-        raise ValueError("ood must be 0 or 1")
-    if args.manifold not in (0, 1):
-        raise ValueError("manifold must be 0 or 1")
-    if args.mode != "last_token":
-        raise ValueError("This script expects --mode last_token.")
-
-    if args.ood_set.strip():
-        args.ood_set = args.ood_set.split(" ")
-        
-
-    args.centering = bool(args.centering)
-    args.prefix = bool(args.prefix)
-    args.smoke_test = bool(args.smoke_test)
-    args.ood = bool(args.ood)
-    args.manifold = bool(args.manifold)
-
-    analyzer = SteeringAnalyzer(model_name=args.model)
-    analyzer.run(args)
-
-
-if __name__ == "__main__":
-    main()

@@ -48,6 +48,11 @@ git pull --rebase
 - Idea for OOD: ceteris paribus for domains, languages, generators, and prompting
 
 - Find a way to compare the SV across settings
+
+**OO domain**
+
+- M4: generator: chatgpt; language: English; cross domain (wikihow, wikipedia, reddit, arxiv, peerread)
+
 ## Average projection position?
 
 - get the average projection position, instead of the last layer
