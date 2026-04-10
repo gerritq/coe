@@ -13,8 +13,8 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-DATASETS=("m4_wikipedia_chatgpt") # "wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" 
-MODELS=("qwen_06b") # "qwen_8b" "llama_8b" "qwen_06b"
+DATASETS=("tsm_multi") # "wikipedia_chatgpt" "arxiv_chatgpt" "reddit_chatgpt" 
+MODELS=("llama_8b") # "qwen_8b" "llama_8b" "qwen_06b"
 SAVE_VIZ=1
 CLASSIFIER=0
 
@@ -25,7 +25,7 @@ DIFF_VECTORS=(0)
 NORMALIZE=(1)
 
 PREFIX=(0)
-SMOKE_TEST=1
+SMOKE_TEST=0
 
 # Nested loop to run every model on every dataset
 for DATASET in "${DATASETS[@]}"; do
