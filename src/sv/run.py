@@ -41,8 +41,6 @@ def main() -> None:
         raise ValueError("smoke_test must be 0 or 1")
     if args.normalize_scores not in (0, 1):
         raise ValueError("normalize_scores must be 0 or 1")
-    if args.token_mode != "last_token":
-        raise ValueError("This script expects --token_mode last_token.")
 
     if args.ood.strip():
         args.ood = args.ood.split(" ")

@@ -53,6 +53,12 @@
 - new eval method with more metrics + trehsold is computed based on val
 
 
+**10.04.2026**
+- Tried pooling for sv, does not work at all. Last token is much better
+- Tried denoising and ldp, applying pca per layer and across layers,
+    - Per layer performs better
+
+
 # Learning
 
 - Blog about manifolds: https://colah.github.io/posts/2014-03-NN-Manifolds-Topology/
