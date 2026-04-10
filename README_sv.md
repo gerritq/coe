@@ -3,9 +3,47 @@ git pull --rebase
 
 
 # Today
+- COE or SV: Gaussian and anomaly detection, similar to the coe anomaly paper and the neurips OOD paper
+    - rather than training, estimating the machine direction/subspace and then ood is the distance to it
+- revoew of detection methods: check of S5 multiplies scores
+    - Just majority vote: https://arxiv.org/pdf/2402.13671
+
+- can we use this to compute baslines: https://github.com/kinit-sk/IMGTB
+- bin with new venv?
+- can we collect many steering vectors and then pca? like eg on random boostrap?
+- compute SV similarity acros datasets and layers
+- read this: https://arxiv.org/pdf/2512.24574#page=4.91
+ - noise reduction as in huang manifold steering
+
+- for acc and f1 do threshold tuning instead of youden js
+- take the ideas from https://www.anthropic.com/research/emotion-concepts-function
+
+- instead of projecting on the SV; can we measure if it points away from the machine cluster?
+    - Something like: 3. How to implement "Away-ness" (The RBF Kernel idea)Instead of a dot product, you can use a Distance Metric.Step 1: Find the centroid of your Machine cluster in the manifold: $\mu_{m}$.Step 2: For a new sample $h$, calculate the distance: $d = \|h - \mu_{m}\|^2$.Step 3: If $d$ is small, it "belongs" to the machine cluster. If $d$ is large, it's "pointing away" into the human or OOD space.
+
+    - How can we identify that subspace?
+
+- Other idea: see how the AI safety or hallucination works identify spaces/steer activations. There could be something we could do
+    - Paper: https://www.alignmentforum.org/posts/72vpkRRvoPHKi48fi/truth-is-universal-robust-detection-of-lies-in-llms-3
+    - https://arxiv.org/pdf/2410.00153
+    - https://aclanthology.org/2025.naacl-short.47.pdf
+- try pca to activation differences vs difference in means
+
 - add notes from todist
+
 - change the backbone of the models to the og papers
 
+
+No, they are **not the same**, though they often point in similar directions. Here is the concise breakdown:
+
+* **Difference in Means:** Calculates the vector between the **average** of Group A and the **average** of Group B. It treats all samples equally and only cares about the "center" of each cloud.
+* **PCA (on contrastive pairs):** Finds the axis of **maximum variance** among the differences. If some pairs have a much stronger "signal" than others, PCA will align itself with those more influential samples.
+
+**The "Cleaning" Intuition:**
+* **Means:** Captures the average shift ($Signal + Average Noise$).
+* **PCA:** Captures the most consistent trend ($Signal$ while ignoring inconsistent $Noise$).
+
+In a "clean" dataset, they are nearly identical. In a "noisy" or "complex" dataset, **PCA** is a better "cleaner" because it ignores dimensions where the data is just randomly scattered.
 
 - add tsm, and update hf
 - email preksha
@@ -98,3 +136,9 @@ git pull --rebase
 
 - Can we reverse the label? So that we assume that there is a homogenous machine subspace, but the human one differs?
     - And then projecting how to any of the human activation subspaces
+
+- Can we identify the SV, and the clean it? Or like zero out noise and use the SLM with cleaned activations/SV for classification?
+
+-  Can we FT a model first, and does this improves the SV? But how to fine-tune?
+
+- Check what has been done in word embeddings, it may translate to SVs

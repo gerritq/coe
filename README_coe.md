@@ -9,7 +9,11 @@ git pull --rebase
 
 
 # To do
+- can we do pca on the full activations, and the track metrics?
 
+- can we collect all activations at all layers for all samples and the apply pca?
+    - there is this paper that collects all in one matrix: Residual Stream Analysis of Overfitting And Structural Disruptions
+- implment other norm variants, eg relative to previous
 - add ideas of latent thinking to the overleaf
 - check why bin is not working; may need to create separate env for falcon
 - denoise activations for coe

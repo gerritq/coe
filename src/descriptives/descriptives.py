@@ -28,12 +28,12 @@ class LayerPCAAnalyzer:
 
     def pca_by_layer(self, hidden_states: np.ndarray) -> np.ndarray:
         n_samples, n_layers, dimension_size = hidden_states.shape # n_samples x n_layers x dimension_size
-        components = np.zeros((n_layers, n_samples, 2), dtype=np.float32)
+        components = np.zeros((n_layers, n_samples, 3), dtype=np.float32)
 
         for layer_idx in range(n_layers):
             # apply pca for a given layer, across samples on the hidden dim
             layer_vectors = hidden_states[:, layer_idx, :] # n_samples x dimension_size
-            layer_pca = PCA(n_components=2) # n_samples x 2
+            layer_pca = PCA(n_components=3) # n_samples x 3
             components[layer_idx] = layer_pca.fit_transform(layer_vectors)
 
         return components
@@ -51,7 +51,7 @@ class LayerPCAAnalyzer:
         n_layers = pca_components.shape[0]
         selected_layers = np.unique(np.linspace(0, n_layers - 1, num=10, dtype=int)).tolist()
 
-        fig, axes = plt.subplots(2, 5, figsize=(20, 8))
+        fig, axes = plt.subplots(2, 5, figsize=(22, 9), subplot_kw={"projection": "3d"})
         axes = axes.flatten()
 
         colors = {0: "tab:blue", 1: "tab:orange"}
@@ -66,13 +66,15 @@ class LayerPCAAnalyzer:
                 points = pca_components[layer_idx, mask, :]
                 pc1 = points[:, 0]
                 pc2 = points[:, 1]
-                finite_mask = np.isfinite(pc1) & np.isfinite(pc2)
+                pc3 = points[:, 2]
+                finite_mask = np.isfinite(pc1) & np.isfinite(pc2) & np.isfinite(pc3)
                 if not np.any(finite_mask):
                     continue
 
                 axis.scatter(
                     pc1[finite_mask],
                     pc2[finite_mask],
+                    pc3[finite_mask],
                     s=12,
                     alpha=0.5,
                     color=colors[label],
@@ -82,16 +84,17 @@ class LayerPCAAnalyzer:
             axis.set_title(f"Layer {layer_idx + 1}")
             axis.set_xlabel("PC1")
             axis.set_ylabel("PC2")
+            axis.set_zlabel("PC3")
             axis.legend()
             axis.grid(alpha=0.2)
 
         for empty_idx in range(len(selected_layers), len(axes)):
             axes[empty_idx].axis("off")
 
-        fig.suptitle(f"PCA Scatter by Layer | {args.model} | {args.data}", y=1.02)
+        fig.suptitle(f"PCA 3D Scatter by Layer | {args.model} | {args.data}", y=1.02)
         fig.tight_layout()
 
-        out_path = os.path.join(OUT_DIR, f"ld_scatter_{args.model}_{args.data}.png")
+        out_path = os.path.join(OUT_DIR, f"ld_scatter3d_{args.model}_{args.data}.png")
         fig.savefig(out_path, dpi=300, bbox_inches="tight")
         plt.close(fig)
         return out_path
