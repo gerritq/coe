@@ -3,6 +3,11 @@ git pull --rebase
 
 
 # Today
+
+- Maybe also reduce to the last 2 thrid tokens?
+
+    We extracted residual stream activations at each layer, averaging across all token positions within each story, beginning with the 50th token (at which point the emotional content should be apparent). 
+    
 - COE or SV: Gaussian and anomaly detection, similar to the coe anomaly paper and the neurips OOD paper
     - rather than training, estimating the machine direction/subspace and then ood is the distance to it
 - revoew of detection methods: check of S5 multiplies scores

@@ -13,12 +13,11 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-DATASETS=("multisocial_full" "m4_wikipedia_chatgpt")
+DATASETS=("multisocial_en" "m4_wikipedia_chatgpt")
 MODELS=("llama_8b") # qwen_06b
 ANALYSIS="ld"  # "ld", "sv", "all"
 SPLIT="val"
 MODE="pooling"
-N=500
 PREFIX=0
 SMOKE_TEST=0
 
@@ -28,12 +27,11 @@ for DATASET in "${DATASETS[@]}"; do
         echo "Running LD PCA: Dataset=$DATASET, Model=$MODEL, Split=$SPLIT, Mode=$MODE, N=$N"
         echo "------------------------------------------------"
 
-        PYTHONPATH="${ROOT_DIR}"  uv run src/descriptives/descriptives.py \
+        PYTHONPATH="${ROOT_DIR}"  uv run src/descriptives/desc_run.py \
             --model "$MODEL" \
             --data "$DATASET" \
             --split "$SPLIT" \
             --mode "$MODE" \
-            --n "$N" \
             --prefix "$PREFIX" \
             --analysis "$ANALYSIS" \
             --smoke_test "$SMOKE_TEST"
