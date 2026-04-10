@@ -9,7 +9,7 @@ from sklearn.decomposition import PCA
 from tqdm import tqdm
 
 from src.inference import Inference
-from src.sv.sv_main import raw_steering_vector
+from src.sv.sv_main import SVBase
 from src.utils import load_dataset
 
 BASE_DIR = os.getenv("BASE_COE")
@@ -298,7 +298,7 @@ class SVAnalyser:
                 val_data = val_data.select(range(min(len(val_data), args.n)))
 
             val_hidden, val_labels = self._collect_hidden_states(data=val_data, mode=args.mode)
-            steering_vectors = raw_steering_vector(hidden_states=val_hidden, labels=val_labels)
+            steering_vectors = SVBase.raw_steering_vector(hidden_states=val_hidden, labels=val_labels)
 
             if n_layers is None:
                 n_layers = int(steering_vectors.shape[0])
