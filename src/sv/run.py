@@ -2,7 +2,9 @@ import argparse
 from argparse import Namespace
 
 from src.sv.sv_denoise import DenoiseSVBase
+from src.sv.sv_denoise_layer import DenoiseLayerSVBase
 from src.sv.sv_ldp import LDPSVBase
+from src.sv.sv_ldp_by_layer import LDPByLayerSVBase
 from src.sv.sv_main import SVBase
 
 
@@ -12,7 +14,12 @@ def parse_args() -> Namespace:
     parser.add_argument("--dataset", type=str, required=True)
 
     # steering strategy mode
-    parser.add_argument("--mode", type=str, choices=["default", "denoise", "ldp"], default="default")
+    parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["default", "denoise", "denoise_layer", "ldp", "ldp_by_layer"],
+        default="default",
+    )
 
     # hidden-state extraction mode
     parser.add_argument("--token_mode", type=str, default="last_token")
@@ -45,12 +52,16 @@ def main() -> None:
     args.prefix = bool(args.prefix)
     args.smoke_test = bool(args.smoke_test)
     args.normalize_scores = bool(args.normalize_scores)
-    args.manifold = args.mode in ("denoise", "ldp")
+    args.manifold = args.mode in ("denoise", "denoise_layer", "ldp", "ldp_by_layer")
 
     if args.mode == "denoise":
         analyzer = DenoiseSVBase(model_name=args.model)
+    elif args.mode == "denoise_layer":
+        analyzer = DenoiseLayerSVBase(model_name=args.model)
     elif args.mode == "ldp":
         analyzer = LDPSVBase(model_name=args.model)
+    elif args.mode == "ldp_by_layer":
+        analyzer = LDPByLayerSVBase(model_name=args.model)
     else:
         analyzer = SVBase(model_name=args.model)
 
