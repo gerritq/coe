@@ -4,6 +4,7 @@ git pull --rebase
 
 # Today
 
+- with pca like 500 the denoise and default plots are identical, how?
 - !!! PCA on all layers not layer-wise
 
 - Maybe also reduce to the last 2 thrid tokens?
