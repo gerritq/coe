@@ -4,6 +4,8 @@ git pull --rebase
 
 # Today
 
+- !!! PCA on all layers not layer-wise
+
 - Maybe also reduce to the last 2 thrid tokens?
 
     We extracted residual stream activations at each layer, averaging across all token positions within each story, beginning with the 50th token (at which point the emotional content should be apparent). 

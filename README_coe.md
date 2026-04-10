@@ -9,6 +9,9 @@ git pull --rebase
 
 
 # To do
+
+- !!!! PCA on all layer, not layer wise
+
 - can we do pca on the full activations, and the track metrics?
 
 - can we collect all activations at all layers for all samples and the apply pca?

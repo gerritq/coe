@@ -17,7 +17,7 @@ DATASETS=("multisocial_en" "m4_wikipedia_chatgpt")
 MODELS=("llama_8b") # qwen_06b
 ANALYSIS="ld"  # "ld", "sv", "all"
 SPLIT="val"
-MODE="pooling"
+MODE="last_token"
 PREFIX=0
 SMOKE_TEST=0
 
