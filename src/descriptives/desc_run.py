@@ -24,11 +24,13 @@ def parse_args() -> Namespace:
     parser.add_argument("--prefix", type=int, default=0)
     parser.add_argument("--smoke_test", type=int, default=0)
     parser.add_argument("--analysis", type=str, default="all")
+    parser.add_argument("--dim", type=int, default=3)
     return parser.parse_args()
 
 
 def main() -> None:
     from src.descriptives.pca_analyzer import PCAAnalyzer
+    from src.descriptives.pca_trajectory import PCATrajectoryAnalyzer
     from src.descriptives.sv_analyser import SVAnalyser
 
     args = parse_args()
@@ -43,6 +45,11 @@ def main() -> None:
         analyzer = PCAAnalyzer(model_name=args.model)
         result = analyzer.run(args)
         print(result)
+
+    if args.analysis in ["traj", "all"]:
+        traj_analyzer = PCATrajectoryAnalyzer(model_name=args.model)
+        traj_result = traj_analyzer.run(args)
+        print(traj_result)
 
     if args.analysis in ["sv", "all"]:
         sv_analyzer = SVAnalyser(model_name=args.model)

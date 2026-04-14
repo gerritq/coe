@@ -64,7 +64,7 @@ class PCATrajectoryAnalyzer:
 
             axis.set_title(f"{set_name.capitalize()} Trajectory")
             if not np.any(mask):
-                axis.text2D(0.5, 0.5, "No samples", transform=axis.transAxes, ha="center", va="center")
+                axis.text(0.5, 0.5, "No samples", transform=axis.transAxes, ha="center", va="center")
                 continue
 
             # Mean set trajectory across layers: n_layers x 3
@@ -90,6 +90,13 @@ class PCATrajectoryAnalyzer:
                     label="start",
                     zorder=5,
                 )
+                axis.text(
+                    trajectory[0, 0],
+                    trajectory[0, 1],
+                    trajectory[0, 2],
+                    "start",
+                    color=start_color,
+                )
                 axis.scatter(
                     trajectory[-1, 0],
                     trajectory[-1, 1],
@@ -99,6 +106,13 @@ class PCATrajectoryAnalyzer:
                     marker="X",
                     label="end",
                     zorder=6,
+                )
+                axis.text(
+                    trajectory[-1, 0],
+                    trajectory[-1, 1],
+                    trajectory[-1, 2],
+                    "end",
+                    color=end_color,
                 )
                 axis.set_xlabel("PC1")
                 axis.set_ylabel("PC2")
@@ -121,6 +135,13 @@ class PCATrajectoryAnalyzer:
                     label="start",
                     zorder=5,
                 )
+                axis.annotate(
+                    "start",
+                    (trajectory[0, 0], trajectory[0, 1]),
+                    textcoords="offset points",
+                    xytext=(6, 6),
+                    color=start_color,
+                )
                 axis.scatter(
                     trajectory[-1, 0],
                     trajectory[-1, 1],
@@ -129,6 +150,13 @@ class PCATrajectoryAnalyzer:
                     marker="X",
                     label="end",
                     zorder=6,
+                )
+                axis.annotate(
+                    "end",
+                    (trajectory[-1, 0], trajectory[-1, 1]),
+                    textcoords="offset points",
+                    xytext=(6, 6),
+                    color=end_color,
                 )
                 axis.set_xlabel("PC1")
                 axis.set_ylabel("PC2")
