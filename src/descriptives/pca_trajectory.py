@@ -36,6 +36,57 @@ class PCATrajectoryAnalyzer:
         # Return n_layers x n_samples x 3 for convenient layer-wise plotting.
         return transformed.reshape(n_samples, n_layers, 3).transpose(1, 0, 2).astype(np.float32)
 
+    @staticmethod
+    def _plot_direction_arrows_2d(
+        axis: Any,
+        trajectory: np.ndarray,
+        color: str,
+    ) -> None:
+        for idx in range(trajectory.shape[0] - 1):
+            start = trajectory[idx, :2]
+            end = trajectory[idx + 1, :2]
+            axis.annotate(
+                "",
+                xy=(end[0], end[1]),
+                xytext=(start[0], start[1]),
+                arrowprops={"arrowstyle": "-|>", "color": color, "lw": 1.6, "alpha": 0.8},
+            )
+
+    @staticmethod
+    def _plot_uncertainty_3d(
+        axis: Any,
+        trajectory: np.ndarray,
+        uncertainty: np.ndarray,
+        color: str,
+    ) -> None:
+        for idx in range(trajectory.shape[0]):
+            x, y, z = trajectory[idx]
+            ux, uy, uz = uncertainty[idx]
+            axis.plot(
+                [x - ux, x + ux],
+                [y, y],
+                [z, z],
+                color=color,
+                alpha=0.25,
+                linewidth=1.2,
+            )
+            axis.plot(
+                [x, x],
+                [y - uy, y + uy],
+                [z, z],
+                color=color,
+                alpha=0.25,
+                linewidth=1.2,
+            )
+            axis.plot(
+                [x, x],
+                [y, y],
+                [z - uz, z + uz],
+                color=color,
+                alpha=0.25,
+                linewidth=1.2,
+            )
+
     def _plot_set_trajectories(
         self,
         pca_components: np.ndarray,
@@ -69,6 +120,12 @@ class PCATrajectoryAnalyzer:
 
             # Mean set trajectory across layers: n_layers x 3
             trajectory = np.mean(pca_components[:, mask, :], axis=1)
+            n_points = int(np.sum(mask))
+            # SEM across samples at each layer/component.
+            if n_points > 1:
+                uncertainty = np.std(pca_components[:, mask, :], axis=1, ddof=1) / np.sqrt(n_points)
+            else:
+                uncertainty = np.zeros_like(trajectory)
 
             if dim == 3:
                 axis.plot(
@@ -79,6 +136,25 @@ class PCATrajectoryAnalyzer:
                     linewidth=2.5,
                     alpha=0.95,
                     label=f"{set_name} trajectory",
+                )
+                axis.quiver(
+                    trajectory[:-1, 0],
+                    trajectory[:-1, 1],
+                    trajectory[:-1, 2],
+                    trajectory[1:, 0] - trajectory[:-1, 0],
+                    trajectory[1:, 1] - trajectory[:-1, 1],
+                    trajectory[1:, 2] - trajectory[:-1, 2],
+                    color=line_colors[label],
+                    alpha=0.7,
+                    linewidth=1.0,
+                    arrow_length_ratio=0.25,
+                    label="direction",
+                )
+                self._plot_uncertainty_3d(
+                    axis=axis,
+                    trajectory=trajectory,
+                    uncertainty=uncertainty,
+                    color=line_colors[label],
                 )
                 axis.scatter(
                     trajectory[0, 0],
@@ -125,6 +201,23 @@ class PCATrajectoryAnalyzer:
                     linewidth=2.5,
                     alpha=0.95,
                     label=f"{set_name} trajectory",
+                )
+                self._plot_direction_arrows_2d(
+                    axis=axis,
+                    trajectory=trajectory,
+                    color=line_colors[label],
+                )
+                axis.errorbar(
+                    trajectory[:, 0],
+                    trajectory[:, 1],
+                    xerr=uncertainty[:, 0],
+                    yerr=uncertainty[:, 1],
+                    fmt="none",
+                    ecolor=line_colors[label],
+                    elinewidth=1.0,
+                    capsize=2.5,
+                    alpha=0.35,
+                    label="uncertainty (SEM)",
                 )
                 axis.scatter(
                     trajectory[0, 0],
