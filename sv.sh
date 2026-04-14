@@ -15,14 +15,14 @@ cd "${ROOT_DIR}"
 
 # Full data run
 # DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
-DATASETS=("tsm_multi")
+DATASETS=("multisocial_en")
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
 SV_MODES=("clean_topic")   # default | denoise | denoise_layer | clean_topic | ldp | ldp_by_layer | pca_align | pca_sv | pca_layer
 TOKEN_MODE="last_token"
 
 SMOKE_TEST=0
 # OOD="multisocial_de multisocial_nl multisocial_pt multisocial_ar"
-OOD=""
+OOD="multisocial_ar"
 NORMALIZE_SCORES=1
 
 for DATASET in "${DATASETS[@]}"; do
