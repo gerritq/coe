@@ -17,7 +17,7 @@ cd "${ROOT_DIR}"
 # DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
 DATASETS=("tsm_multi")
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
-SV_MODES=("pca_align")   # default | denoise | denoise_layer | ldp | ldp_by_layer | pca_align
+SV_MODES=("pca_sv")   # default | denoise | denoise_layer | ldp | ldp_by_layer | pca_align | pca_sv
 TOKEN_MODE="last_token"
 
 SMOKE_TEST=0
