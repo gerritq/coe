@@ -17,7 +17,7 @@ cd "${ROOT_DIR}"
 # DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
 DATASETS=("tsm_multi")
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
-SV_MODES=("default" "ldp"  "ldp_by_layer" "ldp"  "denoise" "denoise_layer")   # default | denoise | denoise_layer | ldp | ldp_by_layer
+SV_MODES=("pca_align")   # default | denoise | denoise_layer | ldp | ldp_by_layer | pca_align
 TOKEN_MODE="last_token"
 
 SMOKE_TEST=0
@@ -28,9 +28,9 @@ NORMALIZE_SCORES=1
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
         for SV_MODE in "${SV_MODES[@]}"; do
-            if [ "$SV_MODE" = "denoise" ] || [ "$SV_MODE" = "denoise_layer" ] || [ "$SV_MODE" = "ldp" ] || [ "$SV_MODE" = "ldp_by_layer" ]; then
+            if [ "$SV_MODE" != "default" ]; then
                 # PCA_COMPONENTS=(5 10 15 20 25 30 40 50)
-                PCA_COMPONENTS=(25 50 100 500)
+                PCA_COMPONENTS=(25 50 100)
                 # PCA_COMPONENTS=(20)
             else
                 PCA_COMPONENTS=(0)
