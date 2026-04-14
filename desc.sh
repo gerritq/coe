@@ -6,7 +6,7 @@
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
-#SBATCH --constraint=b200|a100|h200
+#SBATCH --constraint=b200|h200
 
 nvidia-smi
 
