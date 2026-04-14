@@ -3,6 +3,7 @@ from argparse import Namespace
 
 from src.sv.sv_denoise import DenoiseSVBase
 from src.sv.sv_denoise_layer import DenoiseLayerSVBase
+from src.sv.sv_clean_topic import CleanTopicSVBase
 from src.sv.sv_ldp import LDPSVBase
 from src.sv.sv_ldp_by_layer import LDPByLayerSVBase
 from src.sv.sv_pca_align import PCAAlignSVBase
@@ -20,7 +21,17 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--mode",
         type=str,
-        choices=["default", "denoise", "denoise_layer", "ldp", "ldp_by_layer", "pca_align", "pca_sv", "pca_layer"],
+        choices=[
+            "default",
+            "denoise",
+            "denoise_layer",
+            "clean_topic",
+            "ldp",
+            "ldp_by_layer",
+            "pca_align",
+            "pca_sv",
+            "pca_layer",
+        ],
         default="default",
     )
 
@@ -53,12 +64,23 @@ def main() -> None:
     args.prefix = bool(args.prefix)
     args.smoke_test = bool(args.smoke_test)
     args.normalize_scores = bool(args.normalize_scores)
-    args.manifold = args.mode in ("denoise", "denoise_layer", "ldp", "ldp_by_layer", "pca_align", "pca_sv", "pca_layer")
+    args.manifold = args.mode in (
+        "denoise",
+        "denoise_layer",
+        "clean_topic",
+        "ldp",
+        "ldp_by_layer",
+        "pca_align",
+        "pca_sv",
+        "pca_layer",
+    )
 
     if args.mode == "denoise":
         analyzer = DenoiseSVBase(model_name=args.model)
     elif args.mode == "denoise_layer":
         analyzer = DenoiseLayerSVBase(model_name=args.model)
+    elif args.mode == "clean_topic":
+        analyzer = CleanTopicSVBase(model_name=args.model)
     elif args.mode == "ldp":
         analyzer = LDPSVBase(model_name=args.model)
     elif args.mode == "ldp_by_layer":
