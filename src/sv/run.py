@@ -7,6 +7,7 @@ from src.sv.sv_ldp import LDPSVBase
 from src.sv.sv_ldp_by_layer import LDPByLayerSVBase
 from src.sv.sv_pca_align import PCAAlignSVBase
 from src.sv.sv_pca import PCASVBase
+from src.sv.sv_pca_layer import PCALayerSVBase
 from src.sv.sv_main import SVBase
 
 
@@ -19,7 +20,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--mode",
         type=str,
-        choices=["default", "denoise", "denoise_layer", "ldp", "ldp_by_layer", "pca_align", "pca_sv"],
+        choices=["default", "denoise", "denoise_layer", "ldp", "ldp_by_layer", "pca_align", "pca_sv", "pca_layer"],
         default="default",
     )
 
@@ -52,7 +53,7 @@ def main() -> None:
     args.prefix = bool(args.prefix)
     args.smoke_test = bool(args.smoke_test)
     args.normalize_scores = bool(args.normalize_scores)
-    args.manifold = args.mode in ("denoise", "denoise_layer", "ldp", "ldp_by_layer", "pca_align", "pca_sv")
+    args.manifold = args.mode in ("denoise", "denoise_layer", "ldp", "ldp_by_layer", "pca_align", "pca_sv", "pca_layer")
 
     if args.mode == "denoise":
         analyzer = DenoiseSVBase(model_name=args.model)
@@ -66,6 +67,8 @@ def main() -> None:
         analyzer = PCAAlignSVBase(model_name=args.model)
     elif args.mode == "pca_sv":
         analyzer = PCASVBase(model_name=args.model)
+    elif args.mode == "pca_layer":
+        analyzer = PCALayerSVBase(model_name=args.model)
     else:
         analyzer = SVBase(model_name=args.model)
 
