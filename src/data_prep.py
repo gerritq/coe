@@ -489,31 +489,31 @@ def prepare_multisocial_data() -> None:
 def main() -> None:
     
     
-    # M4
-    # need to halve bc one instance contains both machine and human text
+    # # M4
+    # # need to halve bc one instance contains both machine and human text
+    # # print("Preparing M4 data...")
+    # prepare_M4_data()
+
+    # # M4 multilingual
+    # # need to halve bc one instance contains both machine and human text
     # print("Preparing M4 data...")
-    prepare_M4_data()
-
-    # M4 multilingual
-    # need to halve bc one instance contains both machine and human text
-    print("Preparing M4 data...")
-    prepare_M4_multi_data()
+    # prepare_M4_multi_data()
     
-    # MULTISOCIAL
-    # print("Preparing Multisocial data...")
-    prepare_multisocial_data()
+    # # MULTISOCIAL
+    # # print("Preparing Multisocial data...")
+    # prepare_multisocial_data()
 
-    # TSM
-    # print("Preparing TSM task_2 data...")
-    prepare_TSM_data()
+    # # TSM
+    # # print("Preparing TSM task_2 data...")
+    # prepare_TSM_data()
     
-    # DetectRL task_1
-    print("Preparing DetectRL task_1 data...")
-    prepare_detectrl_task_1()
+    # # DetectRL task_1
+    # print("Preparing DetectRL task_1 data...")
+    # prepare_detectrl_task_1()
 
-    # tsm multi
-    print("Preparing TSM multi data...")
-    prepare_tsm_multi()
+    # # tsm multi
+    # print("Preparing TSM multi data...")
+    # prepare_tsm_multi()
 
     # prepare multitude
     print("Preparing MULTITUDE data...")

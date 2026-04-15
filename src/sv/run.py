@@ -4,6 +4,7 @@ from argparse import Namespace
 from src.sv.sv_denoise import DenoiseSVBase
 from src.sv.sv_denoise_layer import DenoiseLayerSVBase
 from src.sv.sv_clean_topic import CleanTopicSVBase
+from src.sv.sv_clean_topic_val import CleanTopicValSVBase
 from src.sv.sv_ldp import LDPSVBase
 from src.sv.sv_ldp_by_layer import LDPByLayerSVBase
 from src.sv.sv_pca_align import PCAAlignSVBase
@@ -26,6 +27,7 @@ def parse_args() -> Namespace:
             "denoise",
             "denoise_layer",
             "clean_topic",
+            "clean_topic_val",
             "ldp",
             "ldp_by_layer",
             "pca_align",
@@ -68,6 +70,7 @@ def main() -> None:
         "denoise",
         "denoise_layer",
         "clean_topic",
+        "clean_topic_val",
         "ldp",
         "ldp_by_layer",
         "pca_align",
@@ -81,6 +84,8 @@ def main() -> None:
         analyzer = DenoiseLayerSVBase(model_name=args.model)
     elif args.mode == "clean_topic":
         analyzer = CleanTopicSVBase(model_name=args.model)
+    elif args.mode == "clean_topic_val":
+        analyzer = CleanTopicValSVBase(model_name=args.model)
     elif args.mode == "ldp":
         analyzer = LDPSVBase(model_name=args.model)
     elif args.mode == "ldp_by_layer":
