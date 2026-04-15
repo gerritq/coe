@@ -15,7 +15,7 @@ cd "${ROOT_DIR}"
 
 DATASETS=("multisocial_en" "m4_wikipedia_chatgpt")
 MODELS=("llama_8b") # qwen_06b
-ANALYSIS="traj"  # "ld", "traj", "sv", "all"
+ANALYSIS="topic_sv"  # "ld", "traj", "sv", "topic_sv", "all"
 SPLIT="val"
 MODE="last_token"
 DIM=3

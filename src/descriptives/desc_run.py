@@ -32,6 +32,7 @@ def main() -> None:
     from src.descriptives.pca_analyzer import PCAAnalyzer
     from src.descriptives.pca_trajectory import PCATrajectoryAnalyzer
     from src.descriptives.sv_analyser import SVAnalyser
+    from src.descriptives.topic_sv import TopicSVAnalyzer
 
     args = parse_args()
     if args.prefix not in (0, 1):
@@ -55,6 +56,11 @@ def main() -> None:
         sv_analyzer = SVAnalyser(model_name=args.model)
         sv_result = sv_analyzer.run(args)
         print(sv_result)
+
+    if args.analysis in ["topic_sv", "all"]:
+        topic_sv_analyzer = TopicSVAnalyzer(model_name=args.model)
+        topic_sv_result = topic_sv_analyzer.run(args)
+        print(topic_sv_result)
 
 
 if __name__ == "__main__":
