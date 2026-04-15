@@ -28,7 +28,7 @@ NORMALIZE_SCORES=1
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
         for SV_MODE in "${SV_MODES[@]}"; do
-            if [ "$SV_MODE" != "default" && "$SV_MODE" != "clean_topic"]; then
+            if [ "$SV_MODE" != "default" ] && [ "$SV_MODE" != "clean_topic" ] && [ "$SV_MODE" != "clean_topic_val" ]; then
                 # PCA_COMPONENTS=(5 10 15 20 25 30 40 50)
                 PCA_COMPONENTS=(25 50 100)
                 # PCA_COMPONENTS=(20)

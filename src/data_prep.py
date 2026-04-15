@@ -40,7 +40,6 @@ random.seed(SEED)
 def prepare_multitude()-> None:
     languages = ["de", "en", "uk", "pt", "ro", "nl"]
     allowed_models = {"human", "gpt-3.5-turbo-0125"}
-    train_per_label = TRAINING_N // 2
     val_per_label = VALIDATION_N // 2
     test_per_label = TESTING_N // 2
 
@@ -70,27 +69,29 @@ def prepare_multitude()-> None:
             label = 0 if str(row["multi_label"]) == "human" else 1
             test_by_label[label].append({"text": row["text"], "label": label})
 
-        train_h = min(train_per_label, len(train_by_label[0]))
-        train_m = min(train_per_label, len(train_by_label[1]))
+        rng = random.Random(SEED)
+        rng.shuffle(train_by_label[0])
+        rng.shuffle(train_by_label[1])
+        rng.shuffle(test_by_label[0])
+        rng.shuffle(test_by_label[1])
 
-        val_h_available = max(0, len(train_by_label[0]) - train_h)
-        val_m_available = max(0, len(train_by_label[1]) - train_m)
-        val_h = min(val_per_label, val_h_available)
-        val_m = min(val_per_label, val_m_available)
+        # First sample a balanced validation set from train.
+        val_take = min(val_per_label, len(train_by_label[0]), len(train_by_label[1]))
+        val_data = train_by_label[0][:val_take] + train_by_label[1][:val_take]
 
-        test_h = min(test_per_label, len(test_by_label[0]))
-        test_m = min(test_per_label, len(test_by_label[1]))
+        # Remaining train rows after carving out validation.
+        rem_train_h = train_by_label[0][val_take:]
+        rem_train_m = train_by_label[1][val_take:]
+        train_take = min(len(rem_train_h), len(rem_train_m))
+        train_data = rem_train_h[:train_take] + rem_train_m[:train_take]
 
-        train_data = train_by_label[0][:train_h] + train_by_label[1][:train_m]
-        val_data = (
-            train_by_label[0][train_h:train_h + val_h]
-            + train_by_label[1][train_m:train_m + val_m]
-        )
-        test_data = test_by_label[0][:test_h] + test_by_label[1][:test_m]
+        # Keep test as a balanced random sample of up to 500.
+        test_take = min(test_per_label, len(test_by_label[0]), len(test_by_label[1]))
+        test_data = test_by_label[0][:test_take] + test_by_label[1][:test_take]
 
-        random.Random(SEED).shuffle(train_data)
-        random.Random(SEED).shuffle(val_data)
-        random.Random(SEED).shuffle(test_data)
+        rng.shuffle(train_data)
+        rng.shuffle(val_data)
+        rng.shuffle(test_data)
 
         dataset_name = f"multitude_{language}"
         split_data = {
