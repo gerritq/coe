@@ -2,11 +2,11 @@
 #SBATCH --job-name=sv_ood_ldp
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=00:45:00
+#SBATCH --time=00:30:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
-# SBATCH --constraint=h200|b200
+# SBATCH --constraint=h200|b200|a100
 
 nvidia-smi
 
@@ -15,14 +15,14 @@ cd "${ROOT_DIR}"
 
 # Full data run
 # DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
-DATASETS=("multisocial_en")
+DATASETS=("tsm_paras_en_first_deepseek")
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
-SV_MODES=("clean_topic")   # default | denoise | denoise_layer | clean_topic | ldp | ldp_by_layer | pca_align | pca_sv | pca_layer
+SV_MODES=("clean_topic" "default")   # default | denoise | denoise_layer | clean_topic | ldp | ldp_by_layer | pca_align | pca_sv | pca_layer
 TOKEN_MODE="last_token"
 
 SMOKE_TEST=0
 # OOD="multisocial_de multisocial_nl multisocial_pt multisocial_ar"
-OOD="multisocial_pt"
+OOD="tsm_paras_pt_first_deepseek tsm_paras_vi_first_deepseek"
 NORMALIZE_SCORES=1
 
 for DATASET in "${DATASETS[@]}"; do

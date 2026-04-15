@@ -4,6 +4,12 @@ git pull --rebase
 
 # Today
 
+
+## Ablation idea
+- full ablation as in "No training wheels"
+    - but maybe we need to do this at all layers and tokens
+- i think in the current implementation we also ablate the test set? I wasn't expecting that
+
 - with pca like 500 the denoise and default plots are identical, how?
 - !!! PCA on all layers not layer-wise
 
