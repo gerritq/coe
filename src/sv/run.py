@@ -3,6 +3,7 @@ from argparse import Namespace
 
 from src.sv.sv_denoise import DenoiseSVBase
 from src.sv.sv_denoise_layer import DenoiseLayerSVBase
+from src.sv.sv_denoise_val import DenoiseValSVBase
 from src.sv.sv_clean_topic import CleanTopicSVBase
 from src.sv.sv_clean_topic_val import CleanTopicValSVBase
 from src.sv.sv_ldp import LDPSVBase
@@ -26,6 +27,7 @@ def parse_args() -> Namespace:
             "default",
             "denoise",
             "denoise_layer",
+            "denoise_val",
             "clean_topic",
             "clean_topic_val",
             "ldp",
@@ -69,6 +71,7 @@ def main() -> None:
     args.manifold = args.mode in (
         "denoise",
         "denoise_layer",
+        "denoise_val",
         "clean_topic",
         "clean_topic_val",
         "ldp",
@@ -82,6 +85,8 @@ def main() -> None:
         analyzer = DenoiseSVBase(model_name=args.model)
     elif args.mode == "denoise_layer":
         analyzer = DenoiseLayerSVBase(model_name=args.model)
+    elif args.mode == "denoise_val":
+        analyzer = DenoiseValSVBase(model_name=args.model)
     elif args.mode == "clean_topic":
         analyzer = CleanTopicSVBase(model_name=args.model)
     elif args.mode == "clean_topic_val":
