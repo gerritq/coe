@@ -14,17 +14,16 @@ ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
 # Full data run
-# DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
-DATASETS=("multisocial_en")
+DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
+# DATASETS=("m4_multi")
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
 SV_MODES=("clean_topic_val")   # default | denoise | denoise_layer | clean_topic | ldp | ldp_by_layer | pca_align | pca_sv | pca_layer
 TOKEN_MODE="last_token"
 # this is for sv_topic | sv_topic_val
-ABLATION_SET="all"  # human | machine | all
+ABLATION_SET="human"  # human | machine | all
 
 SMOKE_TEST=0
-OOD="multisocial_ar"
-# OOD="multisocial_ar"
+OOD=""
 NORMALIZE_SCORES=1
 
 for DATASET in "${DATASETS[@]}"; do
