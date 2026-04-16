@@ -47,6 +47,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--ood", type=str, default="")
     parser.add_argument("--pca_components", type=int, default=10)
     parser.add_argument("--normalize_scores", type=int, default=0)
+    parser.add_argument("--ablation_set", type=str, choices=["human", "machine", "all"], default="all")
     return parser.parse_args()
 
 

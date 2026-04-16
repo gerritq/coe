@@ -10,6 +10,25 @@ class CleanTopicSVBase(SVBase):
     """Topic-style ablation via per-layer PC1, then residual-space steering detection."""
 
     @staticmethod
+    def _subset_for_ablation_axes(
+        hidden_states: np.ndarray,
+        labels: np.ndarray,
+        ablation_set: str,
+    ) -> np.ndarray:
+        if ablation_set == "all":
+            subset = hidden_states
+        elif ablation_set == "human":
+            subset = hidden_states[labels == 0]
+        elif ablation_set == "machine":
+            subset = hidden_states[labels == 1]
+        else:
+            raise ValueError(f"Unsupported ablation_set: {ablation_set}")
+
+        if subset.shape[0] == 0:
+            raise ValueError(f"No samples available for ablation_set='{ablation_set}'.")
+        return subset
+
+    @staticmethod
     def fit_ablation_axes_by_layer(
         hidden_states: np.ndarray,
         eps: float = 1e-12,
@@ -62,7 +81,12 @@ class CleanTopicSVBase(SVBase):
 
         val_hidden, val_labels = self._collect_hidden_states(data=dataset["val"], token_mode=args.token_mode)
 
-        ablation_means, ablation_axes = self.fit_ablation_axes_by_layer(val_hidden)
+        axis_fit_hidden = self._subset_for_ablation_axes(
+            hidden_states=val_hidden,
+            labels=val_labels,
+            ablation_set=str(getattr(args, "ablation_set", "all")),
+        )
+        ablation_means, ablation_axes = self.fit_ablation_axes_by_layer(axis_fit_hidden)
         val_hidden_ablated = self.ablate_hidden_states_with_axes(
             hidden_states=val_hidden,
             means=ablation_means,

@@ -19,6 +19,8 @@ DATASETS=("multisocial_en")
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
 SV_MODES=("clean_topic_val")   # default | denoise | denoise_layer | clean_topic | ldp | ldp_by_layer | pca_align | pca_sv | pca_layer
 TOKEN_MODE="last_token"
+# this is for sv_topic | sv_topic_val
+ABLATION_SET="all"  # human | machine | all
 
 SMOKE_TEST=0
 OOD="multisocial_ar"
@@ -40,7 +42,7 @@ for DATASET in "${DATASETS[@]}"; do
                 
             echo "------------------------------------------------"
             echo "Running Steering: Dataset=$DATASET, Model=$MODEL, SVMode=$SV_MODE, TokenMode=$TOKEN_MODE, PCA=$PCA_COMPONENTS_FLAG"
-            echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, NormalizeScores=$NORMALIZE_SCORES"
+            echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, NormalizeScores=$NORMALIZE_SCORES, AblationSet=$ABLATION_SET"
             echo "------------------------------------------------"
 
             
@@ -52,7 +54,8 @@ for DATASET in "${DATASETS[@]}"; do
                 --pca_components "$PCA_COMPONENTS_FLAG" \
                 --smoke_test "$SMOKE_TEST" \
                 --ood "$OOD" \
-                --normalize_scores "$NORMALIZE_SCORES"
+                --normalize_scores "$NORMALIZE_SCORES" \
+                --ablation_set "$ABLATION_SET"
             done
         done
     done
