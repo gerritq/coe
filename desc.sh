@@ -13,7 +13,7 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-DATASETS=("multisocial_en" "m4_wikipedia_chatgpt")
+DATASETS=("multisocial_en" "multitude_en")
 MODELS=("llama_8b") # qwen_06b
 ANALYSIS="topic_sv"  # "ld", "traj", "sv", "topic_sv", "all"
 SPLIT="val"
