@@ -203,10 +203,11 @@ class SVBase:
             "metrics_avg_projection_last_2_3_layers": avg_projection_last_2_3_metrics,
             "metrics_avg_projection_div_std_last_2_3_layers": avg_div_std_projection_last_2_3_metrics,
         }
+        ablation_set = str(getattr(args, "ablation_set", "all"))
 
         out_path = os.path.join(
             out_dir,
-            f"psm_{args.mode}_{args.model}_{steering_domain}_on_{eval_domain}_M{int(args.manifold)}_P{int(args.pca_components)}_NS{int(args.normalize_scores)}.json",
+            f"psm_{args.mode}_{args.model}_{steering_domain}_on_{eval_domain}_M{int(args.manifold)}_P{int(args.pca_components)}_NS{int(args.normalize_scores)}_AS{ablation_set}.json",
         )
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
@@ -227,6 +228,7 @@ class SVBase:
         eval_domain = eval_domain or args.dataset
         manifold = args.manifold
         pca_components = args.pca_components
+        ablation_set = str(getattr(args, "ablation_set", "all"))
 
         fig = plt.figure(figsize=(20, 12))
         grid = fig.add_gridspec(3, 5, height_ratios=[1.5, 1, 1])
@@ -330,7 +332,7 @@ class SVBase:
         )
 
         axis.set_title(
-            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | P{int(pca_components)} | NS{int(args.normalize_scores)} | last-layer AUROC={last_layer_auc_text} | avg-proj AUROC={avg_projection_auc_text} | avg/std AUROC={avg_div_std_projection_auc_text} | avg-proj(2/3) AUROC={avg_projection_last_2_3_auc_text} | avg/std(2/3) AUROC={avg_div_std_projection_last_2_3_auc_text}"
+            f"Steering Projection by Layer | {model} | steering={steering_domain} | eval={eval_domain} | M{int(manifold)} | P{int(pca_components)} | NS{int(args.normalize_scores)} | AS{ablation_set} | last-layer AUROC={last_layer_auc_text} | avg-proj AUROC={avg_projection_auc_text} | avg/std AUROC={avg_div_std_projection_auc_text} | avg-proj(2/3) AUROC={avg_projection_last_2_3_auc_text} | avg/std(2/3) AUROC={avg_div_std_projection_last_2_3_auc_text}"
         )
         axis.set_xlabel("Layer")
         axis.set_ylabel("Projection Score")
@@ -414,7 +416,7 @@ class SVBase:
 
         out_path = os.path.join(
             out_dir,
-            f"psp_{args.mode}_{model}_{steering_domain}_on_{eval_domain}_M{int(manifold)}_P{int(pca_components)}_NS{int(args.normalize_scores)}.png",
+            f"psp_{args.mode}_{model}_{steering_domain}_on_{eval_domain}_M{int(manifold)}_P{int(pca_components)}_NS{int(args.normalize_scores)}_AS{ablation_set}.png",
         )
         fig.tight_layout()
         fig.savefig(out_path, dpi=300, bbox_inches="tight")
