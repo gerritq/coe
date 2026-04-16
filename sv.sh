@@ -57,7 +57,7 @@ tsm_sums_vi_deepseek"
 
 # DATASETS=("m4_multi")
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
-SV_MODES=("default")   # default | denoise | denoise_layer | clean_topic | clean_topic_val | ldp | ldp_by_layer | pca_align | pca_sv | pca_layer
+SV_MODES=("default")   # default | denoise | denoise_layer | denoise_layer_split | clean_topic | clean_topic_val | ldp | ldp_by_layer | pca_align | pca_sv | pca_layer
 TOKEN_MODE="last_token"
 # this is for sv_topic | sv_topic_val
 ABLATION_SET="human"  # human | machine | all

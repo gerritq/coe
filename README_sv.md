@@ -6,6 +6,12 @@ git pull --rebase
 
 
 ## Ablation idea
+
+- ablation leads to low recall
+    - maybe we should ablate times a a parameter alpha
+    - NEXT: try other OOD
+
+
 - full ablation as in "No training wheels"
     - but maybe we need to do this at all layers and tokens
 - i think in the current implementation we also ablate the test set? I wasn't expecting that
