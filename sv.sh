@@ -55,7 +55,7 @@ cd "${ROOT_DIR}"
 # DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
 DATASETS=("multisocial_en")
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
-SV_MODES=("ldp_by_layer")   # default | denoise | denoise_layer | denoise_layer_split | clean_topic | clean_topic_val | ldp | ldp_by_layer | pca_align | pca_sv | pca_layer
+SV_MODES=("default")   # default | denoise | denoise_layer | denoise_layer_split | denoise_val | clean_topic | clean_topic_val | ldp | ldp_by_layer | lda | pca_align | pca_sv | pca_layer
 TOKEN_MODE="last_token"
 # this is for sv_topic | sv_topic_val
 ABLATION_SET="human"  # human | machine | all
@@ -67,7 +67,7 @@ NORMALIZE_SCORES=1
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
         for SV_MODE in "${SV_MODES[@]}"; do
-            if [ "$SV_MODE" != "default" ] && [ "$SV_MODE" != "clean_topic" ] && [ "$SV_MODE" != "clean_topic_val" ]; then
+            if [ "$SV_MODE" != "default" ] && [ "$SV_MODE" != "clean_topic" ] && [ "$SV_MODE" != "clean_topic_val" ] && [ "$SV_MODE" != "lda" ]; then
                 # PCA_COMPONENTS=(5 10 15 20 25 30 40 50)
                 PCA_COMPONENTS=(25 50 100)
                 # PCA_COMPONENTS=(20)
