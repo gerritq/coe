@@ -6,17 +6,13 @@
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
-#SBATCH --exclude=erc-hpc-comp035
+#SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050
 # SBATCH --constraint=h200|b200|a100
 
 nvidia-smi
 
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
-
-# Full ID data
-# DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
-# DATASETS=("m4_multi" "multisocial_full")
 
 # Multitude - languages
 # DATASETS=("multitude_en")
@@ -45,25 +41,27 @@ cd "${ROOT_DIR}"
 # tsm_paras_vi_first_deepseek"
 
 # TSM - Tasks
-DATASETS=("tsm_paras_en_first_gpt4o")
-OOD="tsm_sums_en_gemini \
-tsm_sums_en_deepseek \
-tsm_sums_pt_gpt4o \
-tsm_sums_pt_gemini \
-tsm_sums_pt_deepseek \
-tsm_sums_vi_gpt4o \
-tsm_sums_vi_gemini \
-tsm_sums_vi_deepseek"
+# DATASETS=("tsm_paras_en_first_gpt4o")
+# OOD="tsm_sums_en_gemini \
+# tsm_sums_en_deepseek \
+# tsm_sums_pt_gpt4o \
+# tsm_sums_pt_gemini \
+# tsm_sums_pt_deepseek \
+# tsm_sums_vi_gpt4o \
+# tsm_sums_vi_gemini \
+# tsm_sums_vi_deepseek"
 
-# DATASETS=("m4_multi")
+# Full ID data
+# DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
+DATASETS=("multisocial_en")
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
-SV_MODES=("default")   # default | denoise | denoise_layer | denoise_layer_split | clean_topic | clean_topic_val | ldp | ldp_by_layer | pca_align | pca_sv | pca_layer
+SV_MODES=("ldp_by_layer")   # default | denoise | denoise_layer | denoise_layer_split | clean_topic | clean_topic_val | ldp | ldp_by_layer | pca_align | pca_sv | pca_layer
 TOKEN_MODE="last_token"
 # this is for sv_topic | sv_topic_val
 ABLATION_SET="human"  # human | machine | all
 
 SMOKE_TEST=0
-
+OOD="multisocial_ar"
 NORMALIZE_SCORES=1
 
 for DATASET in "${DATASETS[@]}"; do
