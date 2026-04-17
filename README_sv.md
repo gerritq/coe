@@ -6,11 +6,19 @@ git pull --rebase
 
 ## LDA idea
 
+- NEXT: more OOD settings + baselines
+    - more challenging ood settings + run proper baselines including repguard
 - can be written as any  function that linrearly discriminates, we use lda
 - multi m4 seems to beat the baseline
 - correct the eval function, terrible eval scores 
 - can we do lda in low dim?
-- NEXT: more OOD settings + baselines
+- comparison to bert can be also about sample efficiency!
+- can also compare the linear boundary identified by lr with the sv
+- investigate where probes are most accurate
+- take the subset of probes with highest acc
+- we can also use this spans for making tokens interpretable, like going over the full text?
+- we can work on identifying a subset of best probes, and then make this an ensemble
+
 
 - m_lda better acc than lda; but we need to adjust eval fucntion
     - try denoising
