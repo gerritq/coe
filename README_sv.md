@@ -4,6 +4,11 @@ git pull --rebase
 
 # Today
 
+## LDA idea
+
+- can be written as any  function that linrearly discriminates, we use lda
+- multi m4 seems to beat the baseline
+- NEXT: more OOD settings + baselines
 
 ## Ablation idea
 
