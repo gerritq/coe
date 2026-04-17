@@ -65,31 +65,10 @@ class MLdaSVBase(SVBase):
             x = hidden_states[:, layer_idx, :]
             y = labels
 
-            if np.unique(y).size < 2:
-                models.append({"kind": "linear", "w": np.zeros((x.shape[1],), dtype=np.float32), "b": 0.0})
-                continue
+            lda = LinearDiscriminantAnalysis(solver="eigen", shrinkage="auto")
+            lda.fit(x, y)
+            models.append({"kind": "lda", "model": lda})
 
-            try:
-                lda = LinearDiscriminantAnalysis(solver="eigen", shrinkage="auto")
-                lda.fit(x, y)
-                models.append({"kind": "lda", "model": lda})
-                continue
-            except Exception:
-                pass
-
-            try:
-                lda = LinearDiscriminantAnalysis(solver="lsqr", shrinkage="auto")
-                lda.fit(x, y)
-                models.append({"kind": "lda", "model": lda})
-                continue
-            except Exception:
-                pass
-
-            machine_mean = x[y == 1].mean(axis=0)
-            human_mean = x[y == 0].mean(axis=0)
-            w = (machine_mean - human_mean).astype(np.float32)
-            b = float(-0.5 * np.dot(machine_mean + human_mean, w))
-            models.append({"kind": "linear", "w": w, "b": b})
 
         return models
 
