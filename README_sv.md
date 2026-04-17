@@ -8,7 +8,14 @@ git pull --rebase
 
 - can be written as any  function that linrearly discriminates, we use lda
 - multi m4 seems to beat the baseline
+- correct the eval function, terrible eval scores 
+- can we do lda in low dim?
 - NEXT: more OOD settings + baselines
+
+- for lit review
+ - papers relying on interals: repguard, https://aclanthology.org/2024.emnlp-main.885.pdf, Text Fluoroscopy: Detecting LLM-Generated Text through Intrinsic Features
+- check also this for probes: https://aclanthology.org/2025.findings-emnlp.880.pdf
+
 
 ## Ablation idea
 
