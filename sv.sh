@@ -30,15 +30,15 @@ cd "${ROOT_DIR}"
 # multisocial_ar"
 
 # TSM - Generators
-DATASETS=("tsm_paras_en_first_gpt4o")
-OOD="tsm_paras_en_first_gemini \
-tsm_paras_en_first_deepseek \
-tsm_paras_pt_first_gpt4o \
-tsm_paras_pt_first_gemini \
-tsm_paras_pt_first_deepseek \
-tsm_paras_vi_first_gpt4o \
-tsm_paras_vi_first_gemini \
-tsm_paras_vi_first_deepseek"
+# DATASETS=("tsm_paras_en_first_gpt4o")
+# OOD="tsm_paras_en_first_gemini \
+# tsm_paras_en_first_deepseek \
+# tsm_paras_pt_first_gpt4o \
+# tsm_paras_pt_first_gemini \
+# tsm_paras_pt_first_deepseek \
+# tsm_paras_vi_first_gpt4o \
+# tsm_paras_vi_first_gemini \
+# tsm_paras_vi_first_deepseek"
 
 # TSM - Tasks
 # DATASETS=("tsm_paras_en_first_gpt4o")
@@ -54,9 +54,10 @@ tsm_paras_vi_first_deepseek"
 # Full ID data
 # DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
 # DATASETS=("tsm_multi")
-# OOD=""
+DATASETS=("multisocial_en")
+OOD="multisocial_ar multisocial_de"
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
-SV_MODES=("lda")   # default | denoise | denoise_layer | denoise_layer_split | denoise_val | clean_topic | clean_topic_val | ldp | ldp_by_layer | lda | pca_align | pca_sv | pca_layer
+SV_MODES=("m_lda")   # default | denoise | denoise_layer | denoise_layer_split | denoise_val | clean_topic | clean_topic_val | ldp | ldp_by_layer | lda | pca_align | pca_sv | pca_layer
 TOKEN_MODE="last_token"
 # this is for sv_topic | sv_topic_val
 ABLATION_SET="human"  # human | machine | all

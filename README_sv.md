@@ -12,6 +12,9 @@ git pull --rebase
 - can we do lda in low dim?
 - NEXT: more OOD settings + baselines
 
+- m_lda better acc than lda; but we need to adjust eval fucntion
+    - try denoising
+
 - for lit review
  - papers relying on interals: repguard, https://aclanthology.org/2024.emnlp-main.885.pdf, Text Fluoroscopy: Detecting LLM-Generated Text through Intrinsic Features
 - check also this for probes: https://aclanthology.org/2025.findings-emnlp.880.pdf
