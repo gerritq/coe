@@ -9,6 +9,7 @@ from src.sv.sv_clean_topic import CleanTopicSVBase
 from src.sv.sv_clean_topic_val import CleanTopicValSVBase
 from src.sv.sv_ldp import LDPSVBase
 from src.sv.sv_ldp_by_layer import LDPByLayerSVBase
+from src.sv.sv_m_logistic import MLogisticSVBase
 from src.sv.sv_m_lda import MLdaSVBase
 from src.sv.sv_lda import LdaSVBase
 from src.sv.sv_pca_align import PCAAlignSVBase
@@ -36,6 +37,7 @@ def parse_args() -> Namespace:
             "clean_topic_val",
             "ldp",
             "ldp_by_layer",
+            "m_logistic",
             "m_lda",
             "lda",
             "pca_align",
@@ -84,6 +86,7 @@ def main() -> None:
         "clean_topic_val",
         "ldp",
         "ldp_by_layer",
+        "m_logistic",
         "m_lda",
         "lda",
         "pca_align",
@@ -107,6 +110,8 @@ def main() -> None:
         analyzer = LDPSVBase(model_name=args.model)
     elif args.mode == "ldp_by_layer":
         analyzer = LDPByLayerSVBase(model_name=args.model)
+    elif args.mode == "m_logistic":
+        analyzer = MLogisticSVBase(model_name=args.model)
     elif args.mode == "m_lda":
         analyzer = MLdaSVBase(model_name=args.model)
     elif args.mode == "lda":

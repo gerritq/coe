@@ -57,7 +57,7 @@ cd "${ROOT_DIR}"
 DATASETS=("multisocial_en")
 OOD="multisocial_ar multisocial_de"
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
-SV_MODES=("m_lda")   # default | denoise | denoise_layer | denoise_layer_split | denoise_val | clean_topic | clean_topic_val | ldp | ldp_by_layer | lda | pca_align | pca_sv | pca_layer
+SV_MODES=("m_lda")   # default | denoise | denoise_layer | denoise_layer_split | denoise_val | clean_topic | clean_topic_val | ldp | ldp_by_layer | m_logistic | m_lda | lda | pca_align | pca_sv | pca_layer
 TOKEN_MODE="last_token"
 # this is for sv_topic | sv_topic_val
 ABLATION_SET="human"  # human | machine | all
