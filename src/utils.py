@@ -34,13 +34,47 @@ def load_dataset(args: Namespace):
 
     return data
 
-def optimal_threshold(y_true: np.ndarray, y_predict: np.ndarray) -> float:
-    """used with the dev set to determine the optimal threshold"""
-    y_true_arr = np.asarray(y_true).astype(int).reshape(-1)
-    y_score_arr = np.asarray(y_predict).astype(float).reshape(-1)
-    fpr, tpr, thresholds = roc_curve(y_true_arr, y_score_arr)
-    best_idx = int(np.argmax(tpr - fpr))
-    return float(thresholds[best_idx])
+def optimal_threshold(
+    y_true: np.ndarray,
+    y_predict: np.ndarray,
+    num_thresholds: int = 1001,
+) -> dict[str, float]:
+    """Determine thresholds that maximize F1 and accuracy on a dev set."""
+    labels = np.asarray(y_true).astype(int).reshape(-1)
+    preds = np.asarray(y_predict).astype(float).reshape(-1)
+    thresholds = np.linspace(0.0, 1.0, int(num_thresholds))
+
+    best_threshold_f1 = 0.0
+    best_f1 = -1.0
+    best_threshold_acc = 0.0
+    best_acc = -1.0
+
+    for threshold in thresholds:
+        pred_labels = (preds >= threshold).astype(int)
+
+        tp = np.sum((pred_labels == 1) & (labels == 1))
+        fp = np.sum((pred_labels == 1) & (labels == 0))
+        fn = np.sum((pred_labels == 0) & (labels == 1))
+
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+        acc = float(np.mean(pred_labels == labels))
+
+        if f1 > best_f1:
+            best_f1 = float(f1)
+            best_threshold_f1 = float(threshold)
+
+        if acc > best_acc:
+            best_acc = float(acc)
+            best_threshold_acc = float(threshold)
+
+    return {
+        "threshold_f1": best_threshold_f1,
+        "best_f1": best_f1,
+        "threshold_acc": best_threshold_acc,
+        "best_acc": best_acc,
+    }
 
 
 def evaluation(
@@ -101,11 +135,15 @@ def evaluation(
 
     fpr, tpr, _ = roc_curve(y_true_arr, y_score_arr)
     if n_val_valid > 0 and len(np.unique(y_val_true_arr)) > 1:
-        optimal_thresh = optimal_threshold(y_val_true_arr, y_val_score_arr)
+        threshold_stats = optimal_threshold(y_val_true_arr, y_val_score_arr)
     else:
-        optimal_thresh = optimal_threshold(y_true_arr, y_score_arr)
+        threshold_stats = optimal_threshold(y_true_arr, y_score_arr)
 
-    y_pred_arr = (y_score_arr >= optimal_thresh).astype(int)
+    optimal_thresh_f1 = float(threshold_stats["threshold_f1"])
+    optimal_thresh_acc = float(threshold_stats["threshold_acc"])
+
+    y_pred_f1 = (y_score_arr >= optimal_thresh_f1).astype(int)
+    y_pred_acc = (y_score_arr >= optimal_thresh_acc).astype(int)
 
     fpr_target = 0.01
     mask_fpr = fpr <= fpr_target
@@ -120,12 +158,16 @@ def evaluation(
         "n_valid": n_valid,
         "n_val_total": n_val_total,
         "n_val_valid": n_val_valid,
-        "acc": float(accuracy_score(y_true_arr, y_pred_arr)),
-        "f1": float(f1_score(y_true_arr, y_pred_arr, average="binary", zero_division=0)),
-        "pre": float(precision_score(y_true_arr, y_pred_arr, average="binary", zero_division=0)),
-        "recall": float(recall_score(y_true_arr, y_pred_arr, average="binary", zero_division=0)),
+        "acc": float(accuracy_score(y_true_arr, y_pred_acc)),
+        "f1": float(f1_score(y_true_arr, y_pred_f1, average="binary", zero_division=0)),
+        "pre": float(precision_score(y_true_arr, y_pred_f1, average="binary", zero_division=0)),
+        "recall": float(recall_score(y_true_arr, y_pred_f1, average="binary", zero_division=0)),
         "auroc": float(roc_auc_score(y_true_arr, y_score_arr)),
-        "optimal_threshold": optimal_thresh,
+        "optimal_threshold": optimal_thresh_f1,
+        "optimal_threshold_f1": optimal_thresh_f1,
+        "optimal_threshold_acc": optimal_thresh_acc,
+        "best_f1_on_threshold_sweep": float(threshold_stats["best_f1"]),
+        "best_acc_on_threshold_sweep": float(threshold_stats["best_acc"]),
         "tpr_at_fpr_0_01": tpr_at_fpr_0_01,
         "fpr95": fpr95,
         "aupr": float(average_precision_score(y_true_arr, y_score_arr)),
