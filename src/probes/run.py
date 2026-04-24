@@ -1,6 +1,7 @@
 import argparse
 from argparse import Namespace
 
+from src.probes.probe_feature import FeatureProbeBase
 from src.probes.probe_logistic import LogisticProbeBase
 from src.probes.probe_logistic_m import LogisticManifoldProbeBase
 
@@ -13,7 +14,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--mode",
         type=str,
-        choices=["logistic", "logistic_m"],
+        choices=["logistic", "logistic_m", "feature"],
         default="logistic",
     )
 
@@ -49,6 +50,8 @@ def main() -> None:
 
     if args.mode == "logistic_m":
         analyzer = LogisticManifoldProbeBase(model_name=args.model)
+    elif args.mode == "feature":
+        analyzer = FeatureProbeBase(model_name=args.model)
     else:
         analyzer = LogisticProbeBase(model_name=args.model)
     result = analyzer.run(args)
