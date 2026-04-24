@@ -70,10 +70,9 @@ class LogisticManifoldProbeBase(ProbeBase):
                 continue
 
             logistic = LogisticRegression(
-                penalty="l2",
+                penalty=None,
                 solver="lbfgs",
                 max_iter=2000,
-                class_weight="balanced",
                 random_state=42,
             )
             logistic.fit(x, y)

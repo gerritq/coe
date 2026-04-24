@@ -6,10 +6,11 @@ from typing import Any
 
 
 BASE_DIR = Path(os.getenv("BASE_COE", "."))
-SV_OOD_DIR = BASE_DIR / "output" / "sv_ood"
-BASELINE_DIR = SV_OOD_DIR / "sandbox_default"
-METHOD_DIR = SV_OOD_DIR / "sandbox_clean_topic_val"
-OUT_TEX = BASE_DIR / "item" / "ood.tex"
+SV_OOD_DIR = BASE_DIR / "output" / "probe_ood"
+BASELINE_DIR = SV_OOD_DIR / "sandbox_logistic"
+METHOD_DIR = SV_OOD_DIR / "sandbox_logistic_m"
+OUT_TEX = BASE_DIR / "item" / "ood_log.tex"
+
 
 
 @dataclass
@@ -45,7 +46,10 @@ def _last_layer_auroc(metrics_per_layer: dict[str, Any]) -> float:
     return layer_items[-1][1]
 
 
-def _collect_rows(folder: Path) -> dict[tuple[str, str, str, str], ScoreRow]:
+def _collect_rows(
+    folder: Path,
+    required_pca_components: int | None = None,
+) -> dict[tuple[str, str, str, str], ScoreRow]:
     rows: dict[tuple[str, str, str, str], ScoreRow] = {}
     for path in sorted(folder.glob("psm_*.json")):
         data = _read_json(path)
@@ -59,6 +63,14 @@ def _collect_rows(folder: Path) -> dict[tuple[str, str, str, str], ScoreRow]:
             continue
 
         args = data.get("args", {})
+        if required_pca_components is not None:
+            try:
+                pca_components = int(args.get("pca_components", -1))
+            except (TypeError, ValueError):
+                continue
+            if pca_components != required_pca_components:
+                continue
+
         model = str(args.get("model", ""))
         ablation_set = str(args.get("ablation_set", "all"))
 
@@ -83,7 +95,7 @@ def _tex_escape(text: str) -> str:
 
 def build_latex_table() -> str:
     baseline = _collect_rows(BASELINE_DIR)
-    method = _collect_rows(METHOD_DIR)
+    method = _collect_rows(METHOD_DIR, required_pca_components=50)
 
     common_keys = sorted(set(baseline.keys()) & set(method.keys()))
 
