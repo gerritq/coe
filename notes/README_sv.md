@@ -2,34 +2,15 @@ git pull --rebase
 :wq
 
 
-# Today
-
 ## LDA idea
 
-- NEXT: more OOD settings + baselines
-    - more challenging ood settings + run proper baselines including repguard
-- can be written as any  function that linrearly discriminates, we use lda
-- multi m4 seems to beat the baseline
-- correct the eval function, terrible eval scores 
-- can we do lda in low dim?
-- comparison to bert can be also about sample efficiency!
-- can also compare the linear boundary identified by lr with the sv
-- investigate where probes are most accurate
-- take the subset of probes with highest acc
-- we can also use this spans for making tokens interpretable, like going over the full text?
-- we can work on identifying a subset of best probes, and then make this an ensemble
-
-
-- m_lda better acc than lda; but we need to adjust eval fucntion
-    - try denoising
-
-- for lit review
  - papers relying on interals: repguard, https://aclanthology.org/2024.emnlp-main.885.pdf, Text Fluoroscopy: Detecting LLM-Generated Text through Intrinsic Features
 - check also this for probes: https://aclanthology.org/2025.findings-emnlp.880.pdf
 
 
 ## Ablation idea
 
+- can ablate with 0.5
 - ablation leads to low recall
     - maybe we should ablate times a a parameter alpha
     - NEXT: try other OOD
@@ -176,6 +157,11 @@ In a "clean" dataset, they are nearly identical. In a "noisy" or "complex" datas
 - Can we fool the model with the SV we obtained? Like llr, fast-detect, ppl: can we drop their performance with interventions?
 
 ## Misc
+
+- Can we go more to distributions?
+    Then, for example, use the Mahalanobis distance? To PCAed representations?
+
+- One uses the first PCA to obtain the SV, what about we use this subspace?
 
 - Can we reverse the label? So that we assume that there is a homogenous machine subspace, but the human one differs?
     - And then projecting how to any of the human activation subspaces

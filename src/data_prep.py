@@ -14,6 +14,7 @@ MULTISOCIAL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "multisocial")
 TSM_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "tsm")
 DETECT_RL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "detectrl")
 MULTITUDE_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "multitude")
+EDITLENS_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "editlens")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(RAW_DATA_DIR, exist_ok=True)
@@ -36,6 +37,49 @@ SEED=42
 
 random.seed(SEED)
 
+def prepare_editlens() -> None:
+    val_per_label = VALIDATION_N // 2
+    test_per_label = TESTING_N // 2
+
+    def sample_split(csv_path: str, per_label: int) -> list[dict[str, Any]]:
+        rows_by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
+
+        dataset = Dataset.from_csv(csv_path)
+        for row in dataset:
+            text = str(row.get("text", "")).strip()
+            text_type = str(row.get("text_type", "")).strip().lower()
+            if not text:
+                continue
+
+            if text_type == "human_written":
+                label = 0
+            elif text_type in {"ai_generated", "ai_edited"}:
+                label = 1
+            else:
+                continue
+
+            rows_by_label[label].append({"text": text, "label": label})
+
+        rng = random.Random(SEED)
+        rng.shuffle(rows_by_label[0])
+        rng.shuffle(rows_by_label[1])
+
+        take = min(per_label, len(rows_by_label[0]), len(rows_by_label[1]))
+        sampled = rows_by_label[0][:take] + rows_by_label[1][:take]
+        rng.shuffle(sampled)
+        return sampled
+
+    val_path = os.path.join(EDITLENS_RAW_DATA_DIR, "val.csv")
+    test_path = os.path.join(EDITLENS_RAW_DATA_DIR, "test.csv")
+
+    split_data = {
+        "val": sample_split(val_path, val_per_label),
+        "test": sample_split(test_path, test_per_label),
+    }
+    save_jsonl_splits("editlens", split_data)
+
+    print("\nSummary of EditLens splits:")
+    print({split: len(rows) for split, rows in split_data.items()})
 
 def prepare_multitude()-> None:
     languages = ["de", "en", "uk", "pt", "ro", "nl"]
@@ -517,10 +561,12 @@ def main() -> None:
     # prepare_tsm_multi()
 
     # prepare multitude
-    print("Preparing MULTITUDE data...")
-    prepare_multitude()
+    # print("Preparing MULTITUDE data...")
+    # prepare_multitude()
 
-
+    # prepare editlens
+    print("Preparing EditLens data...")
+    prepare_editlens()
 
 
 if __name__ == "__main__":
