@@ -16,8 +16,14 @@ cd "${ROOT_DIR}"
 
 # Full ID data examples
 # DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
-DATASETS=("editlens")
-OOD=""
+# DATASETS=("editlens" "tsm_multi" "m4_multi" "multisocial_full")
+# OOD=""
+DATASETS=("multisocial_en")
+OOD="multisocial_de \
+multisocial_nl \
+multisocial_pt \
+multisocial_ar"
+
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
 PROBE_MODES=("logistic" "logistic_m")
 TOKEN_MODE="last_token"
