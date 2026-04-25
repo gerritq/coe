@@ -7,7 +7,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
 #SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031
-# SBATCH --constraint=h200|b200|a100
+#SBATCH --constraint=h200|b200|a100
 
 nvidia-smi
 
@@ -25,7 +25,7 @@ multisocial_pt \
 multisocial_ar"
 
 MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
-PROBE_MODES=("logistic" "logistic_m")
+PROBE_MODES=("feature")
 TOKEN_MODE="last_token"
 
 SMOKE_TEST=0
