@@ -102,7 +102,7 @@ class EncoderBaseline:
             ood_logits = torch.from_numpy(ood_predictions.predictions)
             ood_probs = torch.nn.functional.softmax(ood_logits, dim=-1).numpy()
 
-            ds_metrics = metrics(y_true=ood_ds_tok["label"], 
+            ds_metrics = metrics(y_true=ood_ds['test']["label"],
                                   y_predict=ood_probs[:, 1],
                                   acc_threshold=optimal_thresholds_dict["threshold_acc"],
                                   f1_threshold=optimal_thresholds_dict["threshold_f1"])

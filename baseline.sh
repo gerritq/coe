@@ -6,23 +6,34 @@
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=30GB
-# SBATCH --constraint=h200|b200
+#SBATCH --constraint=h200|b200|a100
+#SBATCH --exclude=erc-hpc-comp035
+
+set -euo pipefail
 
 nvidia-smi
 
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
+mkdir -p logs
 
-DATASETS=("detectrl_arxiv")
+DATASETS=(
+    "detectrl_arxiv"
+    # "detectrl_xsum"
+    # "detectrl_writing_prompt"
+    # "detectrl_yelp_review"
+    # "multisocial_en"
+)
 SMOKE_TEST=1
+OOD=0
 MODELS=(
-        # "encoder" 
+        "encoder" 
         "llr" 
-        # "fastdetectgpt" 
-        # "rank" 
-        # "entropy"
-        # "likelihood"
-        # "binoculars" 
+        "fastdetectgpt" 
+        "rank" 
+        "entropy"
+        "likelihood"
+        "binoculars" 
         )        
 
 
@@ -30,20 +41,13 @@ MODELS=(
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
         echo "------------------------------------------------"
-        echo "Running Baseline: Dataset=$DATASET, Model=$MODEL"
+        echo "Running Baseline: Dataset=$DATASET, Model=$MODEL, OOD=$OOD, Smoke=$SMOKE_TEST"
         echo "------------------------------------------------"
 
-        if [[ "$MODEL" == "binoculars" ]]; then
-            # UV_PROJECT_ENVIRONMENT=".venv_bo" 
-            PYTHONPATH="${ROOT_DIR}" uv run src/baseline/baseline.py \
-                    --dataset "$DATASET" \
-                    --model "$MODEL" \
-                    --smoke_test "$SMOKE_TEST"
-        else
-            PYTHONPATH="${ROOT_DIR}" uv run src/baseline/baseline.py \
-                    --dataset "$DATASET" \
-                    --model "$MODEL" \
-                    --smoke_test "$SMOKE_TEST"
-        fi
+        PYTHONPATH="${ROOT_DIR}" uv run src/baseline/baseline.py \
+                --dataset "$DATASET" \
+                --model "$MODEL" \
+                --smoke_test "$SMOKE_TEST" \
+                --ood "$OOD"
     done
 done
