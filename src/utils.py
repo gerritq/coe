@@ -94,6 +94,9 @@ def metrics(y_true: np.ndarray,
     if np.any(np.isinf(y_predict)) or np.any(np.isnan(y_predict)):
         raise ValueError("y_predict contains infinite or nan")
 
+    y_true = np.asarray(y_true).astype(int)
+    y_predict = np.asarray(y_predict).astype(float)
+
     # Acc and F1 with optimal thresholds    
     y_pred_acc = (y_predict >= acc_threshold).astype(int)
     y_pred_f1 = (y_predict >= f1_threshold).astype(int)
