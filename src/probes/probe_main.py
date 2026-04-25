@@ -11,15 +11,16 @@ from sklearn.preprocessing import StandardScaler
 
 BASE_DIR = os.getenv("BASE_COE")
 OUT_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
+os.makedirs(OUT_DIR, exist_ok=True)
 
 class LinearProbing:
     def __init__(self, args: Namespace) -> None:
         self.args = args
         self.inference = Inference(self.args.model_name)
 
-
     def _collect_hidden_states(self, 
-                               items: list[dict]) -> dict[str, Any]:
+                               items: list[dict]
+                               ) -> dict[str, Any]:
         
         all_hidden_states = []
         labels = []
@@ -50,7 +51,6 @@ class LinearProbing:
                           x_val: np.ndarray,
                           y_val: np.ndarray
                           ) -> dict[str, Any]:
-
 
         scalers_by_layer = []
         models_by_layer = []
@@ -138,7 +138,7 @@ class LinearProbing:
                 top_k_hard_preds.append(y_pred_hard)
 
         # ensemble score
-        votes = np.stack(top_k_hard_preds, axis=0)              # (top_k, n_samples)
+        votes = np.stack(top_k_hard_preds, axis=0)  # (top_k, n_samples)
         ensemble_score = (votes.sum(axis=0) >= (top_k / 2)).astype(np.float32)  # (n_samples,)
         ensemble_metrics = metrics(
             y_true=y_true,
