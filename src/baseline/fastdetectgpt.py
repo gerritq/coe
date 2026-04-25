@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import random
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from argparse import Namespace
 
 # All code taken form https://github.com/baoguangsheng/fast-detect-gpt
 
@@ -48,7 +49,9 @@ class FastDetectGPT:
         discrepancy = discrepancy.mean()
         return discrepancy.item()
 
-    def run(self, texts: list[str]):
+    def run(self, 
+            texts: list[str],
+            args: Namespace) -> list[float]:
         '''wrapper function to run get_samplnig_discrepency_analytic for list of txts'''
 
         random.seed(42)

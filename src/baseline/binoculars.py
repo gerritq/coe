@@ -4,10 +4,9 @@ import torch
 import transformers
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from typing import Union
+from argparse import Namespace
 
 # All code taken from: https://github.com/ahans30/Binoculars
-
-
 
 # Utils functions
 
@@ -152,9 +151,12 @@ class Binoculars(object):
         return observer_logits, performer_logits
 
 
-    def run(self, input_text: Union[list[str], str], batch_size: int = 16) -> Union[float, list[float]]:
+    def run(self, 
+            args: Namespace,
+            texts: Union[list[str], str],
+            batch_size: int = 16) -> Union[float, list[float]]:
 
-        batch = [input_text] if isinstance(input_text, str) else input_text
+        batch = [texts] if isinstance(texts, str) else texts
         all_scores = []
 
         for i in range(0, len(batch), batch_size):
@@ -174,4 +176,4 @@ class Binoculars(object):
 
             all_scores.extend(binoculars_scores.tolist())
 
-        return all_scores[0] if isinstance(input_text, str) else all_scores
+        return all_scores[0] if isinstance(texts, str) else all_scores

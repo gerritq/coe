@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from argparse import Namespace
 
 class Entropy:
     
@@ -23,7 +24,9 @@ class Entropy:
             neg_entropy = F.softmax(logits, dim=-1) * F.log_softmax(logits, dim=-1)
             return -neg_entropy.sum(-1).mean().item()
         
-    def run(self, texts: list[str]):
+    def run(self, 
+            texts: list[str],
+            args: Namespace) -> list[float]:
         '''wrapper function to run get_entropy for list of txts'''
         scores = []
         for text in texts:

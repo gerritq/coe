@@ -1,5 +1,6 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from argparse import Namespace
 
 # All code taken from: https://github.com/mbzuai-nlp/DetectLLM
 # Only modification is to change the tokenizer and model; and we create a class
@@ -49,7 +50,9 @@ class LLR:
     # def compute_llrs(self, texts):
     #     return [self.compute_llr(text) for text in texts]
 
-    def run(self, texts: list[str], args):
+    def run(self, 
+            texts: list[str], 
+            args: Namespace) -> list[float]:
         results= []
         for i, text in enumerate(texts):
             try:

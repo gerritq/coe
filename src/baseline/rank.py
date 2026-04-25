@@ -1,4 +1,5 @@
 import torch
+from argparse import Namespace
 from transformers import (AutoTokenizer, 
                           AutoModelForCausalLM)
 class Rank:
@@ -37,5 +38,7 @@ class Rank:
                 return ranks.float().mean().item()
 
 
-    def run(self, texts: list[str]) -> list[float]:
+    def run(self, 
+            texts: list[str],
+            args: Namespace) -> list[float]:
         return [self._get_rank(text) for text in texts]

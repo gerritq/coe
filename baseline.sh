@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=baselines_bin
+#SBATCH --job-name=baselines
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=01:00:00
@@ -13,19 +13,18 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-# DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")  # "tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full"
-DATASETS=("tsm_multi")
+DATASETS=("detectrl_arxiv")
+SMOKE_TEST=1
 MODELS=(
         # "encoder" 
-        # "llr" 
+        "llr" 
         # "fastdetectgpt" 
         # "rank" 
         # "entropy"
         # "likelihood"
-        "binoculars" 
+        # "binoculars" 
         )        
 
-SMOKE_TEST=1
 
 # Nested loop to run every model on every dataset
 for DATASET in "${DATASETS[@]}"; do
