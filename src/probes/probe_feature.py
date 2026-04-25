@@ -115,10 +115,11 @@ class FeatureProbeBase:
             last_idx = max(seq_len - 1, 0)
 
             for layer_idx, layer_h in enumerate(hidden_states):
-                mean_pooled = layer_h.mean(dim=1).detach().cpu().numpy().reshape(-1)
-                last_pooled = layer_h[:, last_idx, :].detach().cpu().numpy().reshape(-1)
-                min_pooled = layer_h.min(dim=1).values.detach().cpu().numpy().reshape(-1)
-                max_pooled = layer_h.max(dim=1).values.detach().cpu().numpy().reshape(-1)
+                layer_h_f = layer_h.float()
+                mean_pooled = layer_h_f.mean(dim=1).detach().cpu().numpy().reshape(-1)
+                last_pooled = layer_h_f[:, last_idx, :].detach().cpu().numpy().reshape(-1)
+                min_pooled = layer_h_f.min(dim=1).values.detach().cpu().numpy().reshape(-1)
+                max_pooled = layer_h_f.max(dim=1).values.detach().cpu().numpy().reshape(-1)
                 concat_pooled = np.hstack([min_pooled, max_pooled, mean_pooled]).astype(np.float32)
 
                 pooled_rows_by_layer[layer_idx]["mean"].append(mean_pooled.astype(np.float32))
@@ -128,7 +129,7 @@ class FeatureProbeBase:
                 pooled_rows_by_layer[layer_idx]["concat"].append(concat_pooled)
 
                 # attention features cache: per-head entropy from attention probabilities
-                a = attentions[layer_idx].detach().cpu().numpy()[0]  # (heads, S, S)
+                a = attentions[layer_idx].float().detach().cpu().numpy()[0]  # (heads, S, S)
                 a = np.clip(a, 1e-12, 1.0)
                 ent = -(a * np.log(a)).sum(axis=-1).mean(axis=-1).astype(np.float32)  # (heads,)
                 attn_rows_by_layer[layer_idx].append(ent)
