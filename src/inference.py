@@ -19,6 +19,7 @@ class Inference:
         self,
         model_name: str,
         device: str | None = None,
+        attn_implementation: str | None = None,
     ) -> None:
         if model_name not in MODEL_DIR:
             available = ", ".join(sorted(MODEL_DIR))
@@ -33,7 +34,10 @@ class Inference:
         config.tie_word_embeddings = False
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)
-        self.model = AutoModelForCausalLM.from_pretrained(self.model_id, config=config)
+        model_kwargs: dict[str, Any] = {"config": config}
+        if attn_implementation is not None:
+            model_kwargs["attn_implementation"] = attn_implementation
+        self.model = AutoModelForCausalLM.from_pretrained(self.model_id, **model_kwargs)
         self.model.to(self.device)
         self.model.eval()
 

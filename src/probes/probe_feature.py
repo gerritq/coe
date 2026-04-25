@@ -20,7 +20,8 @@ class FeatureProbeBase:
     """Independent feature probe with notebook-style feature sets per layer."""
 
     def __init__(self, model_name: str) -> None:
-        self.inference = Inference(model_name=model_name)
+        # Eager attention is needed here to reliably return attention tensors.
+        self.inference = Inference(model_name=model_name, attn_implementation="eager")
 
     @staticmethod
     def _safe_entropy(x: np.ndarray) -> np.ndarray:
@@ -102,7 +103,6 @@ class FeatureProbeBase:
 
             hidden_states = outputs.hidden_states[1:]
             attentions = outputs.attentions
-
             if layer_count is None:
                 layer_count = len(hidden_states)
                 pooled_rows_by_layer = [
@@ -115,6 +115,7 @@ class FeatureProbeBase:
             last_idx = max(seq_len - 1, 0)
 
             for layer_idx, layer_h in enumerate(hidden_states):
+                print(layer_idx)
                 layer_h_f = layer_h.float()
                 mean_pooled = layer_h_f.mean(dim=1).detach().cpu().numpy().reshape(-1)
                 last_pooled = layer_h_f[:, last_idx, :].detach().cpu().numpy().reshape(-1)
