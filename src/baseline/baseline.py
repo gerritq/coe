@@ -9,7 +9,8 @@ from src.utils import (load_dataset,
                        optimal_thresholds,
                        metrics, 
                        return_args,
-                       return_device)
+                       return_device,
+                       OOD)
 
 """
 - fix to onclude args in run
@@ -23,11 +24,6 @@ DATA_DIR = os.path.join(BASE_DIR, "data/sets")
 BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
 os.makedirs(BASELINE_DIR, exist_ok=True)
 
-# for each benchmark all subsets 
-OOD = {
-    "detectrl": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^detectrl_.+", x)]),
-    "multisocial": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^multisocial_.+", x)]),
-}
 
 DEVICE = return_device()
 SEED = 42

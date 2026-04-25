@@ -11,6 +11,8 @@
 
 set -euo pipefail
 
+set -euo pipefail
+
 nvidia-smi
 
 ROOT_DIR="${BASE_COE:-$(pwd)}"

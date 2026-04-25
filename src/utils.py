@@ -6,13 +6,16 @@ import torch
 from typing import Any
 from argparse import Namespace
 from datasets import Dataset, DatasetDict
-
+import re
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score, roc_curve, average_precision_score
 
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data", "sets")
 
-TEXT_PREFIX = "Is this text human- or LLM-written?"
+OOD = {
+    "detectrl": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^detectrl_.+", x)]),
+    "multisocial": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^multisocial_.+", x)]),
+}
 
 """
 - hp sweep for 0-1 threshold only correct if the score are also in this range!

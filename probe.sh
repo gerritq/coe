@@ -9,28 +9,23 @@
 #SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031
 #SBATCH --constraint=h200|b200|a100
 
+set -euo pipefail
+
 nvidia-smi
 
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
+mkdir -p logs
 
-# Full ID data examples
-# DATASETS=("tsm_multi" "m4_multi" "drl_t1_perturbation" "drl_t1_paraphrase" "multisocial_full")
-# DATASETS=("editlens" "tsm_multi" "m4_multi" "multisocial_full")
-# OOD=""
-DATASETS=("multisocial_en")
-OOD="multisocial_de \
-multisocial_nl \
-multisocial_pt \
-multisocial_ar"
-
-MODELS=("llama_8b")  # "llama_8b" "qwen_06b"
-PROBE_MODES=("feature")
+MODELS=("llama_8b") # "llama_8b" "qwen_06b"
+DATASETS=("detectrl_arxiv")
+PROBE_MODES=("logistic") # "logistic" "logistic_m" "feature"
 TOKEN_MODE="last_token"
+SMOKE_TEST=1
+OOD=""                  # keep empty for ID; for OOD pass space-separated datasets
+NORMALIZE_SCORES=0
+ABLATION_SET="all"
 
-SMOKE_TEST=0
-NORMALIZE_SCORES=1
-ABLATION_SET="all"  # human | machine | all
 
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
