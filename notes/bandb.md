@@ -6,7 +6,13 @@ git pull --rebase
 - Select 3 benchmarks and create easy to run datasets
     - DetectRL
     - Multisocial
-    - ?
+    - TSM
+
+- Baselines
+    - NPR
+    - RepreGuard
+    - Raidar, Ghostbuster
+    - Potentially: BiScopre, RADAR
 
 - Eval
     - We need to do the threshold tuning between min and max ()

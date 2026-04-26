@@ -72,7 +72,8 @@ class RepReadingPipeline(Pipeline):
 
         if self.image_processor:
             return self.image_processor(inputs, add_end_of_utterance_token=False, return_tensors="pt")
-        return self.tokenizer(inputs, return_tensors=self.framework, **tokenizer_kwargs)
+        # GQ: change from eturn_tensors=self.framework (which is not specified)
+        return self.tokenizer(inputs, return_tensors="pt", **tokenizer_kwargs)
 
     def postprocess(self, outputs):
         return outputs
@@ -122,7 +123,7 @@ class RepReadingPipeline(Pipeline):
             for batch in hidden_states_batch:
                 for layer in hidden_layers:
                     if layer in batch:
-                        hidden_states[layer].append(batch[layer].detach().cpu().numpy())
+                        hidden_states[layer].append(batch[layer].detach().to(torch.float32).cpu().numpy())
             del hidden_states_batch
             torch.cuda.empty_cache()
         hidden_states = {k: np.vstack(v) for k, v in hidden_states.items()}

@@ -150,10 +150,10 @@ def main():
 
     # select base models 
     if args.smoke_test:
-        args.base_model_1 = "Qwen/Qwen3-0.6B-Base"
-        args.base_model_2 = "Qwen/Qwen3-0.6B"
-        # args.base_model_1 = "HuggingFaceTB/SmolLM-135M"
-        # args.base_model_2 = "HuggingFaceTB/SmolLM-135M"
+        # args.base_model_1 = "Qwen/Qwen3-0.6B-Base"
+        # args.base_model_2 = "Qwen/Qwen3-0.6B"
+        args.base_model_1 = "HuggingFaceTB/SmolLM-135M"
+        args.base_model_2 = "HuggingFaceTB/SmolLM-135M"
 
     else:
         args.base_model_1 = "meta-llama/Meta-Llama-3-8B"
