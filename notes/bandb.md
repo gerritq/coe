@@ -24,6 +24,8 @@ git pull --rebase
 
 - Add pca probes
 
+# Detectors
+
 ## M4/M4GT [Wu et al. 2025](https://arxiv.org/pdf/2410.23746#page=7.89)
 
 **To do**

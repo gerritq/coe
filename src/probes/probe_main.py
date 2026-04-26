@@ -8,7 +8,7 @@ from src.inference import Inference
 from src.utils import load_dataset, optimal_thresholds, metrics, OOD
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
-
+from sklearn.decomposition import PCA
 
 BASE_DIR = os.getenv("BASE_COE")
 OUT_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
@@ -54,6 +54,7 @@ class LinearProbing:
                           ) -> dict[str, Any]:
 
         scalers_by_layer = []
+        pca_by_layer = []
         models_by_layer = []
         optimal_thresholds_by_layer = []
         val_metrics_by_layer = []
@@ -66,19 +67,29 @@ class LinearProbing:
             scaler = StandardScaler()
             x_layer_train_scaled = scaler.fit_transform(x_layer_train)
 
+            if self.pca:
+                pca = PCA(n_components=50, random_state=42)
+                x_layer_train_scaled = pca.fit_transform(x_layer_train_scaled)
+
             # train probe
-            clf_binary = LogisticRegression(random_state=42, 
-                                            max_iter=1000)
+            clf_binary = LogisticRegression(penalty='l2', 
+                                            C=1.0, 
+                                            max_iter=2000, 
+                                            random_state=42)
             clf_binary.fit(x_layer_train_scaled, y_train)
 
             # find optimal thresholds on val set
             x_layer_val = x_val[layer]  # (n_samples, d_model)
             x_layer_val_scaled = scaler.transform(x_layer_val)
+
+            if self.pca:
+                x_layer_val_scaled = pca.transform(x_layer_val_scaled)
             y_val_score = clf_binary.predict_proba(x_layer_val_scaled)[:, 1]
             thresholds = optimal_thresholds(y_true=y_val, y_predict=y_val_score)
             
             # collect
             scalers_by_layer.append(scaler)
+            pca_by_layer.append(pca)
             models_by_layer.append(clf_binary)
             optimal_thresholds_by_layer.append(thresholds)
 
@@ -91,6 +102,7 @@ class LinearProbing:
 
         return {
             "scalers_by_layer": scalers_by_layer,
+            "pca_by_layer": pca_by_layer,
             "models_by_layer": models_by_layer,
             "optimal_thresholds_by_layer": optimal_thresholds_by_layer,
             "val_metrics_by_layer": val_metrics_by_layer,
@@ -115,15 +127,32 @@ class LinearProbing:
         y_true = test["y"]
         
         # run eval by layer
+        all_projections = []
         for layer in range(len(train_out["models_by_layer"])):
 
             scaler = train_out["scalers_by_layer"][layer]
+            pca = train_out["pca_by_layer"][layer]
             model = train_out["models_by_layer"][layer]
             thresholds = train_out["optimal_thresholds_by_layer"][layer]
 
+            # Get test data for this layer
             x_layer_test = test["x"][layer]  # (n_samples, d_model)
             x_layer_test_scaled = scaler.transform(x_layer_test)
+            if self.pca:
+                x_layer_test_scaled = pca.transform(x_layer_test_scaled)
+            
+            # A Predict probs
             y_score = model.predict_proba(x_layer_test_scaled)[:, 1]
+
+            # B Probing vector
+            probe_vector = model.coef_[0]
+            probe_vector = np.linalg.norm(probe_vector)
+            
+            # project 
+            # n_samples x d_model/d_pca  x  d_model/d_pca -> n_samples
+            x_proj = np.dot(x_layer_test_scaled, probe_vector)
+            all_projections.append(x_proj)
+
 
             # metrics for this layer
             layer_metrics = metrics(
@@ -148,10 +177,21 @@ class LinearProbing:
             acc_threshold=0.5,
         )
 
+        # aggregate projection score, mean projection
+        all_projections = np.stack(all_projections, axis=0)  # (n_layers, n_samples)
+        mean_projection = all_projections.mean(axis=0)  # (n_samples,)
+        mean_projection_metrics = metrics(
+            y_true=y_true,
+            y_predict=mean_projection,
+            f1_threshold=0.5,
+            acc_threshold=0.5,
+        )
+
         return {
             "test_metrics_by_layer": test_metrics_by_layer,
             "top_k_layers_by_val_acc": top_k_indices,
             "ensemble_metrics": ensemble_metrics,
+            "mean_projection_metrics": mean_projection_metrics,
         }
 
 

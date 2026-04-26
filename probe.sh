@@ -21,12 +21,13 @@ DATASETS=("detectrl_arxiv")
 TOKEN_MODE="last_token"
 SMOKE_TEST=0
 OOD=1
+PCA=0
 
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
         echo "------------------------------------------------"
         echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE"
-        echo "SmokeTest=$SMOKE_TEST, OOD=$OOD"
+        echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, PCA=$PCA"
         echo "------------------------------------------------"
 
         PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.run \
@@ -34,6 +35,7 @@ for DATASET in "${DATASETS[@]}"; do
             --dataset "$DATASET" \
             --token_mode "$TOKEN_MODE" \
             --smoke_test "$SMOKE_TEST" \
-            --ood "$OOD"
+            --ood "$OOD" \
+            --pca "$PCA"
     done
 done

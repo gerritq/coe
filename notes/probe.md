@@ -1,17 +1,14 @@
 # To do
+- inlcud repguard metrics
+- add roberta open ai; radar
+
+- implement tje projecton idea
 
 - Evaluation threshold fixing. Not sure why the tuned threshold is so fucked.
 - Implementation ideas
     1. PCA activations
     2. Code the projection idea; projection across all layers and top-k selected on the validation set
     
-
-- Add a new "probe" folder
-    - Implement the probing idea with linear regression
-    - Implement the denoising idea
-    - Use low-dim representations for the classifier
-    - For low-dim probes, we should maybe not reguralize
-
 - Correct the evaluation function
     - Check that this is properly implemented (see pangram optimizing f1)
     - Tune the threshold properly, not with roc
@@ -32,7 +29,44 @@
 
 ---
 
-## Analysis Ideas
+# Analysis Ideas
+
+## Descriptives
+
+To show the low-dimensionality
+
+- PCA by layer, then share of components by number of components (the Manifold steering plot)
+
+- Run L1 regularization probes, and see how many neurons are zeroed out
+    - Could be done per layer
+
+---
+
+To show whether trained probing vectors are similar
+
+- Run the Cosine of vectors across layers between two domains/languages (vis as a heat map)
+
+---
+
+
+# Main Analysis
+
+## ID 
+
+- Compare against various baselines, but not necessarily trained on the data (zero-shot, ML)
+
+## OOD
+
+- Compare against trained model on the data, for those we can then show AUROC/TPR
+
+---
+
+### Additional Analysis
+
+- Can use different surrogate models
+
+- Compare trained concept vectors across languages and domains
+    - Can be done for each layer
 
 - Performance by layer
 
@@ -44,6 +78,8 @@
 
 ## Brain Dump
 
+- Can we also run the logistic regression and then see how many neurons survive? This would further strengthen the argument that we need to operate in low-dim spaces.
+
 - Can we combine PCA and projection on w as a new method?
 
 - Try whether pooling improves performance
@@ -53,3 +89,11 @@
 - Compare probes across layers
 
 - Comparison along sample efficiency (500 samples won't suffice for Bert)
+
+- For the low-dim representation, should we not penalize?
+
+
+# Paper/Posts
+
+## https://huggingface.co/blog/TensorSlay/activation-steering-with-mean-response-probes
+
