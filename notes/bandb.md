@@ -9,11 +9,14 @@ git pull --rebase
     - ?
 
 - Eval
-    - We need to do the threshold tuning between min and max
+    - We need to do the threshold tuning between min and max ()
+    - also, the tuning seems to suck for OOD what to do?
+
 - Build a proper baseline structure + sh file
     - Include RepGuard, NPR, and pre-trained models
     - Inlcude 2-4 other detectors (BiScope, RADAR, )
 
+- Add pca probes
 
 ## M4/M4GT [Wu et al. 2025](https://arxiv.org/pdf/2410.23746#page=7.89)
 

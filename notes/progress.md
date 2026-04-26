@@ -58,6 +58,11 @@
 - Tried denoising and ldp, applying pca per layer and across layers,
     - Per layer performs better
 
+**26.04.2026**
+
+- refactored the probing folder and code; now has a basic linear probing implementation
+- added detectrl and multisocial as ds. We likely need some more challenging in domain data at least
+-
 
 # Learning
 

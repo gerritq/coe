@@ -1,5 +1,11 @@
 # To do
 
+- Evaluation threshold fixing. Not sure why the tuned threshold is so fucked.
+- Implementation ideas
+    1. PCA activations
+    2. Code the projection idea; projection across all layers and top-k selected on the validation set
+    
+
 - Add a new "probe" folder
     - Implement the probing idea with linear regression
     - Implement the denoising idea
@@ -24,6 +30,8 @@
 
 - Why does PC
 
+---
+
 ## Analysis Ideas
 
 - Performance by layer
@@ -34,7 +42,9 @@
 
 - OOD detection
 
-## Misc
+## Brain Dump
+
+- Can we combine PCA and projection on w as a new method?
 
 - Try whether pooling improves performance
 

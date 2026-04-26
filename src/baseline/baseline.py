@@ -35,6 +35,10 @@ def supervised_models(args):
         from src.baseline.enc import EncoderBaseline
         baseline = EncoderBaseline(model_name="google-bert/bert-base-uncased", device=DEVICE)
 
+    if args.model == "repreguard":
+        from src.baseline.repreguard.repre_main import RepreGuard
+        baseline = RepreGuard(args=args)
+
     source_data = load_dataset(args=args)
     ood_data = []
     for target_dataset in OOD[args.dataset.split("_")[0]]:
@@ -76,13 +80,11 @@ def return_model(args: Namespace):
             reference_model=args.base_model_1,
             device=DEVICE,
         )
-    
-    if args.model == "repreguard":
-        pass
+
 
 def run(args):
 
-    if args.model == 'encoder':
+    if args.model in ['encoder', "repreguard"]:
         supervised_models(args)
     
     else:
@@ -150,6 +152,9 @@ def main():
     if args.smoke_test:
         args.base_model_1 = "Qwen/Qwen3-0.6B-Base"
         args.base_model_2 = "Qwen/Qwen3-0.6B"
+        # args.base_model_1 = "HuggingFaceTB/SmolLM-135M"
+        # args.base_model_2 = "HuggingFaceTB/SmolLM-135M"
+
     else:
         args.base_model_1 = "meta-llama/Meta-Llama-3-8B"
         args.base_model_2 = "meta-llama/Meta-Llama-3-8B-instruct"

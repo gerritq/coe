@@ -9,7 +9,7 @@
 #SBATCH --constraint=h200|b200|a100
 #SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031
 
-set -euo pipefail
+# set -euo pipefail
 
 nvidia-smi
 
@@ -23,16 +23,17 @@ DATASETS=(
     # "detectrl_yelp_review"
     # "multisocial_en"
 )
-SMOKE_TEST=0
-OOD=1
+SMOKE_TEST=1
+OOD=0
 MODELS=(
-        "encoder" 
-        "llr" 
-        "fastdetectgpt" 
-        "rank" 
-        "entropy"
-        "likelihood"
-        "binoculars" 
+        "repreguard"
+        # "encoder" 
+        # "llr" 
+        # "fastdetectgpt" 
+        # "rank" 
+        # "entropy"
+        # "likelihood"
+        # "binoculars" 
         )        
 
 
