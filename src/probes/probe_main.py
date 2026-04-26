@@ -2,6 +2,7 @@ from argparse import Namespace
 from typing import Any
 import os
 import json
+import torch
 import numpy as np
 from src.inference import Inference
 from src.utils import load_dataset, optimal_thresholds, metrics, OOD
@@ -31,7 +32,7 @@ class LinearProbing:
 
             hs_per_layer = []
             for l in hidden_states:
-                hs_per_layer.append(np.asarray(l, dtype=np.float32))
+                hs_per_layer.append(l.detach().to(torch.float32).cpu().numpy())
 
             all_hidden_states.append(np.stack(hs_per_layer, axis=0))
             labels.append(int(out["label"]))
@@ -180,6 +181,6 @@ class LinearProbing:
             test = self._collect_hidden_states(target_data)
             test_metrics = self._evaluate(train_out=train_out, test=test)
 
-            filename = f"{args.mode}_{args.dataset}_2_{target_dataset}_metrics.json"
+            filename = f"{args.token_mode}_{args.dataset}_2_{target_dataset}_metrics.json"
             with open(os.path.join(OUT_DIR, filename), "w") as f:
                 json.dump(test_metrics, f, indent=4)

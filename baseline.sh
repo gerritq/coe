@@ -5,11 +5,9 @@
 #SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
-#SBATCH --mem=30GB
+#SBATCH --mem=50GB
 #SBATCH --constraint=h200|b200|a100
-#SBATCH --exclude=erc-hpc-comp035
-
-set -euo pipefail
+#SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031
 
 set -euo pipefail
 
@@ -17,7 +15,6 @@ nvidia-smi
 
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
-mkdir -p logs
 
 DATASETS=(
     "detectrl_arxiv"
@@ -26,8 +23,8 @@ DATASETS=(
     # "detectrl_yelp_review"
     # "multisocial_en"
 )
-SMOKE_TEST=1
-OOD=0
+SMOKE_TEST=0
+OOD=1
 MODELS=(
         "encoder" 
         "llr" 

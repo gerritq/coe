@@ -19,8 +19,8 @@ cd "${ROOT_DIR}"
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=("detectrl_arxiv")
 TOKEN_MODE="last_token"
-SMOKE_TEST=1
-OOD=0 
+SMOKE_TEST=0
+OOD=1
 
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do

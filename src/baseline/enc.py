@@ -14,6 +14,11 @@ from transformers import (
     TrainingArguments,
     set_seed,
 )
+import os
+
+BASE_DIR = os.getenv("BASE_COE")
+BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
+os.makedirs(BASELINE_DIR, exist_ok=True)
 
 MAX_LENGTH = 256
 BATCH_SIZE = 32
@@ -109,5 +114,5 @@ class EncoderBaseline:
             
             file_name = f"{args.model}_{args.dataset}_2_{ood_name}.json"
             out = {"args": return_args(args), "metrics": ds_metrics}
-            with open(file_name, "w") as f:
-                json.dump(out, f)
+            with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
+                json.dump(out, f, indent=2)

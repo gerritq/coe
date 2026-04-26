@@ -37,7 +37,7 @@ class Inference:
                                  output_hidden_states=True, 
                                  use_cache=False)
 
-        if args.mode == "last_token":
+        if args.token_mode == "last_token":
             hidden_states = tuple(
                 layer[:, -1, :].detach().cpu().squeeze(0) for layer in outputs.hidden_states
             )
@@ -47,7 +47,7 @@ class Inference:
                 "label": item["label"],
                 "hidden_states": hidden_states,
             }
-        if args.mode == "pooling":
+        if args.token_mode == "pooling":
             hidden_states = tuple(
                 layer.mean(dim=1).detach().cpu().squeeze(0) for layer in outputs.hidden_states
             )
