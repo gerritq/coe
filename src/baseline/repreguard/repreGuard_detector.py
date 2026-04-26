@@ -81,8 +81,8 @@ class AIHumanFunctionModel:
         input_statements = []
         input_labels = []
         # GQ: the first two lines were commented out; i am using those + changed to binary labels
-        ai_datasets = [item for item in data if item.get("label") == 1]
-        human_datasets = [item for item in data if item.get("label") == 0]
+        ai_datasets = [item['text'] for item in data if item.get("label") == 1]
+        human_datasets = [item['text'] for item in data if item.get("label") == 0]
         # ai_datasets = [item for item in data if item.get("label") == "llm"]
         # human_datasets = [item for item in data if item.get("label") == "human"]
         # ai_datasets = [item['direct_prompt'] for item in data]

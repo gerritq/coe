@@ -23,8 +23,8 @@ DATASETS=(
     # "detectrl_yelp_review"
     # "multisocial_en"
 )
-SMOKE_TEST=1
-OOD=0
+SMOKE_TEST=0
+OOD=1
 MODELS=(
         "repreguard"
         # "encoder" 
