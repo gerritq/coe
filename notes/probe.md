@@ -3,6 +3,7 @@
 - fix fluo with old model
 - Run fluo with base model
 - add Repguard metrics
+- raidar with batch inference
 - Add TSM (mix detectors)
 
 - Add Raidar

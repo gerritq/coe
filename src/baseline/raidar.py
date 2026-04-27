@@ -2,6 +2,7 @@ import os
 import json
 import os
 import numpy as np
+import torch
 
 from argparse import ArgumentParser, Namespace
 from datasets import Dataset
@@ -43,7 +44,7 @@ class RAIDAR:
     def __init__(self, args):
         self.args = args
         self.model_path = args.base_model_1
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path, device_map="auto")
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         self.model = AutoModelForCausalLM.from_pretrained(self.model_path, device_map="auto")
         self.prompt_list = ['Revise this with your best effort', 'Help me polish this', 'Rewrite this for me', 
                 'Make this fluent while doing minimal change', 'Refine this for me please', 'Concise this for me and keep all the information',
@@ -84,6 +85,44 @@ class RAIDAR:
 
             if i % 50 == 0:
                 print(f"Processed {i} samples")
+
+        return all_data
+
+    def rewrite_json_batch(self, texts, prompt_list, batch_size: int = 16):
+        all_data = []
+
+        for start in range(0, len(texts), batch_size):
+            batch = texts[start:start + batch_size]
+            batch_data = [x.copy() for x in batch]
+            input_texts = [x["input"] for x in batch_data]
+
+            for ep in prompt_list:
+                prompt_batch = [f"{ep}: \"{txt}\"" for txt in input_texts]
+                model_inputs = self.tokenizer(
+                    prompt_batch,
+                    return_tensors="pt",
+                    padding=True,
+                    truncation=True,
+                ).to(self.device)
+                model_inputs.pop("token_type_ids", None)
+
+                max_new_tokens = max(
+                    1,
+                    max(len(self.tokenize_and_normalize(p)) for p in prompt_batch),
+                )
+
+                with torch.no_grad():
+                    outputs = self.model.generate(
+                        **model_inputs,
+                        max_new_tokens=max_new_tokens,
+                    )
+
+                decoded_batch = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+                for item, decoded in zip(batch_data, decoded_batch):
+                    item[ep] = decoded
+
+            all_data.extend(batch_data)
+            print(f"Processed {min(start + len(batch), len(texts))} samples")
 
         return all_data
     
@@ -207,59 +246,32 @@ class RAIDAR:
 
             return all_list
         
-        gpt_davinci_all = get_feature_vec(gpt_davinci)
-        # gpt_ada_all = get_feature_vec(gpt_ada)
-        # gpt_all = get_feature_vec(gpt)
+        machine_all = get_feature_vec(gpt_davinci)
         human_all = get_feature_vec(human)
 
-        # gpt4_all = get_feature_vec(gpt4)
-        # llama_all = get_feature_vec(llama)
-        # import pdb; pdb.set_trace() # dim 112,28 
+        X_train = np.concatenate((human_all, machine_all), axis=0)
+        y_train = np.concatenate((np.zeros(human_all.shape[0]), np.ones(machine_all.shape[0])), axis=0)
 
-        # # random split, may have content similarity   
-        # gpt_all = np.concatenate((gpt_all, gpt_all), axis=0) 
-
-        # ### Original
-        # X = np.concatenate((gpt_all, human_all), axis=0)
-        # Y = np.concatenate((np.ones(gpt_all.shape[0]), np.zeros(human_all.shape[0])), axis=0)
-        # X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
-
-
-        # reblanced
-        # g_train, g_test, yg_train, yg_test = train_test_split(gpt_all, np.ones(gpt_all.shape[0]), test_size=0.2, random_state=42)
-        h_train, h_test, yh_train, yh_test = train_test_split(human_all, np.zeros(human_all.shape[0]), test_size=0.2, random_state=42)
-
-        # ada_g_train, ada_g_test, ada_yg_train, ada_yg_test = train_test_split(gpt_ada_all, np.ones(gpt_ada_all.shape[0]), test_size=0.2, random_state=42)
-        davinci_g_train, davinci_g_test, davinci_yg_train, davinci_yg_test = train_test_split(gpt_davinci_all, np.ones(gpt_davinci_all.shape[0]), test_size=0.2, random_state=42)
-
-        # g4_train, g4_test, yg4_train, yg4_test = train_test_split(gpt4_all, np.ones(gpt4_all.shape[0]), test_size=0.2, random_state=42)
-        # llama_g_train, llama_g_test, llama_yg_train, llama_yg_test = train_test_split(llama_all, np.ones(llama_all.shape[0]), test_size=0.2, random_state=42)
-
-
-        X_train = np.concatenate((davinci_g_train, h_train), axis=0)
-        y_train = np.concatenate((davinci_yg_train, yh_train), axis=0)
-
-        X_test = np.concatenate((davinci_g_test, h_test), axis=0)
-        y_test = np.concatenate((davinci_yg_test, yh_test), axis=0)
-
-
-        # # Neural network
         scaler = StandardScaler()
         X_train = scaler.fit_transform(X_train)
-        X_test = scaler.transform(X_test)
 
-        clf = MLPClassifier(hidden_layer_sizes=(10,), max_iter=1000, activation='relu', solver='adam', random_state=42) # 75.83, using fuzzywazzy, get 78.5% acc.
-
+        clf = MLPClassifier(hidden_layer_sizes=(10,), max_iter=1000, activation='relu', solver='adam', random_state=42)
         clf.fit(X_train, y_train)
-        
-        for ds in ood_data:
-            ood_all = get_feature_vec(ds['stats'])
-            ood_all = scaler.transform(ood_all)
-            # ood_pred = clf.predict(ood_all)
-            
-            y_predict_probs = clf.predict_proba(ood_all)[:, 1]
 
-            metrics_res = metrics(y_true=ds['test']["label"],
+
+        # Eval
+        for ds in ood_data:
+
+            machine_all = get_feature_vec(ds['ood_machine_stat'])
+            human_all = get_feature_vec(ds['ood_human_stat'])
+
+            X_ood = np.concatenate((human_all, machine_all), axis=0)
+            X_ood = scaler.transform(X_ood)
+            y_ood = np.concatenate((np.zeros(human_all.shape[0]), np.ones(machine_all.shape[0])), axis=0)
+
+            y_predict_probs = clf.predict_proba(X_ood)[:, 1]
+
+            metrics_res = metrics(y_true=y_ood,
                                   y_predict=y_predict_probs,
                                   f1_threshold=0.5,
                                   acc_threshold=0.5)
@@ -286,7 +298,7 @@ class RAIDAR:
         
         set_seed(42)
 
-        # Rewrite training data
+        # TRAINING DATA
         machine, human = [], []
         for x in training_data['train']:
             if x['label'] == 1:
@@ -294,16 +306,31 @@ class RAIDAR:
             else:
                 human.append({'input': x['text']})
 
-        machine = self.rewrite_json(machine, self.prompt_list)
-        human = self.rewrite_json(human, self.prompt_list)
+        machine = self.rewrite_json_batch(machine, self.prompt_list)
+        human = self.rewrite_json_batch(human, self.prompt_list)
             
         # get stats
         machine_stat = self.get_data_stat(machine)
         human_stat = self.get_data_stat(human)
 
+        # TEST DATA
         ood_data_stat = []
         for ood in ood_data:
-            ood['stats']  = self.get_data_stat(ood['data']['test'])
+            ood_machine, ood_human = [], []
+            for x in ood['data']['test']:
+                if x['label'] == 1:
+                    ood_machine.append({'input': x['text']})
+                else:
+                    ood_human.append({'input': x['text']})
+            
+            # rewrite ood
+            ood_machine = self.rewrite_json_batch(ood_machine, self.prompt_list)
+            ood_human = self.rewrite_json_batch(ood_human, self.prompt_list)
+            
+            # get stats
+            ood['ood_machine_stat']  = self.get_data_stat(ood_machine)
+            ood['ood_human_stat']  = self.get_data_stat(ood_human)
+            
             ood_data_stat.append(ood)
 
         # train classifier
