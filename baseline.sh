@@ -24,7 +24,7 @@ DATASETS=(
     # "multisocial_en"
 )
 SMOKE_TEST=0
-OOD=1
+OOD=0
 MODELS=(
         "text_fluoroscopy"
         # "raidar"
