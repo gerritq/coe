@@ -39,6 +39,10 @@ def supervised_models(args):
         from src.baseline.repreguard.repre_main import RepreGuard
         baseline = RepreGuard(args=args)
 
+    if args.model == "text_fluoroscopy":
+        from src.baseline.text_fluoroscopy import TextFluoroscopy
+        baseline = TextFluoroscopy(args=args)
+
     source_data = load_dataset(args=args)
     ood_data = []
     for target_dataset in OOD[args.dataset.split("_")[0]]:
@@ -93,7 +97,7 @@ def return_model(args: Namespace):
 
 def run(args):
 
-    if args.model in ['encoder', "repreguard"]:
+    if args.model in ['encoder', "repreguard", "text_fluoroscopy"]:
         supervised_models(args)
     
     else:

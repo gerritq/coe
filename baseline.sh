@@ -26,8 +26,9 @@ DATASETS=(
 SMOKE_TEST=0
 OOD=1
 MODELS=(
-        "raidar"
-        "openai_roberta"
+        "text_fluoroscopy"
+        # "raidar"
+        # "openai_roberta"
         # "repreguard"
         # "encoder" 
         # "llr" 

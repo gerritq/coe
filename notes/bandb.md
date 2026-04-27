@@ -9,10 +9,11 @@ git pull --rebase
     - TSM
 
 - Baselines
+    - fix radar and openai
+    
     - NPR
-    - RepreGuard
-    - Raidar, Ghostbuster
-    - Potentially: BiScopre, RADAR
+    - Raidar, Ghostbuster, BiScope, TextFluoroscpy
+    - Add rewrite-based methods: DNA?
 
 - Eval
     - We need to do the threshold tuning between min and max ()
