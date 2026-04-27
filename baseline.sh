@@ -2,7 +2,7 @@
 #SBATCH --job-name=baselines
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=00:45:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -26,10 +26,10 @@ DATASETS=(
     # "multisocial_en"
 )
 SMOKE_TEST=0
-OOD=1
+OOD=0
 MODELS=(
-        "text_fluoroscopy"
-        # "radar"
+        # "text_fluoroscopy"
+        "raidar"
         # "openai_roberta"
         # "repreguard"
         # "encoder" 

@@ -1,5 +1,14 @@
 # To do
-- inlcud repguard metrics
+- fix MLModel results
+- fix fluo with old model
+- Run fluo with base model
+- add Repguard metrics
+- Add TSM (mix detectors)
+
+- Add Raidar
+- Add BiScope
+
+
 - Implement
     - Open AIroberta
     - Radar
