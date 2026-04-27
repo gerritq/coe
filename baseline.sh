@@ -25,11 +25,12 @@ DATASETS=(
     # "detectrl_yelp_review"
     # "multisocial_en"
 )
-SMOKE_TEST=0
+SMOKE_TEST=1
 OOD=0
 MODELS=(
-        # "text_fluoroscopy"
         "raidar"
+        # "text_fluoroscopy"
+        # "radar"
         # "openai_roberta"
         # "repreguard"
         # "encoder" 

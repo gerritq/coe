@@ -43,6 +43,10 @@ def supervised_models(args):
         from src.baseline.text_fluoroscopy import TextFluoroscopy
         baseline = TextFluoroscopy(args=args)
 
+    if args.model == "raidar":
+        from src.baseline.raidar import RAIDAR
+        baseline = RAIDAR(args=args)
+
     source_data = load_dataset(args=args)
     ood_data = []
     for target_dataset in OOD[args.dataset.split("_")[0]]:
@@ -96,7 +100,7 @@ def return_model(args: Namespace):
 
 def run(args):
 
-    if args.model in ['encoder', "repreguard", "text_fluoroscopy"]:
+    if args.model in ['encoder', "repreguard", "text_fluoroscopy", "raidar"]:
         supervised_models(args)
     
     else:
