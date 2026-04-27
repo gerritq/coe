@@ -28,7 +28,8 @@ DATASETS=(
 SMOKE_TEST=1
 OOD=0
 MODELS=(
-        "text_fluoroscopy"
+        # "text_fluoroscopy"
+        "raidar"
         # "radar"
         # "openai_roberta"
         # "repreguard"

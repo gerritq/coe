@@ -47,7 +47,7 @@ class RAIDAR:
         self.model = AutoModelForCausalLM.from_pretrained(self.model_path, device_map="auto")
         self.prompt_list = ['Revise this with your best effort', 'Help me polish this', 'Rewrite this for me', 
                 'Make this fluent while doing minimal change', 'Refine this for me please', 'Concise this for me and keep all the information',
-                'Improve this in GPT way']  
+                'Improve this in GPT way'][:2]
         
         self.ngram_num = 4
         self.cutoff_start = 0
@@ -78,7 +78,7 @@ class RAIDAR:
             tmp_dict = data.copy()
 
             for ep in prompt_list:
-                tmp_dict[ep] = self.GPT_self_prompt(ep, tmp_dict['text'])
+                tmp_dict[ep] = self.GPT_self_prompt(ep, tmp_dict['input'])
             
             all_data.append(tmp_dict)
 
@@ -143,8 +143,9 @@ class RAIDAR:
             all_statistic_res = [0 for i in range(self.ngram_num)]
             cnt = 0
             whole_combined=''
-            for pp in each.keys():
+            for pp in each.keys(): 
                 if pp != 'common_features':
+                
                     whole_combined += (' ' + each[pp])
                     
 
@@ -286,12 +287,15 @@ class RAIDAR:
         set_seed(42)
 
         # Rewrite training data
-        train = []
+        machine, human = [], []
         for x in training_data['train']:
-            train.append({'input': x['text'], 'label': x['label']})
-        train_rewritten = self.rewrite_json(train, self.prompt_list)
-        machine = [x for x in train_rewritten if x['label'] == 1]
-        human = [x for x in train_rewritten if x['label'] == 0]
+            if x['label'] == 1:
+                machine.append({'input': x['text']})
+            else:
+                human.append({'input': x['text']})
+
+        machine = self.rewrite_json(machine, self.prompt_list)
+        human = self.rewrite_json(human, self.prompt_list)
             
         # get stats
         machine_stat = self.get_data_stat(machine)
