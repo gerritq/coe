@@ -16,6 +16,8 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
+export CUDA_LAUNCH_BLOCKING=1
+
 DATASETS=(
     "detectrl_arxiv"
     # "detectrl_xsum"
@@ -27,7 +29,7 @@ SMOKE_TEST=0
 OOD=1
 MODELS=(
         "text_fluoroscopy"
-        # "raidar"
+        # "radar"
         # "openai_roberta"
         # "repreguard"
         # "encoder" 

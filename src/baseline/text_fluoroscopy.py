@@ -65,7 +65,7 @@ class TextFluoroscopy:
     
 
         self.max_length = 512
-        self.pretrained_model_name_or_path = args.base_model_1
+        self.pretrained_model_name_or_path = "Alibaba-NLP/gte-Qwen1.5-7B-instruct"
         self.which_embedding = 'gte-qwen_KL_with_first_and_last_layer'
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name_or_path, 

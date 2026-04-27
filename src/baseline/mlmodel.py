@@ -10,7 +10,11 @@ class MLModels:
         self.model_name = model_name
         self.device = return_device()
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name).to(self.device)
+        attn_impl = "eager" if "radar" in self.model_name.lower() else None
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+                self.model_name,
+                attn_implementation=attn_impl,
+            ).to(self.device)
         self.model.eval()
 
     def run(
@@ -31,6 +35,7 @@ class MLModels:
                     batch_texts,
                     padding=True,
                     truncation=True,
+                    max_length=512, 
                     return_tensors="pt",
                 )
                 encoded = {k: v.to(self.device) for k, v in encoded.items()}
