@@ -45,6 +45,12 @@ class RAIDAR:
         self.args = args
         self.model_path = args.base_model_1
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+        if self.tokenizer.pad_token is None:
+            if self.tokenizer.eos_token is not None:
+                self.tokenizer.pad_token = self.tokenizer.eos_token
+            else:
+                self.tokenizer.add_special_tokens({"pad_token": "[PAD]"})
+                self.model.resize_token_embeddings(len(self.tokenizer))
         self.model = AutoModelForCausalLM.from_pretrained(self.model_path, device_map="auto")
         self.prompt_list = ['Revise this with your best effort', 'Help me polish this', 'Rewrite this for me', 
                 'Make this fluent while doing minimal change', 'Refine this for me please', 'Concise this for me and keep all the information',
