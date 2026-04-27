@@ -37,6 +37,66 @@ SEED=42
 
 random.seed(SEED)
 
+def process_tsm():
+    train_per_label = TRAINING_N // 2
+    val_per_label = VALIDATION_N // 2
+    test_per_label = TESTING_N // 2
+
+    languages = ['en', "pt", "vi"]
+    subsets = ["sums", "paras"]
+    models = ["deepseek", "gemini", "gpt_4o_mini", "gpt4o"]
+
+    for lang in languages:
+        for subset in subsets:
+            all_pos = []
+            all_neg = []
+            for model in models:
+                if subset == "sums":
+                    file_name = f"{subset}_{lang}_{model}.jsonl"
+                else:
+                    file_name = f"{subset}_{lang}_first_{model}.jsonl"
+
+                # load jsonl
+                with open(os.path.join(TSM_RAW_DATA_DIR, file_name), "r", encoding="utf-8") as f:
+                    data = [json.loads(line) for line in f]
+
+                pos = [{"text": x["mgt"], "label": 1} for x in data if x['mgt'].strip()]
+                neg = [{"text": x["trgt"], "label": 0} for x in data if x['trgt'].strip()]
+
+                all_pos.extend(pos)
+                all_neg.extend(neg)
+            
+            # shuffle and split
+            random.shuffle(all_pos)
+            # rm duplicates
+            print(f"Before deduplication: {len(all_neg)} negatives")
+            all_neg_unique = set()
+            deduplicated_neg = []
+            for item in all_neg:
+                if item["text"] not in all_neg_unique:
+                    all_neg_unique.add(item["text"])
+                    deduplicated_neg.append(item)
+            all_neg = deduplicated_neg
+            print(f"After deduplication: {len(all_neg)} negatives")
+            all_neg = list(all_neg)
+            random.shuffle(all_neg)
+
+            data_out = {"train": [], "val": [], "test": []}
+            data_out["train"].extend(all_pos[:train_per_label])
+            data_out["train"].extend(all_neg[:train_per_label])
+            data_out["val"].extend(all_pos[train_per_label:train_per_label + val_per_label])
+            data_out["val"].extend(all_neg[train_per_label:train_per_label + val_per_label])
+            data_out["test"].extend(all_pos[train_per_label + val_per_label:train_per_label + val_per_label + test_per_label])
+            data_out["test"].extend(all_neg[train_per_label + val_per_label:train_per_label + val_per_label + test_per_label])
+
+            output_dir = os.path.join(DATA_DIR, f"tsm_{subset}_{lang}")
+            os.makedirs(output_dir, exist_ok=True)
+            for split in ["train", "val", "test"]:
+                with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
+                    for item in data_out[split]:
+                        f.write(json.dumps(item) + "\n")
+
+
 def process_detectrl():
     train_per_label = TRAINING_N // 2
     val_per_label = VALIDATION_N // 2
@@ -149,11 +209,16 @@ def process_multisocial():
 def main() -> None:
 
     # DetectRL task_2
-    print("Preparing DetectRL task_2 data...")
-    process_detectrl()
+    # print("Preparing DetectRL task_2 data...")
+    # process_detectrl()
     
-    # Multisocial
-    print("Preparing Multisocial data...")
-    process_multisocial()
+    # # Multisocial
+    # print("Preparing Multisocial data...")
+    # process_multisocial()
+
+    # TSM
+    print("Preparing TSM data...")
+    process_tsm()
+
 if __name__ == "__main__":
     main()
