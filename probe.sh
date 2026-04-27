@@ -17,11 +17,11 @@ ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
-DATASETS=("detectrl_arxiv")
+DATASETS=("multisocial_en")
 TOKEN_MODE="last_token"
 SMOKE_TEST=0
-OOD=1
-PCA=0
+OOD=0
+PCA=1
 
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
