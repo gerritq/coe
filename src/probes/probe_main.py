@@ -5,7 +5,7 @@ import json
 import torch
 import numpy as np
 from src.inference import Inference
-from src.utils import load_dataset, optimal_thresholds, metrics, OOD
+from src.utils import load_dataset, optimal_thresholds, metrics, OOD, return_args
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -223,6 +223,7 @@ class LinearProbing:
             test = self._collect_hidden_states(target_data)
             test_metrics = self._evaluate(train_out=train_out, test=test)
 
-            filename = f"{args.token_mode}_{args.dataset}_2_{target_dataset}_metrics.json"
+            filename = f"{args.token_mode}_{args.dataset}_2_{target_dataset}_pca{int(bool(args.pca))}.json"
+            out = {'args': return_args(args), 'test_metrics': test_metrics}
             with open(os.path.join(OUT_DIR, filename), "w") as f:
-                json.dump(test_metrics, f, indent=4)
+                json.dump(out, f, indent=4)
