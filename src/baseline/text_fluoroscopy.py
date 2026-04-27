@@ -1,5 +1,5 @@
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
 import torch
 import argparse
 import torch.nn.functional as F
@@ -71,8 +71,13 @@ class TextFluoroscopy:
         self.tokenizer = AutoTokenizer.from_pretrained(self.pretrained_model_name_or_path, 
                                                        trust_remote_code=True)
         self.tokenizer.pad_token = self.tokenizer.eos_token
+
+        cfg = AutoConfig.from_pretrained(self.pretrained_model_name_or_path, trust_remote_code=True)
+        if not hasattr(cfg, "rope_theta"):
+            cfg.rope_theta = 10000.0
         self.model = AutoModelForCausalLM.from_pretrained(self.pretrained_model_name_or_path, 
-                                                          trust_remote_code=True)
+                                                          trust_remote_code=True,
+                                                          config=cfg)
         # Keep this baseline on CPU to avoid MPS placeholder-storage errors.
         self.device = return_device()
         self.model.to(self.device)
