@@ -2,11 +2,11 @@
 #SBATCH --job-name=baselines
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=00:45:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|b200|a100
+#SBATCH --constraint=h200|b200
 #SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031
 
 # set -euo pipefail
@@ -20,26 +20,24 @@ export CUDA_LAUNCH_BLOCKING=1
 
 DATASETS=(
     "detectrl_arxiv"
-    # "detectrl_xsum"
-    # "detectrl_writing_prompt"
-    # "detectrl_yelp_review"
-    # "multisocial_en"
+    "multisocial_en"
+    "tsm_paras_en"
 )
-SMOKE_TEST=1
+SMOKE_TEST=0
 OOD=0
 MODELS=(
-        # "text_fluoroscopy"
-        "raidar"
-        # "radar"
-        # "openai_roberta"
-        # "repreguard"
-        # "encoder" 
-        # "llr" 
-        # "fastdetectgpt" 
-        # "rank" 
-        # "entropy"
-        # "likelihood"
-        # "binoculars" 
+        "text_fluoroscopy"
+        # "raidar"
+        "radar"
+        "openai_roberta"
+        "repreguard"
+        "encoder" 
+        "llr" 
+        "fastdetectgpt" 
+        "rank" 
+        "entropy"
+        "likelihood"
+        "binoculars" 
         )        
 
 
