@@ -81,6 +81,15 @@ def return_model(args: Namespace):
             device=DEVICE,
         )
 
+    if args.model == "raidar":
+        # RAIDAR
+        from src.baseline.mlmodel import MLModels
+        return MLModels(model_name="TrustSafeAI/RADAR-Vicuna-7B")
+    
+    if args.model == "openai_roberta":
+        # RAIDAR
+        from src.baseline.mlmodel import MLModels
+        return MLModels(model_name="openai-community/roberta-base-openai-detector")
 
 def run(args):
 

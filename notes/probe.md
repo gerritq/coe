@@ -1,8 +1,14 @@
 # To do
 - inlcud repguard metrics
-- add roberta open ai; radar
+- Implement
+    - Open AIroberta
+    - Radar
+    - Raidar
+    - Biscope
+    - DetectGPT
+    - DNA-GPT
+    - Text Fluorsocpy
 
-- implement tje projecton idea
 
 - Evaluation threshold fixing. Not sure why the tuned threshold is so fucked.
 - Implementation ideas
@@ -12,6 +18,7 @@
 - Correct the evaluation function
     - Check that this is properly implemented (see pangram optimizing f1)
     - Tune the threshold properly, not with roc
+    - edit lens also uses min max scaling
 
 
 ## Feature Assembly idea (Rethinking LLM-as-a-judge)
@@ -75,6 +82,10 @@ To show whether trained probing vectors are similar
 - Performance under different data sampling strategies (comparing with training-based methods)
 
 - OOD detection
+
+- Can we use the projection score to measure the degree of editing as in editlens?
+
+- Efficency analysis against bert models (compute + data)
 
 ## Brain Dump
 

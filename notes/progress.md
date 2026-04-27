@@ -62,7 +62,7 @@
 
 - refactored the probing folder and code; now has a basic linear probing implementation
 - added detectrl and multisocial as ds. We likely need some more challenging in domain data at least
--
+- implemented the projection idea
 
 # Learning
 
