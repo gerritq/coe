@@ -1,24 +1,15 @@
 # To do
+
+**Primary**
+- add Repguard metrics
+- Create a a ID table
+- Add BiScope
+- Add DNA-GPT
+- Add DetectGPT
+
+**Secondary**
 - fix MLModel results
 - fix fluo with old model
-- Run fluo with base model
-- add Repguard metrics
-- raidar with batch inference
-- Add TSM (mix detectors)
-
-- Add Raidar
-- Add BiScope
-
-
-- Implement
-    - Open AIroberta
-    - Radar
-    - Raidar
-    - Biscope
-    - DetectGPT
-    - DNA-GPT
-    - Text Fluorsocpy
-
 
 - Evaluation threshold fixing. Not sure why the tuned threshold is so fucked.
 - Implementation ideas
@@ -97,7 +88,25 @@ To show whether trained probing vectors are similar
 
 - Efficency analysis against bert models (compute + data)
 
+## Ablations
+
+- pca vs no pca
+
+- number of components (I think there is a way to determine this)
+
+- number of layers to consider? (top-k layers)
+
 ## Brain Dump
+
+### Aggregations
+
+- Top-k best performing on the val set? Or top-k most correct and certain?
+
+- Read papers on aggregation methods; we do not need the projection idea
+
+- Can we do a moving average/momentum like the EME aggregation, just with the performance metric as the weight?
+
+### Misc
 
 - Can we also run the logistic regression and then see how many neurons survive? This would further strengthen the argument that we need to operate in low-dim spaces.
 

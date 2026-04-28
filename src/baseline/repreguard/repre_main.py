@@ -14,6 +14,13 @@ from argparse import Namespace
 from datasets import Dataset
 import sys
 
+from src.utils import return_args
+
+BASE_DIR = os.getenv("BASE_COE")
+BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
+os.makedirs(BASELINE_DIR, exist_ok=True)
+
+
 def process_eval(args,train_json_data, test_json_data,test_data_path):
     print(f"Eval in {args.train_data_path}")
     # with open(train_filepath, 'r') as json_file:
@@ -63,7 +70,6 @@ def process_eval(args,train_json_data, test_json_data,test_data_path):
             "accuracy": accuracy,
             "tpr_at_fpr_0_01": tpr_at_fpr_0_01
         }
-    print(f"Test result: {test_result}")
 
     return train_result,test_result
 
@@ -89,7 +95,7 @@ class RepreGuard:
             args: Namespace,
             training_data: Dataset,
             ood_data: list[Dataset]
-            ) -> dict[str, list[float]]:
+            ) -> None:
         
         # process
         train_json_data = self.model.process_train_data(train_data=training_data['val'])
@@ -105,11 +111,14 @@ class RepreGuard:
 
             test_json_data = self.model.process_test_data(test_data=ood_ds['test'])
 
-            train_result,test_result = process_eval(args,train_json_data, test_json_data,test_data_path)
+            train_result, test_result = process_eval(args,train_json_data, test_json_data,test_data_path)
             result = {"train_result": train_result, "test_result": test_result}
 
-            print(result)
-
-            print("done")
-
             # save here
+            out = {"args": return_args(args), 
+                   "train_results": result,
+                   "metrics": test_result}
+            
+            file_name = f"{args.model}_{args.dataset}_2_{ood_name}.json"
+            with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
+                json.dump(out, f, indent=2)

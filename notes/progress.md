@@ -64,6 +64,11 @@
 - added detectrl and multisocial as ds. We likely need some more challenging in domain data at least
 - implemented the projection idea
 
+**26.04.2026**
+- Added raidar (with batch inference), open ai roberta, radar, text fluo
+- Added TSM data
+
+
 # Learning
 
 - Blog about manifolds: https://colah.github.io/posts/2014-03-NN-Manifolds-Topology/
