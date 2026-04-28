@@ -47,6 +47,10 @@ def supervised_models(args):
         from src.baseline.raidar import RAIDAR
         baseline = RAIDAR(args=args)
 
+    if args.model == "biscope":
+        from src.baseline.biscope import BiScope
+        baseline = BiScope(args=args)
+
     source_data = load_dataset(args=args)
     ood_data = []
     for target_dataset in OOD[args.dataset.split("_")[0]]:
@@ -144,6 +148,7 @@ def run(args):
         
             file_name = f"{args.model}_{args.dataset}_2_{target_dataset}.json"
             out_path = os.path.join(BASELINE_DIR, file_name)
+            args.ood_dataset = target_dataset
             out = {"args": return_args(args),
                     "metrics": test_metrics}
             with open(out_path, "w") as f:

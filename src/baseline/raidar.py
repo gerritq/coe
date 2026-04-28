@@ -283,6 +283,7 @@ class RAIDAR:
                                   acc_threshold=0.5)
 
             file_name = f"{self.args.model}_{self.args.dataset}_2_{ds['name']}.json"
+            self.args.ood_dataset = ds['name']
             out = {"args": return_args(self.args), "metrics": metrics_res}
             with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
                 json.dump(out, f, indent=2)
@@ -341,6 +342,3 @@ class RAIDAR:
 
         # train classifier
         self.xgboost_classifier(None, human_stat, None, machine_stat, None, None, ood_data_stat)
-
-        print("done")
-    

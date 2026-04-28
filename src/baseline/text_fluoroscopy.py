@@ -252,6 +252,7 @@ class TextFluoroscopy:
 
         for ood_name, metrics in results["ood_metrics"].items():            
             file_name = f"{args.model}_{args.dataset}_2_{ood_name}.json"
+            args.ood_dataset = ood_name
             out = {"args": return_args(args), "metrics": metrics}
             with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
                 json.dump(out, f, indent=2)

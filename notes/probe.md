@@ -1,11 +1,21 @@
 # To do
 
 **Primary**
-- add Repguard metrics
-- Create a a ID table
-- Add BiScope
+- Add the target data to the args
+- fix roc auroc metric in repreguard
+- fix a ID table sith bold and second
+- Add BiScope -> test (feels like we need to make it faster with batch inference)
 - Add DNA-GPT
-- Add DetectGPT
+- Add Ghostbuser (no bc it is too resource intensive)
+- Add DivScore
+
+
+Probes baselines (report all, select later)
+- try differnet number of pca by changing the flag to > 0
+- gry weighting the scores by probing metric
+- train meta
+- add attention features
+- normalize
 
 **Secondary**
 - fix MLModel results
@@ -21,6 +31,8 @@
     - Tune the threshold properly, not with roc
     - edit lens also uses min max scaling
 
+-read Truth Directions Transfer Across Topics in https://learnmechinterp.com/topics/truthfulness-probing/
+    - universality should be used by us as well
 
 ## Feature Assembly idea (Rethinking LLM-as-a-judge)
 
@@ -107,6 +119,8 @@ To show whether trained probing vectors are similar
 - Can we do a moving average/momentum like the EME aggregation, just with the performance metric as the weight?
 
 ### Misc
+
+- Can we use attention probes? https://learnmechinterp.com/topics/attention-probes/
 
 - Can we also run the logistic regression and then see how many neurons survive? This would further strengthen the argument that we need to operate in low-dim spaces.
 

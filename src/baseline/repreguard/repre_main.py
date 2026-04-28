@@ -61,7 +61,7 @@ def process_eval(args,train_json_data, test_json_data,test_data_path):
     roc_auc, optimal_threshold, conf_matrix, precision, recall, f1, accuracy,tpr_at_fpr_0_01 = get_roc_by_threshold(real_preds,
                                                                                             sample_preds,threshold=optimal_threshold)
     test_result = {
-            "roc_auc": roc_auc,
+            "auroc": roc_auc,
             "optimal_threshold": optimal_threshold,
             "conf_matrix": conf_matrix,
             "precision": precision,
@@ -113,7 +113,7 @@ class RepreGuard:
 
             train_result, test_result = process_eval(args,train_json_data, test_json_data,test_data_path)
             result = {"train_result": train_result, "test_result": test_result}
-
+            args.ood_dataset = ood_name
             # save here
             out = {"args": return_args(args), 
                    "train_results": result,

@@ -52,7 +52,7 @@ class EncoderBaseline:
             args: Namespace, 
             training_data: Dataset,
             ood_data: list[Dataset]
-            ) -> dict[str, list[float]]:
+            ) -> None:
         
         set_seed(self.seed)
 

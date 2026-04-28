@@ -169,7 +169,7 @@ class LinearProbing:
                 y_pred_hard = (y_score >= thresholds["threshold_acc"]).astype(np.float32)
                 top_k_hard_preds.append(y_pred_hard)
 
-        # ensemble score
+        # A ensemble score
         votes = np.stack(top_k_hard_preds, axis=0)  # (top_k, n_samples)
         ensemble_score = (votes.sum(axis=0) >= (top_k / 2)).astype(np.float32)  # (n_samples,)
         ensemble_metrics = metrics(
@@ -179,7 +179,7 @@ class LinearProbing:
             acc_threshold=0.5,
         )
 
-        # aggregate projection score, mean projection
+        # B aggregate projection score, mean projection
         all_projections = np.stack(all_projections, axis=0)  # (n_layers, n_samples)
         mean_projection = all_projections.mean(axis=0)  # (n_samples,)
         mean_projection_metrics = metrics(
@@ -189,11 +189,34 @@ class LinearProbing:
             acc_threshold=0.5,
         )
 
+        # C Aggreagtion using auroc as weight
+        auroc_val_by_layer = np.array([m["auroc"] for m in train_out["val_metrics_by_layer"]], dtype=np.float64)
+        # sets a
+        auroc_val_by_layer = np.clip(auroc_val_by_layer - 0.5, a_min=0.0, a_max=None)
+
+        # softmax with temperature (lower temp -> more focus on top layers)
+        temp = 0.5
+        z = auroc_val_by_layer / max(temp, 1e-8)
+        z = z - z.max()  # stability
+        w = np.exp(z)
+        w = w / (w.sum() + 1e-12)  # shape (n_layers,)
+
+        # weighted aggregate score per sample
+        weighted_projection = np.sum(all_projections * w[:, None], axis=0)  # (n_samples,)
+
+        weighted_projection_metrics = metrics(
+            y_true=y_true,
+            y_predict=weighted_projection,
+            f1_threshold=0.5,
+            acc_threshold=0.5,
+        )
+
         return {
             "test_metrics_by_layer": test_metrics_by_layer,
             "top_k_layers_by_val_acc": top_k_indices,
             "ensemble_metrics": ensemble_metrics,
             "mean_projection_metrics": mean_projection_metrics,
+            "weighted_projection_metrics": weighted_projection_metrics,
         }
 
 

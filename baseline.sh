@@ -24,9 +24,10 @@ DATASETS=(
     "tsm_paras_en"
 )
 SMOKE_TEST=0
-OOD=1
+OOD=0
 MODELS=(
-        "raidar"
+        # "biscope"
+        # "raidar"
         # "text_fluoroscopy"
         # "radar"
         # "openai_roberta"
