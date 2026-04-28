@@ -7,7 +7,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
 #SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031
-#SBATCH --constraint=h200|b200|a100
+#SBATCH --constraint=h200|b200
 
 set -euo pipefail
 
@@ -18,13 +18,13 @@ cd "${ROOT_DIR}"
 
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=(
-    "detectrl_arxiv"
-    "multisocial_en"
+    # "detectrl_arxiv"
+    # "multisocial_en"
     "tsm_paras_en"
 )
 TOKEN_MODE="last_token"
 SMOKE_TEST=0
-OOD=0
+OOD=1
 PCA=1
 
 for DATASET in "${DATASETS[@]}"; do

@@ -15,6 +15,7 @@ DATA_DIR = os.path.join(BASE_DIR, "data", "sets")
 OOD = {
     "detectrl": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^detectrl_.+", x)]),
     "multisocial": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^multisocial_.+", x)]),
+    "tsm": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^tsm_.+", x)]),
 }
 
 """
