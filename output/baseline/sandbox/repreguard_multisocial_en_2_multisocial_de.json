@@ -1,0 +1,76 @@
+{
+  "args": {
+    "dataset": "multisocial_en",
+    "model": "repreguard",
+    "smoke_test": false,
+    "ood": true,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "ntrain": 0,
+    "rep_token": 0.1,
+    "batch_size": 8,
+    "bootstrap_iter": -1,
+    "model_name_or_path": "meta-llama/Meta-Llama-3-8B",
+    "random_seed": 42,
+    "train_data_path": "skip"
+  },
+  "train_results": {
+    "train_result": {
+      "roc_auc": 87.98,
+      "optimal_threshold": -1.0768538300351884,
+      "conf_matrix": [
+        [
+          199,
+          51
+        ],
+        [
+          47,
+          203
+        ]
+      ],
+      "precision": 79.92,
+      "recall": 81.2,
+      "f1": 80.56,
+      "accuracy": 80.4,
+      "tpr_at_fpr_0_01": 17.6
+    },
+    "test_result": {
+      "roc_auc": 64.4,
+      "optimal_threshold": -1.0768538300351884,
+      "conf_matrix": [
+        [
+          168,
+          82
+        ],
+        [
+          96,
+          154
+        ]
+      ],
+      "precision": 65.25,
+      "recall": 61.6,
+      "f1": 63.37,
+      "accuracy": 64.4,
+      "tpr_at_fpr_0_01": 3.2
+    }
+  },
+  "metrics": {
+    "roc_auc": 64.4,
+    "optimal_threshold": -1.0768538300351884,
+    "conf_matrix": [
+      [
+        168,
+        82
+      ],
+      [
+        96,
+        154
+      ]
+    ],
+    "precision": 65.25,
+    "recall": 61.6,
+    "f1": 63.37,
+    "accuracy": 64.4,
+    "tpr_at_fpr_0_01": 3.2
+  }
+}

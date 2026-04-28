@@ -30,7 +30,7 @@ class Inference:
             raise ValueError("Input text must be non-empty.")
 
         inputs = self.tokenizer(text, 
-                                truncation=True,,
+                                truncation=True,
                                 max_length=1024,
                                 return_tensors="pt")
         inputs = {key: value.to(self.device) for key, value in inputs.items()}

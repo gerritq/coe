@@ -2,11 +2,11 @@
 #SBATCH --job-name=baselines
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=10:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|b200
+#SBATCH --constraint=h200|b200|a100
 #SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031
 
 # set -euo pipefail
@@ -26,8 +26,8 @@ DATASETS=(
 SMOKE_TEST=0
 OOD=1
 MODELS=(
-        # "raidar"
-        "text_fluoroscopy"
+        "raidar"
+        # "text_fluoroscopy"
         # "radar"
         # "openai_roberta"
         # "repreguard"
