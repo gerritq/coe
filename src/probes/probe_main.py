@@ -58,6 +58,10 @@ class LinearProbing:
         models_by_layer = []
         optimal_thresholds_by_layer = []
         val_metrics_by_layer = []
+        
+        # for the meta probe
+        pca_meta_by_layer = []
+        pca_features_concatenated = []
 
         for layer in range(x_train.shape[0]):
 
@@ -70,6 +74,12 @@ class LinearProbing:
             if self.args.pca:
                 pca = PCA(n_components=50, random_state=42)
                 x_layer_train_scaled = pca.fit_transform(x_layer_train_scaled)
+
+            # apply pca and add features to list for concatenation
+            meta_pca = PCA(n_components=20, random_state=42)
+            meta_pca_features = meta_pca.fit_transform(x_layer_train_scaled)
+            pca_meta_by_layer.append(meta_pca)
+            pca_features_concatenated.append(meta_pca_features)
 
             # train probe
             clf_binary = LogisticRegression(max_iter=2000, 
@@ -99,36 +109,35 @@ class LinearProbing:
                                   acc_threshold=thresholds["threshold_acc"])
             val_metrics_by_layer.append(val_metrics)
 
+
+        # run the meta probes on the concatenated pca features
+        meta_pca_probe = LogisticRegression(max_iter=2000, random_state=42)
+        pca_features_concatenated = np.concatenate(pca_features_concatenated, axis=1)
+        meta_pca_probe.fit(pca_features_concatenated, y_train)
+
         return {
             "scalers_by_layer": scalers_by_layer,
             "pca_by_layer": pca_by_layer,
             "models_by_layer": models_by_layer,
             "optimal_thresholds_by_layer": optimal_thresholds_by_layer,
             "val_metrics_by_layer": val_metrics_by_layer,
+            "meta_pca_probe": meta_pca_probe,
+            "meta_pca_by_layer": pca_meta_by_layer,
         }
     
     def _evaluate(self, 
                   train_out: dict[str, Any], 
                   test: dict[str, Any]) -> dict[str, Any]:
 
-
-        # Select top-k probes
-        top_k = min(5, len(train_out["models_by_layer"]))
-        top_k_models = sorted(
-            enumerate(train_out["val_metrics_by_layer"]),
-            key=lambda x: x[1]["accuracy"],
-            reverse=True,
-        )[:top_k]
-        top_k_indices = [idx for idx, _ in top_k_models]
-
-        top_k_hard_preds = []
         test_metrics_by_layer = []
         y_true = test["y"]
-        
-        # run eval by layer
-        all_projections = []
-        for layer in range(len(train_out["models_by_layer"])):
 
+                # run eval by layer
+        all_projections = []
+        meta_pca_features_concatenated = []
+        for layer in range(len(train_out["models_by_layer"])):
+            
+            # Get scaler, pca, model, and thresholds per layer
             scaler = train_out["scalers_by_layer"][layer]
             if self.args.pca:
                 pca = train_out["pca_by_layer"][layer]
@@ -136,50 +145,38 @@ class LinearProbing:
                 pca=None
             model = train_out["models_by_layer"][layer]
             thresholds = train_out["optimal_thresholds_by_layer"][layer]
+            meta_pca = train_out["meta_pca_by_layer"][layer]
 
             # Get test data for this layer
             x_layer_test = test["x"][layer]  # (n_samples, d_model)
             x_layer_test_scaled = scaler.transform(x_layer_test)
             if self.args.pca:
                 x_layer_test_scaled = pca.transform(x_layer_test_scaled)
-            
-            # A Predict probs
-            y_score = model.predict_proba(x_layer_test_scaled)[:, 1]
 
-            # B Probing vector
+            # Get meta pca features
+            meta_pca_features = meta_pca.transform(x_layer_test_scaled)
+            meta_pca_features_concatenated.append(meta_pca_features)
+
+            # A Probing vector
             probe_vector = model.coef_[0]
             probe_vector = probe_vector / np.linalg.norm(probe_vector)
-            
+
             # project 
             # n_samples x d_model/d_pca  x  d_model/d_pca -> n_samples
             x_proj = np.dot(x_layer_test_scaled, probe_vector)
             all_projections.append(x_proj)
 
-
-            # metrics for this layer
+            # layer metrics
             layer_metrics = metrics(
                 y_true=y_true,
-                y_predict=y_score,
-                f1_threshold=thresholds["threshold_f1"],
-                acc_threshold=thresholds["threshold_acc"],
+                y_predict=x_proj,
+                f1_threshold=0.5, # these are wrong
+                acc_threshold=0.5, # these are wrong
             )
             test_metrics_by_layer.append(layer_metrics)
 
-            if layer in top_k_indices:
-                y_pred_hard = (y_score >= thresholds["threshold_acc"]).astype(np.float32)
-                top_k_hard_preds.append(y_pred_hard)
 
-        # A ensemble score
-        votes = np.stack(top_k_hard_preds, axis=0)  # (top_k, n_samples)
-        ensemble_score = (votes.sum(axis=0) >= (top_k / 2)).astype(np.float32)  # (n_samples,)
-        ensemble_metrics = metrics(
-            y_true=y_true,
-            y_predict=ensemble_score,
-            f1_threshold=0.5,
-            acc_threshold=0.5,
-        )
-
-        # B aggregate projection score, mean projection
+        # A aggregate projection score, mean projection
         all_projections = np.stack(all_projections, axis=0)  # (n_layers, n_samples)
         mean_projection = all_projections.mean(axis=0)  # (n_samples,)
         mean_projection_metrics = metrics(
@@ -189,7 +186,7 @@ class LinearProbing:
             acc_threshold=0.5,
         )
 
-        # C Aggreagtion using auroc as weight
+        # B Aggreagtion using auroc as weight
         auroc_val_by_layer = np.array([m["auroc"] for m in train_out["val_metrics_by_layer"]], dtype=np.float64)
         # sets a
         auroc_val_by_layer = np.clip(auroc_val_by_layer - 0.5, a_min=0.0, a_max=None)
@@ -211,12 +208,22 @@ class LinearProbing:
             acc_threshold=0.5,
         )
 
+        # C Meta probe on concatenated pca features
+        meta_pca_features_concatenated = np.concatenate(meta_pca_features_concatenated, axis=1)
+        meta_pca_probe = train_out["meta_pca_probe"]
+        meta_pca_scores = meta_pca_probe.predict_proba(meta_pca_features_concatenated)[:, 1]
+        meta_pca_metrics = metrics(
+            y_true=y_true,
+            y_predict=meta_pca_scores,
+            f1_threshold=0.5,
+            acc_threshold=0.5,
+        )
+
         return {
             "test_metrics_by_layer": test_metrics_by_layer,
-            "top_k_layers_by_val_acc": top_k_indices,
-            "ensemble_metrics": ensemble_metrics,
             "mean_projection_metrics": mean_projection_metrics,
             "weighted_projection_metrics": weighted_projection_metrics,
+            "meta_pca_metrics": meta_pca_metrics,
         }
 
 
