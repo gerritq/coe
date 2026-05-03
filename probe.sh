@@ -18,13 +18,13 @@ cd "${ROOT_DIR}"
 
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=(
-    # "detectrl_arxiv"
-    # "multisocial_en"
+    "detectrl_arxiv"
+    "multisocial_en"
     "tsm_paras_en"
 )
 TOKEN_MODE="last_token"
 SMOKE_TEST=0
-OOD=1
+OOD=0
 PCA=1
 
 for DATASET in "${DATASETS[@]}"; do
