@@ -1,20 +1,27 @@
+from src.baseline.bartscore import BARTScorer
+
+from tqdm import tqdm
 import torch
-import tqdm
-from rouge import Rouge
+import torch
+import os
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import numpy as np
 import torch
 import random
-from transformers import AutoModelForCausalLM, AutoTokenizer
 from argparse import Namespace
 
 from src.utils import return_device
-rouge = Rouge()
 
-class GECScore:
+print('GPU available', torch.cuda.is_available())
+
+# Code is taken from: https://github.com/thunlp/LLM-generated-text-detection/blob/main/finance_bart_auroc.py
+
+class ReviseDetect:
 
     def __init__(self,
-                # "meta-llama/Llama-3.3-70B-Instruct"
-                model_name="meta-llama/Meta-Llama-3-8B-instruct"):
+                lang,
+                model_name="meta-llama/Meta-Llama-3-8B-instruct",
+                workers=8):
         self.model = AutoModelForCausalLM.from_pretrained(model_name,
                                                           trust_remote_code=True,
                                                           device_map='auto',
@@ -22,9 +29,10 @@ class GECScore:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, 
                                                        trust_remote_code=True)
         self.model.eval()
-        self.prompt = "Correct the grammar errors in the following text: {text}\nCorrected text:"
+        self.prompt = "Revise the following text: {text}"
         self.device = return_device()
-    
+        self.bartscorer = BARTScorer(device=return_device(),checkpoint="facebook/bart-large-cnn")
+
 
     def batch_inference(self, items: list[str]) -> list[dict]:
         """"
@@ -64,20 +72,14 @@ class GECScore:
             for idx, text in enumerate(batch_texts):
                 gen_ids = outputs[idx, input_lens:]
                 gec_text = self.tokenizer.decode(gen_ids, skip_special_tokens=True).strip()
-                results.append({"text": text, "gec_text": gec_text})
+                results.append({"text": text, "revise_text": gec_text})
 
         return results
-
-    def gescore(self, item: dict) -> float:
-        text = item['text']
-        gec_text = item['gec_text']
-        rouge_score = rouge.get_scores(text, gec_text, avg=True)
-        return rouge_score['rouge-2']['f']
-
+    
     def run(self, 
             texts: list[str],
             args: Namespace) -> list[float]:
-        '''wrapper function to run get_samplnig_discrepency_analytic for list of txts'''
+        ''''''
 
         random.seed(42)
         torch.manual_seed(42)
@@ -85,10 +87,14 @@ class GECScore:
 
         texts_dict = self.batch_inference(texts)
 
-        scores = []
-        
-        for item in texts_dict:
-            score = self.gescore(item)
-            scores.append(score)
+        revised = [item['revise_text'] for item in texts_dict]
+        og_texts = [item['text'] for item in texts_dict]
 
+        scores = self.bartscorer.score(revised, og_texts)
+        
         return scores
+
+
+
+
+

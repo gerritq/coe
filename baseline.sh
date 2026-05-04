@@ -19,9 +19,9 @@ cd "${ROOT_DIR}"
 export CUDA_LAUNCH_BLOCKING=1
 
 DATASETS=(
-    "detectrl_arxiv"
-    # "multisocial_en"
-    #"tsm_paras_en"
+    # "detectrl_arxiv"
+    "multisocial_en"
+    # "tsm_paras_en"
 )
 SMOKE_TEST=1
 OOD=0

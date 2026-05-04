@@ -105,6 +105,10 @@ def return_model(args: Namespace):
     if args.model == "gescore":
         from src.baseline.gescore import GECScore
         return GECScore() # we use LLama 70b here
+    
+    if args.model == "revise":
+        from src.baseline.revise import ReviseDetect
+        return ReviseDetect() # we use LLama 70b here
 
 def run(args):
 

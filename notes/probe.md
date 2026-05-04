@@ -1,11 +1,13 @@
 # To do
 
+- testing gescore and biscope
+
 
 ## Today 
 1. Add missing detectors
-- Divscore
-- BiScope (likely needs spped up with batch inference)
-- Add DNA-GPT
+- DONE GEScroe
+- DONE BiScope (likely needs spped up with batch inference)
+- DONE ReviseDetect
 
 2. Add a second dataset
 - Beemo? EditLens?
