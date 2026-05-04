@@ -22,15 +22,6 @@ os.makedirs(BASELINE_DIR, exist_ok=True)
 COMPLETION_PROMPT_ONLY = "Complete the following text: "
 COMPLETION_PROMPT = "Given the summary:\n{prompt}\n Complete the following text: "
 
-MODEL_ZOO = {
-    'llama2-7b': 'meta-llama/Llama-2-7b-chat-hf',
-    'llama2-13b': 'meta-llama/Llama-2-13b-chat-hf',
-    'llama3-8b': 'meta-llama/Meta-Llama-3-8B-Instruct',
-    'gemma-2b': 'google/gemma-1.1-2b-it',
-    'gemma-7b': 'google/gemma-1.1-7b-it', 
-    'mistral-7b': 'mistralai/Mistral-7B-Instruct-v0.2',
-}
-
 class BiScope:
 
     def __init__(self, args: Namespace):
@@ -39,22 +30,22 @@ class BiScope:
         args.detect_model = args.base_model_2
 
         self.summary_model = AutoModelForCausalLM.from_pretrained(
-                MODEL_ZOO[args.summary_model],
+                args.summary_model,
                 torch_dtype=torch.float16,
                 device_map='auto'
             ).eval()
         self.summary_tokenizer = AutoTokenizer.from_pretrained(
-                MODEL_ZOO[args.summary_model], padding_side='left'
+                args.summary_model, padding_side='left'
             )
         self.summary_tokenizer.pad_token = self.summary_tokenizer.eos_token
         
         self.model = AutoModelForCausalLM.from_pretrained(
-                MODEL_ZOO[args.detect_model],
+                args.detect_model,
                 torch_dtype=torch.float16,
                 device_map='auto'
             ).eval()
         self.tokenizer = AutoTokenizer.from_pretrained(
-                MODEL_ZOO[args.detect_model], padding_side='left'
+                args.detect_model, padding_side='left'
             )
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
@@ -207,9 +198,9 @@ class BiScope:
                 pad_token_id=self.summary_tokenizer.pad_token_id
             )
 
-            prompt_lens = attention_mask.sum(dim=1).tolist()
+            input_len = summary_ids.shape[1]
             for idx, item in enumerate(batch):
-                gen_ids = outputs[idx, prompt_lens[idx]:]
+                gen_ids = outputs[idx, input_len:]
                 summary_text = self.summary_tokenizer.decode(
                     gen_ids,
                     skip_special_tokens=True

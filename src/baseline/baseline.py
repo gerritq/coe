@@ -101,6 +101,10 @@ def return_model(args: Namespace):
     if args.model == "openai_roberta":
         from src.baseline.mlmodel import MLModels
         return MLModels(model_name="openai-community/roberta-base-openai-detector")
+    
+    if args.model == "gescore":
+        from src.baseline.gescore import GECScore
+        return GECScore() # we use LLama 70b here
 
 def run(args):
 
