@@ -1,0 +1,77 @@
+{
+  "args": {
+    "dataset": "detectrl_yelp_review",
+    "model": "repreguard",
+    "smoke_test": false,
+    "ood": false,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "ntrain": 0,
+    "rep_token": 0.1,
+    "batch_size": 8,
+    "bootstrap_iter": -1,
+    "model_name_or_path": "meta-llama/Meta-Llama-3-8B",
+    "random_seed": 42,
+    "train_data_path": "skip",
+    "ood_dataset": "detectrl_yelp_review"
+  },
+  "train_results": {
+    "train_result": {
+      "roc_auc": 99.66,
+      "optimal_threshold": -0.5564635548461014,
+      "conf_matrix": [
+        [
+          248,
+          2
+        ],
+        [
+          7,
+          243
+        ]
+      ],
+      "precision": 99.18,
+      "recall": 97.2,
+      "f1": 98.18,
+      "accuracy": 98.2,
+      "tpr_at_fpr_0_01": 96.0
+    },
+    "test_result": {
+      "auroc": 98.0,
+      "optimal_threshold": -0.5564635548461014,
+      "conf_matrix": [
+        [
+          247,
+          3
+        ],
+        [
+          7,
+          243
+        ]
+      ],
+      "precision": 98.78,
+      "recall": 97.2,
+      "f1": 97.98,
+      "accuracy": 98.0,
+      "tpr_at_fpr_0_01": 96.0
+    }
+  },
+  "metrics": {
+    "auroc": 98.0,
+    "optimal_threshold": -0.5564635548461014,
+    "conf_matrix": [
+      [
+        247,
+        3
+      ],
+      [
+        7,
+        243
+      ]
+    ],
+    "precision": 98.78,
+    "recall": 97.2,
+    "f1": 97.98,
+    "accuracy": 98.0,
+    "tpr_at_fpr_0_01": 96.0
+  }
+}

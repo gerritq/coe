@@ -17,30 +17,29 @@ ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
-DATASETS=(
-    # "detectrl_arxiv"
-    "multisocial_en"
-    # "tsm_paras_en"
-)
+DATASETS=("detectrl_arxiv" "detectrl_writing_prompt" "detectrl_yelp_review" "detectrl_xsum")
 TOKEN_MODE="last_token"
-MODE="meta_attn" # default | pca | meta | meta_attn
-OOD=1
+MODES=("default" "pca") # default | pca | meta | meta_attn
+OOD=0
 COMPONENTS=50
 SMOKE_TEST=0
-for DATASET in "${DATASETS[@]}"; do
-    for MODEL in "${MODELS[@]}"; do
-        echo "------------------------------------------------"
-        echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE"
-        echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, COMPONENTS=$COMPONENTS" 
-        echo "------------------------------------------------"
 
-        PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.run \
-            --model "$MODEL" \
-            --dataset "$DATASET" \
-            --token_mode "$TOKEN_MODE" \
-            --smoke_test "$SMOKE_TEST" \
-            --ood "$OOD" \
-            --components "$COMPONENTS" \
-            --mode "$MODE"
+for MODEL in "${MODELS[@]}"; do
+    for DATASET in "${DATASETS[@]}"; do
+        for MODE in "${MODES[@]}"; do
+            echo "------------------------------------------------"
+            echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE, Mode=$MODE"
+            echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, COMPONENTS=$COMPONENTS"
+            echo "------------------------------------------------"
+
+            PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.run \
+                --model "$MODEL" \
+                --dataset "$DATASET" \
+                --token_mode "$TOKEN_MODE" \
+                --smoke_test "$SMOKE_TEST" \
+                --ood "$OOD" \
+                --components "$COMPONENTS" \
+                --mode "$MODE"
+        done
     done
 done

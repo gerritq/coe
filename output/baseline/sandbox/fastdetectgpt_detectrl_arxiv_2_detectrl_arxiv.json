@@ -1,0 +1,21 @@
+{
+  "args": {
+    "dataset": "detectrl_arxiv",
+    "model": "fastdetectgpt",
+    "smoke_test": false,
+    "ood": false,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "ood_dataset": "detectrl_arxiv"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.8568,
+    "accuracy": 0.77,
+    "f1": 0.7711267605633803,
+    "tpr_at_fpr_0_05": 0.54,
+    "optimal_threshold_f1": 0.07507507507507508,
+    "optimal_threshold_acc": 0.36036036036036034,
+    "aupr": 0.8786531782941821
+  }
+}

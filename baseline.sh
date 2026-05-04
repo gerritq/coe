@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=baselines
+#SBATCH --job-name=b_fluo_rep
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=05:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -22,14 +22,14 @@ DATASETS=("detectrl_arxiv" "detectrl_writing_prompt" "detectrl_yelp_review" "det
 SMOKE_TEST=0
 OOD=0
 MODELS=(
-        "revise"
-        "gescore"
-        "biscope"
+        # "revise"
+        # "gescore"
+        # "biscope"
         # "raidar"
-        # "text_fluoroscopy"
-        # "radar"
-        # "openai_roberta"
-        # "repreguard"
+        "text_fluoroscopy"
+        "radar"
+        "openai_roberta"
+        "repreguard"
         # "encoder" 
         # "llr" 
         # "fastdetectgpt" 
@@ -41,8 +41,8 @@ MODELS=(
 
 
 # Nested loop to run every model on every dataset
-for DATASET in "${DATASETS[@]}"; do
-    for MODEL in "${MODELS[@]}"; do
+for MODEL in "${MODELS[@]}"; do
+    for DATASET in "${DATASETS[@]}"; do
         echo "------------------------------------------------"
         echo "Running Baseline: Dataset=$DATASET, Model=$MODEL, OOD=$OOD, Smoke=$SMOKE_TEST"
         echo "------------------------------------------------"
