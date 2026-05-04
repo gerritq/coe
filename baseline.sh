@@ -2,7 +2,7 @@
 #SBATCH --job-name=baselines
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=10:00:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -19,14 +19,14 @@ cd "${ROOT_DIR}"
 export CUDA_LAUNCH_BLOCKING=1
 
 DATASETS=(
-    "detectrl_arxiv"
+    #"detectrl_arxiv"
     "multisocial_en"
-    "tsm_paras_en"
+    #"tsm_paras_en"
 )
-SMOKE_TEST=0
+SMOKE_TEST=1
 OOD=0
 MODELS=(
-        # "biscope"
+        "biscope"
         # "raidar"
         # "text_fluoroscopy"
         # "radar"

@@ -108,7 +108,7 @@ def return_model(args: Namespace):
 
 def run(args):
 
-    if args.model in ['encoder', "repreguard", "text_fluoroscopy", "raidar"]:
+    if args.model in ['encoder', "repreguard", "text_fluoroscopy", "raidar", "biscope"]:
         supervised_models(args)
     
     else:
