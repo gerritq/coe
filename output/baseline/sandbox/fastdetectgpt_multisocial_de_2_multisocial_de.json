@@ -1,0 +1,21 @@
+{
+  "args": {
+    "dataset": "multisocial_de",
+    "model": "fastdetectgpt",
+    "smoke_test": false,
+    "ood": false,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "ood_dataset": "multisocial_de"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.680312,
+    "accuracy": 0.614,
+    "f1": 0.4709141274238227,
+    "tpr_at_fpr_0_05": 0.216,
+    "optimal_threshold_f1": 0.0,
+    "optimal_threshold_acc": 0.12412412412412413,
+    "aupr": 0.7036837814421159
+  }
+}

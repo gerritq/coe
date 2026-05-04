@@ -1,0 +1,21 @@
+{
+  "args": {
+    "dataset": "multisocial_zh",
+    "model": "radar",
+    "smoke_test": false,
+    "ood": false,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "ood_dataset": "multisocial_zh"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.6237280000000001,
+    "accuracy": 0.592,
+    "f1": 0.6738794435857806,
+    "tpr_at_fpr_0_05": 0.06,
+    "optimal_threshold_f1": 0.12412412412412413,
+    "optimal_threshold_acc": 0.6226226226226226,
+    "aupr": 0.5726451468857195
+  }
+}

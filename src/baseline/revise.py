@@ -19,7 +19,6 @@ print('GPU available', torch.cuda.is_available())
 class ReviseDetect:
 
     def __init__(self,
-                lang,
                 model_name="meta-llama/Meta-Llama-3-8B-instruct",
                 workers=8):
         self.model = AutoModelForCausalLM.from_pretrained(model_name,
@@ -45,7 +44,7 @@ class ReviseDetect:
         batch_size = 16
         results = []
 
-        for start in tqdm.tqdm(range(0, len(items), batch_size)):
+        for start in tqdm(range(0, len(items), batch_size)):
             batch_texts = items[start:start + batch_size]
             prompts = [self.prompt.format(text=text) for text in batch_texts]
 
