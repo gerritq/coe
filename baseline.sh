@@ -6,7 +6,7 @@
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|b200|a100
+#SBATCH --constraint=h200|b200
 #SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031
 
 # set -euo pipefail
@@ -19,14 +19,15 @@ cd "${ROOT_DIR}"
 export CUDA_LAUNCH_BLOCKING=1
 
 DATASETS=(
-    #"detectrl_arxiv"
-    "multisocial_en"
+    "detectrl_arxiv"
+    # "multisocial_en"
     #"tsm_paras_en"
 )
 SMOKE_TEST=1
 OOD=0
 MODELS=(
-        "biscope"
+        "gescore"
+        # "biscope"
         # "raidar"
         # "text_fluoroscopy"
         # "radar"

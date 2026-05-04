@@ -1,0 +1,25 @@
+{
+  "args": {
+    "dataset": "detectrl_arxiv",
+    "model": "biscope",
+    "smoke_test": true,
+    "ood": false,
+    "base_model_1": "HuggingFaceTB/SmolLM-135M",
+    "base_model_2": "HuggingFaceTB/SmolLM-135M",
+    "summary_model": "HuggingFaceTB/SmolLM-135M",
+    "detect_model": "HuggingFaceTB/SmolLM-135M",
+    "sample_clip": 2000,
+    "seed": 42,
+    "ood_dataset": "detectrl_arxiv"
+  },
+  "metrics": {
+    "n_total": 30,
+    "auroc": 0.8371040723981901,
+    "accuracy": 0.6333333333333333,
+    "f1": 0.6666666666666666,
+    "tpr_at_fpr_0_05": 0.6153846153846154,
+    "optimal_threshold_f1": 0.5,
+    "optimal_threshold_acc": 0.5,
+    "aupr": 0.8729085729085729
+  }
+}
