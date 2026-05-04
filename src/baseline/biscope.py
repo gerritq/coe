@@ -125,14 +125,18 @@ class BiScope:
                              ) -> list[float]:
 
         # SUMMARY MODEL GENERATION
-        sample = item['text']
+        # sample = item['text']
 
-        summary_input = f"Write a title for this text: {sample}\nJust output the title:"
-        summary_ids = self.summary_tokenizer(summary_input, return_tensors='pt',
-                                        max_length=self.sample_clip, truncation=True).input_ids.to(self.device)
-        summary_ids = summary_ids[:, 1:]  # Remove start token.
-        gen_ids = self.generate(self.summary_model, self.summary_tokenizer, summary_ids, summary_ids.shape[1], 64)
-        summary_text = self.summary_tokenizer.decode(gen_ids, skip_special_tokens=True).strip().split('\n')[0]
+        # summary_input = f"Write a title for this text: {sample}\nJust output the title:"
+        # summary_ids = self.summary_tokenizer(summary_input, return_tensors='pt',
+        #                                 max_length=self.sample_clip, truncation=True).input_ids.to(self.device)
+        # summary_ids = summary_ids[:, 1:]  # Remove start token.
+        # gen_ids = self.generate(self.summary_model, self.summary_tokenizer, summary_ids, summary_ids.shape[1], 64)
+        # summary_text = self.summary_tokenizer.decode(gen_ids, skip_special_tokens=True).strip().split('\n')[0]
+        
+        sample = item['text']
+        
+        summary_text = item['summary_text']
         prompt_text = COMPLETION_PROMPT.format(prompt=summary_text)
 
 
@@ -159,6 +163,60 @@ class BiScope:
             ])
         return features
 
+
+    def generate_summaries_batch(self, items: list[dict]) -> list[dict]:
+        """"
+        GQ: we generate this function for faster inference of summaries
+        takes ages w/o batching 
+        """
+        # SUMMARY MODEL GENERATION
+        # sample = item['text']
+
+        # summary_input = f"Write a title for this text: {sample}\nJust output the title:"
+        # summary_ids = self.summary_tokenizer(summary_input, return_tensors='pt',
+        #                                 max_length=self.sample_clip, truncation=True).input_ids.to(self.device)
+        # summary_ids = summary_ids[:, 1:]  # Remove start token.
+        # gen_ids = self.generate(self.summary_model, self.summary_tokenizer, summary_ids, summary_ids.shape[1], 64)
+        # summary_text = self.summary_tokenizer.decode(gen_ids, skip_special_tokens=True).strip().split('\n')[0]
+        batch_size = 24
+
+        for start in tqdm(range(0, len(items), batch_size)):
+            batch = items[start:start + batch_size]
+            summary_inputs = [
+                f"Write a title for this text: {item['text']}\nJust output the title:"
+                for item in batch
+            ]
+            tokenized = self.summary_tokenizer(
+                summary_inputs,
+                return_tensors='pt',
+                padding=True,
+                max_length=self.sample_clip,
+                truncation=True
+            )
+            summary_ids = tokenized.input_ids.to(self.device)
+            attention_mask = tokenized.attention_mask.to(self.device)
+            summary_ids = summary_ids[:, 1:]  # Remove start token.
+            attention_mask = attention_mask[:, 1:]
+
+            config = self.summary_model.generation_config
+            config.max_new_tokens = 64
+            outputs = self.summary_model.generate(
+                summary_ids,
+                attention_mask=attention_mask,
+                generation_config=config,
+                pad_token_id=self.summary_tokenizer.pad_token_id
+            )
+
+            prompt_lens = attention_mask.sum(dim=1).tolist()
+            for idx, item in enumerate(batch):
+                gen_ids = outputs[idx, prompt_lens[idx]:]
+                summary_text = self.summary_tokenizer.decode(
+                    gen_ids,
+                    skip_special_tokens=True
+                ).strip().split('\n')[0]
+                item['summary_text'] = summary_text
+        return items
+
     def data_generation(self,
                         args, 
                         human_data: list[str],
@@ -175,6 +233,10 @@ class BiScope:
         Returns:
         The output directory.
         """
+
+        # GQ: add summaries to the keys
+        human_features = self.generate_summaries_batch(human_data)
+        machine_features = self.generate_summaries_batch(machine_data)
 
         
         human_features = [self.detect_single_sample(args, item) for item in tqdm(human_data)]
