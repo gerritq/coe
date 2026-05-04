@@ -7,7 +7,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
 #SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031
-#SBATCH --constraint=h200|b200
+#SBATCH --constraint=h200|b200|a100
 
 set -euo pipefail
 
@@ -23,15 +23,15 @@ DATASETS=(
     # "tsm_paras_en"
 )
 TOKEN_MODE="last_token"
-SMOKE_TEST=0
+MODE="meta_attn" # default | pca | meta | meta_attn
 OOD=1
-PCA=0
-
+COMPONENTS=50
+SMOKE_TEST=0
 for DATASET in "${DATASETS[@]}"; do
     for MODEL in "${MODELS[@]}"; do
         echo "------------------------------------------------"
         echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE"
-        echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, PCA=$PCA"
+        echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, COMPONENTS=$COMPONENTS" 
         echo "------------------------------------------------"
 
         PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.run \
@@ -40,6 +40,7 @@ for DATASET in "${DATASETS[@]}"; do
             --token_mode "$TOKEN_MODE" \
             --smoke_test "$SMOKE_TEST" \
             --ood "$OOD" \
-            --pca "$PCA"
+            --components "$COMPONENTS" \
+            --mode "$MODE"
     done
 done

@@ -7,13 +7,14 @@ from argparse import Namespace
 MODEL_DIR = {
     "qwen_06b": "Qwen/Qwen3-0.6B",
     "qwen_8b": "Qwen/Qwen3-8B",
-    "qwen_32b": "Qwen/Qwen3-32B",
     "llama_8b": "meta-llama/Meta-Llama-3-8B-Instruct"
 }
 
 
 class Inference:
-    def __init__(self, model_name: str) -> None:
+    def __init__(self, 
+                 model_name: str) -> None:
+        
         self.model_id = MODEL_DIR[model_name]
         self.device = return_device()
 
@@ -23,7 +24,16 @@ class Inference:
         self.model.to(self.device)
         self.model.eval()
 
-    def run(self, item: dict, args: Namespace) -> dict[str, Any]:
+    def run(self, 
+            item: dict, 
+            args: Namespace) -> dict[str, Any]:
+        
+        if args.mode == "meta_attn":
+            attention = True
+        else:            
+            raw_attentions = None
+            attention = False
+        
         text = item["text"]
         
         if not text.strip():
@@ -38,27 +48,34 @@ class Inference:
         with torch.no_grad():
             outputs = self.model(**inputs, 
                                  output_hidden_states=True, 
+                                 output_attentions=attention,
                                  use_cache=False)
+            
+        # attentions/hidden states are tuples of len layer
 
+        # extract hidden states
         if args.token_mode == "last_token":
             hidden_states = tuple(
                 layer[:, -1, :].detach().cpu().squeeze(0) for layer in outputs.hidden_states
             )
-            return {
-                "model_id": self.model_id,
-                "text": text,
-                "label": item["label"],
-                "hidden_states": hidden_states,
-            }
         if args.token_mode == "pooling":
             hidden_states = tuple(
                 layer.mean(dim=1).detach().cpu().squeeze(0) for layer in outputs.hidden_states
             )
-            return {
-                "model_id": self.model_id,
-                "text": text,
-                "label": item["label"],
-                "hidden_states": hidden_states,
-            }
-        
-        raise ValueError(f"Invalid inference mode: {args.mode}")
+
+        # extract attention
+        # shape (1, num_heads, seq_len, seq_len)
+        if attention:
+            raw_attentions = tuple(
+                layer.detach().cpu().squeeze(0) for layer in outputs.attentions
+            )
+
+
+        return {
+            "model_id": self.model_id,
+            "text": text,
+            "label": item["label"],
+            "hidden_states": hidden_states,
+            "raw_attentions": raw_attentions if attention else None
+        }
+

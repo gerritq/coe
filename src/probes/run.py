@@ -11,7 +11,8 @@ def parse_args() -> Namespace:
     parser.add_argument("--token_mode", type=str, default="last_token")
     parser.add_argument("--ood", type=int, default=0)
     parser.add_argument("--smoke_test", type=int, default=0)
-    parser.add_argument("--pca", type=int, default=0)
+    parser.add_argument("--components", type=int, default=50)
+    parser.add_argument("--mode", type=str, required=True)
     return parser.parse_args()
 
 
@@ -24,12 +25,11 @@ def main() -> None:
         raise ValueError("smoke_test must be 0 or 1")
     if args.ood not in (0, 1):
         raise ValueError("ood must be 0 or 1")
-    if args.pca not in (0, 1):
-        raise ValueError("pca must be 0 or 1")
+    if args.mode not in {"default", "pca", "meta", "meta_attn"}:
+        raise ValueError("mode must be one of: default, pca, meta, meta_attn")
 
     args.smoke_test = bool(args.smoke_test)
     args.ood = bool(args.ood)
-    args.pca = bool(args.pca)
     args.model_name = args.model
 
     analyzer = LinearProbing(args=args)

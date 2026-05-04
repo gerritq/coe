@@ -1,7 +1,7 @@
 # To do
 
 - testing gescore and biscope
-
+- entropy norm?
 
 ## Today 
 1. Add missing detectors
