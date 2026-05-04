@@ -1,6 +1,8 @@
 # To do
 
-- testing gescore and biscope
+- add new benchmarks results to the table
+- where are revise and enc? are others missin?
+- run OOD over night; maybe different folder?
 - entropy norm?
 
 ## Today 
@@ -11,14 +13,14 @@
 
 2. Add a second dataset
 - Beemo? EditLens?
-- Run ID performance with current baselines (exclude encoder)
+- DONE Run ID performance with current baselines (exclude encoder)
 
 3.  Code the OOD setupt where one vs all
     - Select Roberta + 3 other trained methods for this vs ours
     - Or do we do leave one out val?
 
 4. Run our first LP baseline
-    - Add the attention features to the meta probe
+    - DONE Add the attention features to the meta probe
     - Create plots for ID and OOD performance by layer. 
     - OOD can be more interesting as there is more variation.
     - Layers should be one analysis for sure.

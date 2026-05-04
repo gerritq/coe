@@ -1,187 +1,249 @@
 import json
 import os
-import re
-from typing import Any
 
 
 BASE_DIR = os.getenv("BASE_COE", ".")
-BASELINE_DIR_CANDIDATES = [
-    os.path.join(BASE_DIR, "output", "baseline", "sanbox"),
-    os.path.join(BASE_DIR, "output", "baseline", "sandbox"),
+BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
+PROBE_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
+OUT_DIR = os.path.join(BASE_DIR, "output", "item")
+
+DATASET_GROUPS = {
+    "detectrl": [
+        "detectrl_arxiv",
+        "detectrl_writing_prompt",
+        "detectrl_yelp_review",
+        "detectrl_xsum",
+    ],
+    "multisocial": [
+        "multisocial_de",
+        "multisocial_en",
+        "multisocial_pt",
+        "multisocial_ru",
+        "multisocial_zh",
+    ],
+    "tsm": [
+        "tsm_paras_en",
+        "tsm_paras_pt",
+        "tsm_paras_vi",
+        "tsm_sums_en",
+        "tsm_sums_pt",
+        "tsm_sums_vi",
+    ],
+}
+
+DATASET_LABELS = {
+    "detectrl_arxiv": r"\textbf{ArXiv}",
+    "detectrl_writing_prompt": r"\textbf{WritingPrompts}",
+    "detectrl_yelp_review": r"\textbf{Yelp}",
+    "detectrl_xsum": r"\textbf{XSum}",
+    "multisocial_de": r"\textbf{de}",
+    "multisocial_en": r"\textbf{en}",
+    "multisocial_pt": r"\textbf{pt}",
+    "multisocial_ru": r"\textbf{ru}",
+    "multisocial_zh": r"\textbf{zh}",
+    "tsm_paras_en": r"\textbf{P-en}",
+    "tsm_paras_pt": r"\textbf{P-pt}",
+    "tsm_paras_vi": r"\textbf{P-vi}",
+    "tsm_sums_en": r"\textbf{S-en}",
+    "tsm_sums_pt": r"\textbf{S-pt}",
+    "tsm_sums_vi": r"\textbf{S-vi}",
+}
+
+MODEL_LABELS = {
+    "binoculars": "Binoculars",
+    "biscope": "BiScope",
+    "entropy": "Entropy",
+    "fastdetectgpt": "FastDetectGPT",
+    "gescore": "GEScore",
+    "likelihood": "Likelihood",
+    "llr": "LLR",
+    "openai_roberta": "OpenAI-RoBERTa",
+    "radar": "RADAR",
+    "raidar": "RAIDAR",
+    "rank": "Rank",
+    "repreguard": "RepreGuard",
+    "text_fluoroscopy": "TextFluoroscopy",
+}
+
+ZERO_SHOT_MODELS = [
+    "binoculars",
+    "entropy",
+    "fastdetectgpt",
+    "likelihood",
+    "llr",
+    "rank",
+    "repreguard",
+    "gescore",
 ]
-PROBE_DIR_CANDIDATES = [
-    os.path.join(BASE_DIR, "output", "probe", "sanbox"),
-    os.path.join(BASE_DIR, "output", "probe", "sandbox"),
+
+SUPERVISED_MODELS = [
+    "biscope",
+    "openai_roberta",
+    "raidar",
+    "radar",
+    "text_fluoroscopy",
 ]
-OUT_TEX = os.path.join(BASE_DIR, "item", "t_id.tex")
 
-
-def _resolve_existing_dir(candidates: list[str]) -> str:
-    for path in candidates:
-        if os.path.isdir(path):
-            return path
-    raise FileNotFoundError(f"None of these directories exist: {candidates}")
-
-
-def _read_json(path: str) -> dict[str, Any]:
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def _target_from_filename(filename: str) -> str | None:
-    # Supports:
-    # baseline: <model>_<source>_2_<target>.json
-    # probe:    <token_mode>_<source>_2_<target>_pca{0,1}.json
-    m = re.match(r"^.+_2_(.+)\.json$", filename)
-    if not m:
-        return None
-    target = m.group(1)
-    target = re.sub(r"_pca[01]$", "", target)
-    return target
-
-
-def _probe_row_name(args: dict[str, Any]) -> str:
-    model = str(args.get("model", "probe"))
-    token_mode = str(args.get("token_mode", "token"))
-    pca = int(bool(args.get("pca", 0)))
-    return f"{model}_{token_mode}_pca{pca}"
-
-
-def _collect_baseline_scores(folder: str) -> dict[str, dict[str, float]]:
-    # model -> (in-domain dataset -> auroc)
-    scores: dict[str, dict[str, float]] = {}
-
-    for filename in sorted(os.listdir(folder)):
-        if not filename.endswith(".json"):
-            continue
-        path = os.path.join(folder, filename)
-        payload = _read_json(path)
-        args = payload.get("args", {})
-        metrics = payload.get("metrics", {})
-
-        source = args.get("dataset")
-        model = args.get("model")
-        target = _target_from_filename(filename)
-        auroc = metrics.get("auroc", metrics.get("roc_auc"))
-        if source is None or model is None or target is None or auroc is None:
-            continue
-        if str(source) != target:
-            continue
-
-        scores.setdefault(str(model), {})[str(source)] = float(auroc)
-
-    return scores
-
-
-def _collect_probe_scores(folder: str) -> dict[str, dict[str, float]]:
-    # model -> (in-domain dataset -> auroc)
-    scores: dict[str, dict[str, float]] = {}
-
-    for filename in sorted(os.listdir(folder)):
-        if not filename.endswith(".json"):
-            continue
-        path = os.path.join(folder, filename)
-        payload = _read_json(path)
-        args = payload.get("args", {})
-        test_metrics = payload.get("test_metrics", {})
-        ensemble_metrics = test_metrics.get("ensemble_metrics", {})
-
-        source = args.get("dataset")
-        target = _target_from_filename(filename)
-        auroc = ensemble_metrics.get("auroc")
-        if source is None or target is None or auroc is None:
-            continue
-        if str(source) != target:
-            continue
-
-        row_name = _probe_row_name(args)
-        scores.setdefault(row_name, {})[str(source)] = float(auroc)
-
-    return scores
+PROBE_MODE_ORDER = ["default", "pca", "meta", "meta_attn"]
 
 
 def _tex_escape(text: str) -> str:
-    return text.replace("_", r"\_")
+    return text.replace("_", "\\_")
 
 
-def _format_auroc(value: float | None, best_value: float | None) -> str:
-    if value is None:
+def _fmt(score: float | None) -> str:
+    if score is None:
         return ""
-    formatted = f"{value:.3f}"
-    if best_value is not None and abs(value - best_value) <= 1e-12:
-        return rf"\textbf{{{formatted}}}"
-    return formatted
+    return f"{score:.3f}"
 
 
-def build_latex_table(
-    baseline_scores: dict[str, dict[str, float]],
-    probe_scores: dict[str, dict[str, float]],
+def _probe_auroc(test_metrics: dict) -> float | None:
+    if "meta_metrics" in test_metrics:
+        return test_metrics["meta_metrics"].get("auroc")
+    if "weighted_projection_metrics" in test_metrics:
+        return test_metrics["weighted_projection_metrics"].get("auroc")
+    if "mean_projection_metrics" in test_metrics:
+        return test_metrics["mean_projection_metrics"].get("auroc")
+    return None
+
+
+def _all_datasets() -> list[str]:
+    datasets = []
+    for group in ["detectrl", "multisocial", "tsm"]:
+        datasets.extend(DATASET_GROUPS[group])
+    return datasets
+
+
+def collect_baselines() -> dict[str, dict[str, float]]:
+    table: dict[str, dict[str, float]] = {}
+    datasets = set(_all_datasets())
+    for filename in sorted(os.listdir(BASELINE_DIR)):
+        if not filename.endswith(".json"):
+            continue
+        path = os.path.join(BASELINE_DIR, filename)
+        with open(path, "r") as f:
+            obj = json.load(f)
+        args = obj.get("args", {})
+        ds = args.get("dataset")
+        model = args.get("model")
+        if ds not in datasets or model is None:
+            continue
+        auroc = obj.get("metrics", {}).get("auroc")
+        if auroc is None:
+            continue
+        table.setdefault(model, {})[ds] = auroc
+    return table
+
+
+def collect_probes() -> dict[str, dict[str, float]]:
+    table: dict[str, dict[str, float]] = {}
+    datasets = set(_all_datasets())
+    for filename in sorted(os.listdir(PROBE_DIR)):
+        if not filename.endswith(".json"):
+            continue
+        path = os.path.join(PROBE_DIR, filename)
+        with open(path, "r") as f:
+            obj = json.load(f)
+        args = obj.get("args", {})
+        ds = args.get("dataset")
+        mode = args.get("mode")
+        if ds not in datasets or mode is None:
+            continue
+        mode_latex = mode.replace("_", r"\_")
+        row = f"LP$_{{\\mathrm{{{mode_latex}}}}}$"
+        auroc = _probe_auroc(obj.get("test_metrics", {}))
+        if auroc is None:
+            continue
+        table.setdefault(row, {})[ds] = auroc
+    return table
+
+
+def render_table(
+    baseline_rows: dict[str, dict[str, float]],
+    probe_rows: dict[str, dict[str, float]],
 ) -> str:
-    dataset_cols = sorted(
-        set(ds for by_dataset in baseline_scores.values() for ds in by_dataset)
-        | set(ds for by_dataset in probe_scores.values() for ds in by_dataset)
-    )
+    datasets = _all_datasets()
+    cols = "l" + "c" * len(datasets)
+    n_data_cols = len(datasets)
 
-    best_by_dataset: dict[str, float] = {}
-    for ds in dataset_cols:
-        vals: list[float] = []
-        for by_dataset in baseline_scores.values():
-            if ds in by_dataset:
-                vals.append(by_dataset[ds])
-        for by_dataset in probe_scores.values():
-            if ds in by_dataset:
-                vals.append(by_dataset[ds])
-        if vals:
-            best_by_dataset[ds] = max(vals)
+    detectrl_n = len(DATASET_GROUPS["detectrl"])
+    multisocial_n = len(DATASET_GROUPS["multisocial"])
+    tsm_n = len(DATASET_GROUPS["tsm"])
 
-    lines: list[str] = []
-    lines.append(r"\begin{tabular}{l" + "c" * len(dataset_cols) + "}")
-    lines.append(r"\hline")
-    lines.append(
-        "Model & "
-        + " & ".join(_tex_escape(ds) for ds in dataset_cols)
-        + r" \\"
-    )
-    lines.append(r"\hline")
+    start_detectrl = 2
+    end_detectrl = start_detectrl + detectrl_n - 1
+    start_multisocial = end_detectrl + 1
+    end_multisocial = start_multisocial + multisocial_n - 1
+    start_tsm = end_multisocial + 1
+    end_tsm = start_tsm + tsm_n - 1
 
-    for model in sorted(baseline_scores):
-        row = [_tex_escape(model)]
-        for ds in dataset_cols:
-            row.append(_format_auroc(baseline_scores[model].get(ds), best_by_dataset.get(ds)))
-        lines.append(" & ".join(row) + r" \\")
+    lines = [
+        f"\\begin{{tabular}}{{{cols}}}",
+        "\\toprule",
+        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM-Bench~\\citep{{quaremba2026tsm}}}}}} \\\\".format(
+            detectrl_n, multisocial_n, tsm_n
+        ),
+        "\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}".format(
+            start_detectrl, end_detectrl,
+            start_multisocial, end_multisocial,
+            start_tsm, end_tsm,
+        ),
+        "\\textbf{Model} & " + " & ".join(DATASET_LABELS[d] for d in datasets) + " \\\\",
+        "\\midrule",
+    ]
 
-    lines.append(r"\hline")
+    lines.append("\\multicolumn{%d}{l}{\\textbf{Zero-shot}} \\\\" % (n_data_cols + 1))
+    lines.append("\\midrule")
+    for model in ZERO_SHOT_MODELS:
+        if model not in baseline_rows:
+            continue
+        vals = [_fmt(baseline_rows[model].get(d)) for d in datasets]
+        model_label = MODEL_LABELS.get(model, model)
+        lines.append(f"{_tex_escape(model_label)} & " + " & ".join(vals) + " \\\\")
 
-    for model in sorted(probe_scores):
-        row = [_tex_escape(model)]
-        for ds in dataset_cols:
-            row.append(_format_auroc(probe_scores[model].get(ds), best_by_dataset.get(ds)))
-        lines.append(" & ".join(row) + r" \\")
+    lines.append("\\midrule")
+    lines.append("\\multicolumn{%d}{l}{\\textbf{Supervised}} \\\\" % (n_data_cols + 1))
+    lines.append("\\midrule")
+    for model in SUPERVISED_MODELS:
+        if model not in baseline_rows:
+            continue
+        vals = [_fmt(baseline_rows[model].get(d)) for d in datasets]
+        model_label = MODEL_LABELS.get(model, model)
+        lines.append(f"{_tex_escape(model_label)} & " + " & ".join(vals) + " \\\\")
 
-    lines.append(r"\hline")
-    lines.append(r"\end{tabular}")
-    lines.append("")
+    lines.append("\\midrule")
+    lines.append("\\multicolumn{%d}{l}{\\textbf{Linear Probes}} \\\\" % (n_data_cols + 1))
+    lines.append("\\midrule")
+    ordered_probe_rows = []
+    for mode in PROBE_MODE_ORDER:
+        key = f"LP$_{{\\mathrm{{{mode.replace('_', r'\\_')}}}}}$"
+        if key in probe_rows:
+            ordered_probe_rows.append(key)
+    for model in probe_rows:
+        if model not in ordered_probe_rows:
+            ordered_probe_rows.append(model)
 
-    return "\n".join(lines)
+    for idx, model in enumerate(ordered_probe_rows):
+        vals = [_fmt(probe_rows[model].get(d)) for d in datasets]
+        lines.append(f"{model} & " + " & ".join(vals) + " \\\\")
+        if idx == 1:
+            lines.append("\\cdashline{2-%d}" % (n_data_cols + 1))
+
+    lines.extend(["\\bottomrule", "\\end{tabular}"])
+    return "\n".join(lines) + "\n"
 
 
 def main() -> None:
-    baseline_dir = _resolve_existing_dir(BASELINE_DIR_CANDIDATES)
-    probe_dir = _resolve_existing_dir(PROBE_DIR_CANDIDATES)
+    baselines = collect_baselines()
+    probes = collect_probes()
+    table = render_table(baselines, probes)
 
-    baseline_scores = _collect_baseline_scores(baseline_dir)
-    probe_scores = _collect_probe_scores(probe_dir)
+    os.makedirs(OUT_DIR, exist_ok=True)
+    out_main = os.path.join(OUT_DIR, "t_id.tex")
+    with open(out_main, "w") as f:
+        f.write(table)
 
-    latex = build_latex_table(
-        baseline_scores=baseline_scores,
-        probe_scores=probe_scores,
-    )
-
-    os.makedirs(os.path.dirname(OUT_TEX), exist_ok=True)
-    with open(OUT_TEX, "w", encoding="utf-8") as f:
-        f.write(latex)
-    print(f"Saved LaTeX table to {OUT_TEX}")
-
+    print(f"Saved: {out_main}")
 
 if __name__ == "__main__":
     main()
