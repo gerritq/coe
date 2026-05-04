@@ -76,7 +76,7 @@ class LinearProbing:
                 x_layer_train_scaled = pca.fit_transform(x_layer_train_scaled)
 
             # apply pca and add features to list for concatenation
-            meta_pca = PCA(n_components=20, random_state=42)
+            meta_pca = PCA(n_components=50, random_state=42)
             meta_pca_features = meta_pca.fit_transform(x_layer_train_scaled)
             pca_meta_by_layer.append(meta_pca)
             pca_features_concatenated.append(meta_pca_features)
@@ -192,7 +192,7 @@ class LinearProbing:
         auroc_val_by_layer = np.clip(auroc_val_by_layer - 0.5, a_min=0.0, a_max=None)
 
         # softmax with temperature (lower temp -> more focus on top layers)
-        temp = 0.5
+        temp = 0.1
         z = auroc_val_by_layer / max(temp, 1e-8)
         z = z - z.max()  # stability
         w = np.exp(z)
