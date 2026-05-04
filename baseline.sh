@@ -18,16 +18,13 @@ cd "${ROOT_DIR}"
 
 export CUDA_LAUNCH_BLOCKING=1
 
-DATASETS=(
-    # "detectrl_arxiv"
-    "multisocial_en"
-    # "tsm_paras_en"
-)
-SMOKE_TEST=1
+DATASETS=("detectrl_arxiv" "detectrl_writing_prompt" "detectrl_yelp_review" "detectrl_xsum")
+SMOKE_TEST=0
 OOD=0
 MODELS=(
+        "revise"
         "gescore"
-        # "biscope"
+        "biscope"
         # "raidar"
         # "text_fluoroscopy"
         # "radar"

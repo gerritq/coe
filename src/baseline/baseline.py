@@ -12,13 +12,6 @@ from src.utils import (load_dataset,
                        return_device,
                        OOD)
 
-"""
-- fix to onclude args in run
-- add repreguard
-
-"""
-
-
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data/sets")
 BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
@@ -33,7 +26,7 @@ set_seed(SEED)
 def supervised_models(args):
     if args.model == "encoder":
         from src.baseline.enc import EncoderBaseline
-        baseline = EncoderBaseline(model_name="google-bert/bert-base-uncased", device=DEVICE)
+        baseline = EncoderBaseline(model_name="microsoft/mdeberta-v3-base", device=DEVICE)
 
     if args.model == "repreguard":
         from src.baseline.repreguard.repre_main import RepreGuard
