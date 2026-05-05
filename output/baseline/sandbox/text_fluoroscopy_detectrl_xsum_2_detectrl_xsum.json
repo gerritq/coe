@@ -3,13 +3,13 @@
     "dataset": "detectrl_xsum",
     "model": "text_fluoroscopy",
     "smoke_test": false,
-    "ood": false,
+    "ood": true,
     "base_model_1": "meta-llama/Meta-Llama-3-8B",
     "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
     "ood_dataset": "detectrl_xsum"
   },
   "metrics": {
-    "auroc": 0.99848,
+    "auroc": 0.999008,
     "tpr_at_fpr_0_05": 0.996
   }
 }

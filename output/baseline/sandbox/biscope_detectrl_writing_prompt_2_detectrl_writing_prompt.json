@@ -3,7 +3,7 @@
     "dataset": "detectrl_writing_prompt",
     "model": "biscope",
     "smoke_test": false,
-    "ood": false,
+    "ood": true,
     "base_model_1": "meta-llama/Meta-Llama-3-8B",
     "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
     "summary_model": "meta-llama/Meta-Llama-3-8B-instruct",
@@ -14,12 +14,12 @@
   },
   "metrics": {
     "n_total": 500,
-    "auroc": 0.984216,
+    "auroc": 0.982504,
     "accuracy": 0.942,
-    "f1": 0.9406952965235174,
-    "tpr_at_fpr_0_05": 0.932,
+    "f1": 0.9411764705882353,
+    "tpr_at_fpr_0_05": 0.928,
     "optimal_threshold_f1": 0.5,
     "optimal_threshold_acc": 0.5,
-    "aupr": 0.9858279200828033
+    "aupr": 0.9796931161987461
   }
 }
