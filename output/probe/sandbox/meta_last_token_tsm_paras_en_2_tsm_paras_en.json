@@ -3,7 +3,7 @@
         "model": "llama_8b",
         "dataset": "tsm_paras_en",
         "token_mode": "last_token",
-        "ood": false,
+        "ood": true,
         "smoke_test": false,
         "components": 50,
         "mode": "meta",
@@ -12,13 +12,13 @@
     "test_metrics": {
         "meta_metrics": {
             "n_total": 500,
-            "auroc": 0.9693439999999999,
+            "auroc": 0.969248,
             "accuracy": 0.922,
             "f1": 0.9218436873747495,
-            "tpr_at_fpr_0_05": 0.876,
+            "tpr_at_fpr_0_05": 0.884,
             "optimal_threshold_f1": 0.5,
             "optimal_threshold_acc": 0.5,
-            "aupr": 0.9739783715341843
+            "aupr": 0.9739412680888573
         }
     }
 }
