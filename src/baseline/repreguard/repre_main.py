@@ -6,7 +6,7 @@ import logging
 import json
 from src.baseline.repreguard.metrics import get_roc_by_threshold,get_roc_metrics
 import os
-import random
+from datetime import datetime
 from collections import defaultdict
 
 # my packages
@@ -113,9 +113,14 @@ class RepreGuard:
 
             train_result, test_result = process_eval(args,train_json_data, test_json_data,test_data_path)
             result = {"train_result": train_result, "test_result": test_result}
-            args.ood_dataset = ood_name
+            
             # save here
-            out = {"args": return_args(args), 
+            args_copy = Namespace(**vars(args))  
+            out_args = return_args(args_copy)
+            out_args.target_dataset = ood_name
+            out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            out = {"args": out_args, 
                    "train_results": result,
                    "metrics": test_result}
             

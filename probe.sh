@@ -17,16 +17,17 @@ ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
-# DATASETS=("detectrl_arxiv" "detectrl_writing_prompt" "detectrl_yelp_review" "detectrl_xsum")
-# DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "multisocial_pt")
-# DATASETS=("tsm_paras_en" "tsm_paras_pt" "tsm_paras_vi" "tsm_sums_en" "tsm_sums_pt" "tsm_sums_vi")
 
-DATASETS=("detectrl_arxiv" "detectrl_writing_prompt" "detectrl_yelp_review" "detectrl_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "multisocial_pt" "tsm_paras_en" "tsm_paras_pt" "tsm_paras_vi" "tsm_sums_en" "tsm_sums_pt" "tsm_sums_vi")
-
+# DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
+# DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
+# DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
+# DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+# DATASETS=("atp")
 
 TOKEN_MODE="last_token"
-MODES=("default" "pca" "meta" "meta_attn") # default | pca | meta | meta_attn
-OOD=1
+# MODES=("default" "pca" "meta" "meta_attn") # default | pca | meta | meta_attn
+MODES=("default") # default | pca | meta | meta_attn
+OOD=0
 COMPONENTS=50
 SMOKE_TEST=0
 

@@ -4,6 +4,7 @@ import re
 from argparse import ArgumentParser, Namespace
 import torch
 import sys
+from datetime import datetime
 from transformers import set_seed
 from src.utils import (load_dataset, 
                        optimal_thresholds,
@@ -26,7 +27,7 @@ set_seed(SEED)
 def supervised_models(args):
     if args.model == "encoder":
         from src.baseline.enc import EncoderBaseline
-        baseline = EncoderBaseline(model_name="microsoft/mdeberta-v3-base", device=DEVICE)
+        baseline = EncoderBaseline(model_name="FacebookAI/roberta-base", device=DEVICE)
 
     if args.model == "repreguard":
         from src.baseline.repreguard.repre_main import RepreGuard
@@ -148,9 +149,15 @@ def run(args):
 
         
             file_name = f"{args.model}_{args.dataset}_2_{target_dataset}.json"
+
+            args_copy = Namespace(**vars(args))  
+            out_args = return_args(args_copy)
+            out_args.target_dataset = target_dataset
+            out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
             out_path = os.path.join(BASELINE_DIR, file_name)
-            args.ood_dataset = target_dataset
-            out = {"args": return_args(args),
+            
+            out = {"args": out_args,
                     "metrics": test_metrics}
             with open(out_path, "w") as f:
                 json.dump(out, f, indent=2)

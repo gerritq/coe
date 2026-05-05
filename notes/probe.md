@@ -1,9 +1,23 @@
 # To do
+- DONE add paraphrase data
+- DONE Tasks of tsm in English
+- DONE ATP
+- DONE Cross-benchmark, by merging ds (maybe random, balanced 500 is fine)
 
-- add new benchmarks results to the table
-- where are revise and enc? are others missin?
-- run OOD over night; maybe different folder?
+- run tsm and detectrl attacks
+- run new data + run cross benchmark
+- run with score for atp
+
+- create ood fig
+
+
+- Check revise and enc errors of inf. values; run better encoder! del files
+- Do the correlation study
+- Create layer plots for LP
+
+
 - entropy norm?
+- read: Context Matters: Analyzing the Generalizability of Linear Probing and Steering Across Diverse Scenarios
 
 ## Today 
 1. Add missing detectors
@@ -12,7 +26,7 @@
 - DONE ReviseDetect
 
 2. Add a second dataset
-- Beemo? EditLens?
+- Beemo? EditLens? RAID?
 - DONE Run ID performance with current baselines (exclude encoder)
 
 3.  Code the OOD setupt where one vs all

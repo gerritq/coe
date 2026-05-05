@@ -13,15 +13,16 @@ BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data", "sets")
 
 OOD = {
-    "detectrl": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^detectrl_.+", x)]),
+    "drlDomain": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^drlDomain_.+", x)]),
+    "drlAttack": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^drlAttack_.+", x)]),
     "multisocial": [
         "multisocial_en",
         "multisocial_de",
         "multisocial_ru",
         "multisocial_zh",
-        "multisocial_pt",
     ],
     "tsm": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^tsm_.+", x)]),
+    "CB": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^CB_.+", x)]),
 }
 
 """

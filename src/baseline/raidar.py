@@ -34,6 +34,7 @@ from transformers import (AutoTokenizer,
 from src.utils import (return_device, 
                        metrics,
                        return_args)
+from datetime import datetime
 
 BASE_DIR = os.getenv("BASE_COE")
 BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
@@ -283,8 +284,14 @@ class RAIDAR:
                                   acc_threshold=0.5)
 
             file_name = f"{self.args.model}_{self.args.dataset}_2_{ds['name']}.json"
-            self.args.ood_dataset = ds['name']
-            out = {"args": return_args(self.args), "metrics": metrics_res}
+
+            args_copy = Namespace(**vars(self.args))  
+            out_args = return_args(args_copy)
+            out_args.target_dataset = ds['name']
+            out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            out = {"args": out_args, 
+                   "metrics": metrics_res}
             with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
                 json.dump(out, f, indent=2)
 

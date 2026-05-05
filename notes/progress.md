@@ -68,6 +68,9 @@
 - Added raidar (with batch inference), open ai roberta, radar, text fluo
 - Added TSM data
 
+**05.05.2026**
+- Added first ID and OOD results
+
 
 # Learning
 

@@ -10,7 +10,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
 from datasets import Dataset
 from argparse import Namespace
 from sklearn.ensemble import RandomForestClassifier
-
+from datetime import datetime
 
 
 from src.utils import return_device, metrics, return_args
@@ -276,8 +276,14 @@ class BiScope:
                                         f1_threshold=.5)
             
             file_name = f"{args.model}_{args.dataset}_2_{ood_ds['name']}.json"
-            args.ood_dataset = ood_ds['name']
-            out = {"args": return_args(args), "metrics": metrics_results}
+
+            args_copy = Namespace(**vars(args))  
+            out_args = return_args(args_copy)
+            out_args.target_dataset = ood_ds['name']
+            out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            out = {"args": out_args, 
+                   "metrics": metrics_results}
             with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
                 json.dump(out, f, indent=2)
     

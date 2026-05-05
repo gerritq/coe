@@ -9,6 +9,8 @@ from src.utils import load_dataset, optimal_thresholds, metrics, OOD, return_arg
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from datetime import datetime
+from datetime import datetime
 
 BASE_DIR = os.getenv("BASE_COE")
 OUT_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
@@ -26,7 +28,8 @@ class LinearProbing:
         all_hidden_states = []
         all_attention_entropies = []
         labels = []
-
+        meta = []
+        
         for item in items:
             out = self.inference.run(item=item, 
                                      args=self.args)
@@ -59,6 +62,12 @@ class LinearProbing:
             # LABELS
             labels.append(int(out["label"]))
 
+            meta.append({
+                "sem_similarity": item.get("sem_similarity"),
+                "levenshtein_distance": item.get("levenshtein_distance"),
+                "jaccard_distance": item.get("jaccard_distance"),
+            })
+
 
         # STACK HS
         x = np.stack(all_hidden_states, axis=0)  # (n_samples, n_layers, d_model)
@@ -77,6 +86,7 @@ class LinearProbing:
             "hidden_x": x,
             "attentions": a,
             "y": y,
+            "meta": meta,
         }
     
 
@@ -342,6 +352,38 @@ class LinearProbing:
             "test_metrics_by_layer": test_metrics_by_layer,
             "mean_projection_metrics": mean_projection_metrics,
             "weighted_projection_metrics": weighted_projection_metrics,
+            "weighted_projection": weighted_projection.tolist(),
+            "mean_projection": mean_projection.tolist(),
+        }
+
+
+    def correlate_atp(self, 
+                      test_data: dict[str, Any],
+                      mean_projection: list[float],
+                      weighted_projection: list[float]) -> dict[str, Any]:
+        meta = test_data["meta"]
+
+        sem_sim = np.asarray([m.get("sem_similarity") for m in meta], dtype=np.float64)
+        lev_dist = np.asarray([m.get("levenshtein_distance") for m in meta], dtype=np.float64)
+        jac_dist = np.asarray([m.get("jaccard_distance") for m in meta], dtype=np.float64)
+
+        mean_projection = np.asarray(mean_projection, dtype=np.float64)
+        weighted_projection = np.asarray(weighted_projection, dtype=np.float64)
+
+        def safe_corr(x: np.ndarray, y: np.ndarray) -> float | None:
+            return float(np.corrcoef(x, y)[0, 1])
+
+        return {
+            "mean_projection_correlations": {
+                "sem_similarity": safe_corr(sem_sim, mean_projection),
+                "levenshtein_distance": safe_corr(lev_dist, mean_projection),
+                "jaccard_distance": safe_corr(jac_dist, mean_projection),
+            },
+            "weighted_projection_correlations": {
+                "sem_similarity": safe_corr(sem_sim, weighted_projection),
+                "levenshtein_distance": safe_corr(lev_dist, weighted_projection),
+                "jaccard_distance": safe_corr(jac_dist, weighted_projection),
+            },
         }
 
 
@@ -373,7 +415,25 @@ class LinearProbing:
                 test_metrics = self._evaluate(train_out=train_out, test=test)
 
                 filename = f"{args.mode}_{args.token_mode}_{args.dataset}_2_{target_dataset}.json"
-                out = {'args': return_args(args), 'test_metrics': test_metrics}
+
+                args_copy = Namespace(**vars(args))  
+                out_args = return_args(args_copy)
+                out_args.target_dataset = target_dataset
+                out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                if target_dataset == "atp":
+                    atp_correlations = self.correlate_atp(test_data=test, 
+                                                        mean_projection=test_metrics["mean_projection"],
+                                                        weighted_projection=test_metrics["weighted_projection"])
+                    test_metrics["atp_correlations"] = atp_correlations
+
+                out = {'args': out_args, 
+                       'test_metrics': test_metrics}
+                
+                if target_dataset == "atp":
+                    out['mean_projection'] = test_metrics["mean_projection"]
+                    out['weighted_projection'] = test_metrics["weighted_projection"]
+
                 with open(os.path.join(OUT_DIR, filename), "w") as f:
                     json.dump(out, f, indent=4)
 
@@ -399,6 +459,13 @@ class LinearProbing:
                 test_metrics = self._evaluate_meta_probe(train_out=train_out, test=test)
 
                 filename = f"{self.args.mode}_{args.token_mode}_{args.dataset}_2_{target_dataset}.json"
-                out = {'args': return_args(args), 'test_metrics': test_metrics}
+                
+                args_copy = Namespace(**vars(args))  
+                out_args = return_args(args_copy)
+                out_args.target_dataset = target_dataset
+                out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                out = {'args': out_args, 
+                       'test_metrics': test_metrics}
                 with open(os.path.join(OUT_DIR, filename), "w") as f:
                     json.dump(out, f, indent=4)

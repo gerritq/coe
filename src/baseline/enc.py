@@ -15,6 +15,7 @@ from transformers import (
     set_seed,
 )
 import os
+from datetime import datetime
 
 BASE_DIR = os.getenv("BASE_COE")
 BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
@@ -22,7 +23,7 @@ os.makedirs(BASELINE_DIR, exist_ok=True)
 
 MAX_LENGTH = 256
 BATCH_SIZE = 32
-EPOCHS = 1
+EPOCHS = 2
 LEARNING_RATE = 2e-5
 WEIGHT_DECAY = 0.01
 SEED = 42
@@ -113,6 +114,13 @@ class EncoderBaseline:
                                   f1_threshold=optimal_thresholds_dict["threshold_f1"])
             
             file_name = f"{args.model}_{args.dataset}_2_{ood_name}.json"
-            out = {"args": return_args(args), "metrics": ds_metrics}
+
+            args_copy = Namespace(**vars(args))  
+            out_args = return_args(args_copy)
+            out_args.target_dataset = ood_name
+            out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            out = {"args": out_args, 
+                   "metrics": ds_metrics}
             with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
                 json.dump(out, f, indent=2)

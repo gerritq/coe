@@ -1,13 +1,10 @@
 
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
 import torch
-import argparse
 import torch.nn.functional as F
 import os
 import json
 from tqdm import tqdm
-import pickle
-import sys
 from datasets import Dataset
 from argparse import Namespace
 from src.utils import return_device, return_args
@@ -17,14 +14,10 @@ import argparse
 import torch.nn.functional as F
 import os
 import json
-from tqdm import tqdm
-import pickle
-
+from datetime import datetime
 
 import torch
 import torch.nn as nn
-from tqdm import tqdm
-import pickle
 import numpy as np
 from sklearn.metrics import roc_auc_score, roc_curve
 
@@ -250,10 +243,16 @@ class TextFluoroscopy:
             ood_data=prepared_ood_data,
         )
 
-        for ood_name, metrics in results["ood_metrics"].items():            
+        for ood_name, metrics in results["ood_metrics"].items():
             file_name = f"{args.model}_{args.dataset}_2_{ood_name}.json"
-            args.ood_dataset = ood_name
-            out = {"args": return_args(args), "metrics": metrics}
+            
+            args_copy = Namespace(**vars(args))  
+            out_args = return_args(args_copy)
+            out_args.target_dataset = ood_name
+            out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            out = {"args": out_args, 
+                   "metrics": metrics}
             with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
                 json.dump(out, f, indent=2)
     

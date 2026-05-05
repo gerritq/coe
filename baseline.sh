@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=b_encoder
-#SBATCH --output=logs/%j.out
+#SBATCH --job-name=b_enc_bin
+#SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:30:00
+#SBATCH --time=10:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|b200|a100|l40s
+#SBATCH --constraint=h200|b200
 #SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031,erc-hpc-comp038
 
 # set -euo pipefail
@@ -18,12 +18,13 @@ cd "${ROOT_DIR}"
 
 export CUDA_LAUNCH_BLOCKING=1
 
-# DATASETS=("detectrl_arxiv" "detectrl_writing_prompt" "detectrl_yelp_review" "detectrl_xsum")
-# DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "multisocial_pt")
-# DATASETS=("tsm_paras_en" "tsm_paras_pt" "tsm_paras_vi" "tsm_sums_en" "tsm_sums_pt" "tsm_sums_vi")
+# DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
+# DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
+# DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
+# DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+# DATASETS=("atp")
 
-DATASETS=("detectrl_arxiv" "detectrl_writing_prompt" "detectrl_yelp_review" "detectrl_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "multisocial_pt" "tsm_paras_en" "tsm_paras_pt" "tsm_paras_vi" "tsm_sums_en" "tsm_sums_pt" "tsm_sums_vi")
-# DATASETS=("detectrl_arxiv")
+DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm" "drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 
 SMOKE_TEST=0
 OOD=0
@@ -37,12 +38,12 @@ MODELS=(
         # "openai_roberta"
         # "repreguard"
         "encoder" 
-        # "llr" 
-        # "fastdetectgpt" 
-        # "rank" 
-        # "entropy"
-        # "likelihood"
-        # "binoculars" 
+        "llr" 
+        "fastdetectgpt" 
+        "rank" 
+        "entropy"
+        "likelihood"
+        "binoculars" 
         )        
 
 
