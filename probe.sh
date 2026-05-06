@@ -23,7 +23,7 @@ DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAt
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 # DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm")
-# DATASETS=("atp")
+# DATASETS=("apt")
 
 TOKEN_MODE="last_token"
 MODES=("default" "pca" "meta" "meta_attn") # default | pca | meta | meta_attn

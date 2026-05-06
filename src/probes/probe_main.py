@@ -268,6 +268,7 @@ class LinearProbing:
 
         return {
             "meta_metrics": meta_metrics,
+            "scores": {"meta_scores": meta_scores.tolist()},
         }
 
 
@@ -352,39 +353,35 @@ class LinearProbing:
             "test_metrics_by_layer": test_metrics_by_layer,
             "mean_projection_metrics": mean_projection_metrics,
             "weighted_projection_metrics": weighted_projection_metrics,
-            "weighted_projection": weighted_projection.tolist(),
-            "mean_projection": mean_projection.tolist(),
+            "scores": {
+                "mean_projection": mean_projection.tolist(),
+                "weighted_projection": weighted_projection.tolist(),
+            }
         }
 
 
-    def correlate_atp(self, 
+    def correlate_apt(self, 
                       test_data: dict[str, Any],
-                      mean_projection: list[float],
-                      weighted_projection: list[float]) -> dict[str, Any]:
+                      scores: dict[str, list[float]]) -> dict[str, Any]:
         meta = test_data["meta"]
 
         sem_sim = np.asarray([m.get("sem_similarity") for m in meta], dtype=np.float64)
         lev_dist = np.asarray([m.get("levenshtein_distance") for m in meta], dtype=np.float64)
         jac_dist = np.asarray([m.get("jaccard_distance") for m in meta], dtype=np.float64)
-
-        mean_projection = np.asarray(mean_projection, dtype=np.float64)
-        weighted_projection = np.asarray(weighted_projection, dtype=np.float64)
-
+    
         def safe_corr(x: np.ndarray, y: np.ndarray) -> float | None:
             return float(np.corrcoef(x, y)[0, 1])
+        
+        out = {}
+        for name, pred_scores in scores.items():
+            scores = np.asarray(pred_scores, dtype=np.float64)
+            out[name] = {
+                "sem_similarity": safe_corr(scores, sem_sim),
+                "levenshtein_distance": safe_corr(scores, lev_dist),
+                "jaccard_distance": safe_corr(scores, jac_dist),
+            }    
 
-        return {
-            "mean_projection_correlations": {
-                "sem_similarity": safe_corr(sem_sim, mean_projection),
-                "levenshtein_distance": safe_corr(lev_dist, mean_projection),
-                "jaccard_distance": safe_corr(jac_dist, mean_projection),
-            },
-            "weighted_projection_correlations": {
-                "sem_similarity": safe_corr(sem_sim, weighted_projection),
-                "levenshtein_distance": safe_corr(lev_dist, weighted_projection),
-                "jaccard_distance": safe_corr(jac_dist, weighted_projection),
-            },
-        }
+        return out
 
 
     def run(self, args: Namespace) -> None:
@@ -394,80 +391,55 @@ class LinearProbing:
         dataset_group = args.dataset.split("_")[0]
         target_datasets = OOD.get(dataset_group, [args.dataset])
 
+
+
+        # TRAINING THE PROBE
         if self.args.mode in ["default", "pca"]:
-            # train
             train_out = self._train_linear_probe(x_train=train["hidden_x"], 
                                                 y_train=train["y"],
                                                 x_val=val["hidden_x"], 
                                                 y_val=val["y"])
 
-            # RUN EVAL
-            for target_dataset in target_datasets:
-                if not args.ood:
-                    if args.dataset != target_dataset:
-                        continue
-                
-                print("="*60)
-                print(f"Evaluating on target dataset: {target_dataset}")
-                print("="*60)
-
-                target_data = load_dataset(args=Namespace(dataset=target_dataset, 
-                                                        smoke_test=args.smoke_test))['test']
-                test = self._collect_model_states(target_data)
-                test_metrics = self._evaluate(train_out=train_out, test=test)
-
-                filename = f"{args.mode}_{args.token_mode}_{args.dataset}_2_{target_dataset}.json"
-
-                args_copy = Namespace(**vars(args))  
-                out_args = return_args(args_copy)
-                out_args['target_dataset'] = target_dataset
-                out_args['datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-                if target_dataset == "atp":
-                    atp_correlations = self.correlate_atp(test_data=test, 
-                                                        mean_projection=test_metrics["mean_projection"],
-                                                        weighted_projection=test_metrics["weighted_projection"])
-                    test_metrics["atp_correlations"] = atp_correlations
-
-                out = {'args': out_args, 
-                       'test_metrics': test_metrics}
-                
-                if target_dataset == "atp":
-                    out['mean_projection'] = test_metrics["mean_projection"]
-                    out['weighted_projection'] = test_metrics["weighted_projection"]
-
-                with open(os.path.join(OUT_DIR, filename), "w") as f:
-                    json.dump(out, f, indent=4)
-
-        if self.args.mode in ["meta" ,"meta_attn"]:
-            # train meta probe
+        else:
             train_out = self._train_meta_probe(x_hidden_train=train["hidden_x"],
-                                              x_attn_train=train["attentions"],
-                                              y_train=train["y"])
+                                    x_attn_train=train["attentions"],
+                                    y_train=train["y"])
 
-            # eval meta probe
-            for target_dataset in target_datasets:
-                if not args.ood:
-                    if args.dataset != target_dataset:
-                        continue
-                
-                print("="*60)
-                print(f"Evaluating on target dataset: {target_dataset}")
-                print("="*60)
+        # RUNNING EAL
+        for target_dataset in target_datasets:
+            if not args.ood:
+                if args.dataset != target_dataset:
+                    continue
+            
+            print("="*60)
+            print(f"Evaluating on target dataset: {target_dataset}")
+            print("="*60)
 
-                target_data = load_dataset(args=Namespace(dataset=target_dataset, 
-                                                        smoke_test=args.smoke_test))['test']
-                test = self._collect_model_states(target_data)
+            target_data = load_dataset(args=Namespace(dataset=target_dataset, 
+                                                    smoke_test=args.smoke_test))['test']
+            test = self._collect_model_states(target_data)
+
+            if self.args.mode in ["default", "pca"]:
+                test_metrics = self._evaluate(train_out=train_out, test=test)
+            else:
                 test_metrics = self._evaluate_meta_probe(train_out=train_out, test=test)
 
-                filename = f"{self.args.mode}_{args.token_mode}_{args.dataset}_2_{target_dataset}.json"
-                
-                args_copy = Namespace(**vars(args))  
-                out_args = return_args(args_copy)
-                out_args['target_dataset'] = target_dataset
-                out_args['datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                
-                out = {'args': out_args, 
-                       'test_metrics': test_metrics}
-                with open(os.path.join(OUT_DIR, filename), "w") as f:
-                    json.dump(out, f, indent=4)
+            
+            # SAVE OUTPUT
+            filename = f"{args.mode}_{args.token_mode}_{args.dataset}_2_{target_dataset}.json"
+
+            args_copy = Namespace(**vars(args))  
+            out_args = return_args(args_copy)
+            out_args['target_dataset'] = target_dataset
+            out_args['datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            out = {'args': out_args, 
+                    'test_metrics': test_metrics}
+            
+            if target_dataset == "apt":
+                apt_correlations = self.correlate_apt(test_data=test, 
+                                                        scores=test_metrics['scores'])
+                out['apt_correlations'] = apt_correlations
+            
+            with open(os.path.join(OUT_DIR, filename), "w") as f:
+                json.dump(out, f, indent=4)

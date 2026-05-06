@@ -4,23 +4,21 @@
 - DONE ATP
 - DONE Cross-benchmark, by merging ds (maybe random, balanced 500 is fine)
 
-- remove weighted projections
-- Create the layer plot ID and OOD
-- remove weighted projections
+- DONE remove weighted projections
 - Add M4 for generators
-- atp with M4
-- u-map for m4 + linear classifier
+    - Generator version + CB version
+- Run CB with M4 for probing and roberta  
+- Run APT with M4
+- ID and OOD tables
 
-- run the OOD settings + cmap
-- train roberta on cross benchmark
-- may add editlens later
+- Create layer figures with nice point aliases
+- u-map for m4 + linear classifier
 
 GOING
 - run tsm and detectrl attacks
 - run new data + run cross benchmark
 - run with score for atp
 
-- create ood fig
 
 
 - Check revise and enc errors of inf. values; run better encoder! del files
@@ -59,6 +57,9 @@ GOING
 
 ## Has to be done
 
+- Supervised detectors
+    - Editlens
+    - DNA GPT
 
 - Generator ds using M4!!! In appendeix, we use it for CB
 
