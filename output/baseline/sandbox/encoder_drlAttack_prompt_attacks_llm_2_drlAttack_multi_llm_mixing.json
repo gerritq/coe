@@ -1,0 +1,22 @@
+{
+  "args": {
+    "dataset": "drlAttack_prompt_attacks_llm",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": true,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "drlAttack_multi_llm_mixing",
+    "datetime": "2026-05-06 02:21:20"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.992416,
+    "accuracy": 0.98,
+    "f1": 0.9803921568627451,
+    "tpr_at_fpr_0_05": 1.0,
+    "optimal_threshold_f1": 0.992992992992993,
+    "optimal_threshold_acc": 0.992992992992993,
+    "aupr": 0.9785037945863259
+  }
+}

@@ -391,6 +391,8 @@ class LinearProbing:
         source_data = load_dataset(args=args)
         train = self._collect_model_states(source_data["train"])
         val = self._collect_model_states(source_data["val"])
+        dataset_group = args.dataset.split("_")[0]
+        target_datasets = OOD.get(dataset_group, [args.dataset])
 
         if self.args.mode in ["default", "pca"]:
             # train
@@ -400,7 +402,7 @@ class LinearProbing:
                                                 y_val=val["y"])
 
             # RUN EVAL
-            for target_dataset in OOD[args.dataset.split("_")[0]]:
+            for target_dataset in target_datasets:
                 if not args.ood:
                     if args.dataset != target_dataset:
                         continue
@@ -418,8 +420,8 @@ class LinearProbing:
 
                 args_copy = Namespace(**vars(args))  
                 out_args = return_args(args_copy)
-                out_args.target_dataset = target_dataset
-                out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                out_args['target_dataset'] = target_dataset
+                out_args['datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                 if target_dataset == "atp":
                     atp_correlations = self.correlate_atp(test_data=test, 
@@ -444,7 +446,7 @@ class LinearProbing:
                                               y_train=train["y"])
 
             # eval meta probe
-            for target_dataset in OOD[args.dataset.split("_")[0]]:
+            for target_dataset in target_datasets:
                 if not args.ood:
                     if args.dataset != target_dataset:
                         continue
@@ -462,8 +464,8 @@ class LinearProbing:
                 
                 args_copy = Namespace(**vars(args))  
                 out_args = return_args(args_copy)
-                out_args.target_dataset = target_dataset
-                out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                out_args['target_dataset'] = target_dataset
+                out_args['datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
                 out = {'args': out_args, 
                        'test_metrics': test_metrics}

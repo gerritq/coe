@@ -152,8 +152,8 @@ def run(args):
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)
-            out_args.target_dataset = target_dataset
-            out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            out_args['target_dataset'] = target_dataset
+            out_args['datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             out_path = os.path.join(BASELINE_DIR, file_name)
             

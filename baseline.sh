@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=b_enc_bin
+#SBATCH --job-name=b_ood
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=10:00:00
+#SBATCH --time=05:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|b200
+#SBATCH --constraint=h200|b200|a100
 #SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031,erc-hpc-comp038
 
 # set -euo pipefail
@@ -22,28 +22,27 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
-# DATASETS=("atp")
 
 DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm" "drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 
 SMOKE_TEST=0
-OOD=0
+OOD=1
 MODELS=(
         # "revise"
         # "gescore"
-        # "biscope"
+        "biscope"
         # "raidar"
-        # "text_fluoroscopy"
+        "text_fluoroscopy"
         # "radar"
         # "openai_roberta"
         # "repreguard"
         "encoder" 
-        "llr" 
-        "fastdetectgpt" 
-        "rank" 
-        "entropy"
-        "likelihood"
-        "binoculars" 
+        # "llr" 
+        # "fastdetectgpt" 
+        # "rank" 
+        # "entropy"
+        # "likelihood"
+        # "binoculars" 
         )        
 
 

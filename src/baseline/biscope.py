@@ -279,8 +279,8 @@ class BiScope:
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)
-            out_args.target_dataset = ood_ds['name']
-            out_args.datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            out_args['target_dataset'] = ood_ds['name']
+            out_args['datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             out = {"args": out_args, 
                    "metrics": metrics_results}
