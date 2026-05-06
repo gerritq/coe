@@ -4,6 +4,18 @@
 - DONE ATP
 - DONE Cross-benchmark, by merging ds (maybe random, balanced 500 is fine)
 
+- remove weighted projections
+- Create the layer plot ID and OOD
+- remove weighted projections
+- Add M4 for generators
+- atp with M4
+- u-map for m4 + linear classifier
+
+- run the OOD settings + cmap
+- train roberta on cross benchmark
+- may add editlens later
+
+GOING
 - run tsm and detectrl attacks
 - run new data + run cross benchmark
 - run with score for atp
@@ -46,6 +58,9 @@
 
 
 ## Has to be done
+
+
+- Generator ds using M4!!! In appendeix, we use it for CB
 
 - Once and for all, correct the evaluation metrics. 
     - Acc/F1 do tuning and Yuoden's k

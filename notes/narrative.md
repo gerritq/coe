@@ -1,3 +1,8 @@
+Good for writing
+
+- Factuality Probes https://aclanthology.org/2025.findings-emnlp.880.pdf#page=4.81
+
+
 ## Introduction
 
 - Show that activations are linearly seperable 
