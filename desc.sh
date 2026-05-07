@@ -12,15 +12,14 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-MODEL="qwen_06b" # llama_8b
-SMOKE_TEST="1"
+MODEL="llama_8b" # llama_8b
+SMOKE_TEST="0"
 
 echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
 # PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/layer_pca.py \
 #   --model "${MODEL}" \
 #   --smoke_test "${SMOKE_TEST}"
-
 
 PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/map.py \
 --model "${MODEL}" \
@@ -32,7 +31,7 @@ PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/map.py \
 # --model "${MODEL}" \
 # --smoke_test "${SMOKE_TEST}"
 
-# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/pca_ratio.py \
-# --model "${MODEL}" \
-# --smoke_test "${SMOKE_TEST}"
+PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/pca_ratio.py \
+--model "${MODEL}" \
+--smoke_test "${SMOKE_TEST}"
 

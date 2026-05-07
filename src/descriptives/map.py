@@ -52,11 +52,12 @@ def load_domain_data(path: str, smoke_test: bool = False) -> list[dict[str, Any]
 def load_generator_data(path: str, smoke_test: bool = False) -> list[dict[str, Any]]:
     items = _load_jsonl(path)
 
+    # rm human subset
+    items = [item for item in items if item['model'] != 'human']
+    
     if not smoke_test:
         return items
     
-    # rm human subset
-    items = [item for item in items if item['model'] != 'human']
 
     by_label = {}
     for item in items:
@@ -148,7 +149,7 @@ def run(args: Namespace) -> None:
         group_key="label",
     )
     x_2d = project_tsne_2d(x)
-    out_domains = os.path.join(OUT_DIR, f"d_m4_domains_mid_layer_{args.model}{suffix}.pdf")
+    out_domains = os.path.join(OUT_DIR, f"d_m4_map_domains_mid_layer_{args.model}{suffix}.pdf")
     plot_domains_2d(
         x_2d=x_2d,
         domains=domains,

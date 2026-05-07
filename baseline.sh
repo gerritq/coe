@@ -1,15 +1,14 @@
 #!/bin/bash
-#SBATCH --job-name=b_2_multi_domain
+#SBATCH --job-name=b_ood_m4_and_domain
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=05:00:00
+#SBATCH --time=08:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
 #SBATCH --constraint=h200|b200
-#SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031,erc-hpc-comp038
 
-# set -euo pipefail
+set -euo pipefail
 
 nvidia-smi
 
@@ -22,22 +21,27 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+# DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
-DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
+# Missing ID
+# DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
+# Missing OOD
+DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz" "drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
 
 SMOKE_TEST=0
-OOD=0
+OOD=1
+# "raidar"
 MODELS=(
-        "revise"
-        "gescore"
+        # "revise"
+        # "gescore"
         "biscope"
         # "raidar"
         "text_fluoroscopy"
-        "radar"
-        "openai_roberta"
+        # "radar"
+        # "openai_roberta"
         "repreguard"
-        # "encoder" 
+        "encoder" 
         # "llr" 
         # "fastdetectgpt" 
         # "rank" 

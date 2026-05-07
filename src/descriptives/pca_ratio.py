@@ -74,7 +74,7 @@ def layer_cumulative_variance(x_layer: np.ndarray) -> np.ndarray:
 
 def plot_cumulative_variance(x: np.ndarray, layer_indices: list[int], out_path: str) -> None:
     plt.figure(figsize=(9, 6))
-    max_components = 300
+    max_components = 200
 
     for panel_idx, layer_idx in enumerate(layer_indices):
         cum_ratio = layer_cumulative_variance(x[:, layer_idx, :])
