@@ -1,7 +1,11 @@
 # To do
-- check desc code + add generators
-- add editlens data
 - add beemo with apt measures!
+    - leave val empty
+    - add beemo flag
+- atp where train ins m4 easy
+    - same for beemo
+- compile tables and run what is missing
+
 
 - entropy scaled run results
 - fix roberta

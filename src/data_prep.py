@@ -30,6 +30,11 @@ def check_for_duplicates(data: dict[str, list[dict]]) -> None:
     print("\nDATASET SUMMARY:")
     for split in data:
         print(f"{split}: {len(data[split])} items")
+        labels = set([x["label"] for x in data[split]])
+        print(f"  Labels: {sorted(labels)}")
+        for label in sorted(labels):
+            count = sum(1 for x in data[split] if x["label"] == label)
+            print(f"    Label {label}: {count} items")
     print("")
     
     for split in data:
@@ -127,13 +132,6 @@ def process_d_M4():
     check_for_duplicates({"train": domain_data, "val": [], "test": []})
 
 
-
-
-
-
-
-
-
 def process_m4():
     train_per_label = TRAINING_N // 2
     val_per_label = VALIDATION_N // 2
@@ -228,6 +226,8 @@ def process_apt():
     human_data = [{"text": x["generation"], "label": 0} for x in human_data if x["generation"].strip()]
     data_out["train"].extend(human_data)
 
+    print(f"Loaded {len(human_data)} human-written examples for training.")
+
     # Load machine-generated data
     test_df = pd.read_csv(os.path.join(RAW_DATA_DIR, "apt", "test.csv"))
     test_data = test_df.to_dict("records")
@@ -251,10 +251,11 @@ def process_apt():
             data_out["train"].extend(machine_test[n_machine:n_machine*4])
     
     # shuffle splits
-    # we dont need val
-    data_out["val"] = data_out["train"]
     random.shuffle(data_out["train"])
     random.shuffle(data_out["test"])
+
+    # do not need val
+    data_out["val"] = data_out["train"]
 
     output_dir = os.path.join(DATA_DIR, f"apt")
     os.makedirs(output_dir, exist_ok=True)
@@ -264,10 +265,6 @@ def process_apt():
                 f.write(json.dumps(item) + "\n")
 
     check_for_duplicates(data_out)
-    
-
-    
-
 
 
 def process_editlens():
@@ -317,9 +314,61 @@ def process_editlens():
     check_for_duplicates(data_out)
     
 
-        
+def process_apt_with_m4_train():
+    
+    n_apt_per_editing_type = 200
+    n_train=1500
 
+    data_out = {"train": [], "val": [], "test": []}
+    
+    # A TEST SET ONLY APT
+    # Load machine-generated data
+    test_df = pd.read_csv(os.path.join(RAW_DATA_DIR, "apt", "test.csv"))
+    test_data = test_df.to_dict("records")
+    test_data = [x for x in test_data if x["polish_type"] == "degree-based"]
 
+    editing_types = set(x["polishing_degree"] for x in test_data)
+    print(f"Editing types in apt dataset: {editing_types}")
+
+    for editing_degree in editing_types:    
+        subset = [x for x in test_data if x["polishing_degree"] == editing_degree and x["generation"].strip()]
+        random.shuffle(subset)
+        machine_test = [{"text": x["generation"], 
+                         "label": 1,
+                         "sem_similarity": x["sem_similarity"],
+                         "levenshtein_distance": x["levenshtein_distance"],
+                         "jaccard_distance": x["jaccard_distance"]} for x in subset]
+        data_out["test"].extend(machine_test[:n_apt_per_editing_type])
+
+    # A TRAIN BASED ON M4
+    file_path = os.path.join(M4_RAW_DATA_DIR, f"SubtaskB.jsonl")
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = [json.loads(line) for line in f]
+
+    human = [{"text": x["text"], "label": 0} for x in data if x["model"] == "human" and x["text"].strip()]
+    machine = [{"text": x["text"], "label": 1} for x in data if x["model"] != "human" and x["text"].strip()]
+
+    random.shuffle(human)
+    random.shuffle(machine)
+
+    data_out["train"].extend(human[:n_train//2])
+    data_out["train"].extend(machine[:n_train//2])
+
+    # shuffle splits
+    random.shuffle(data_out["train"])
+    random.shuffle(data_out["test"])
+
+    # we do not need val    
+    data_out["val"] = data_out["train"]
+
+    output_dir = os.path.join(DATA_DIR, f"apt_m4_train")
+    os.makedirs(output_dir, exist_ok=True)
+    for split in ["train", "val", "test"]:
+        with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
+            for item in data_out[split]:
+                f.write(json.dumps(item) + "\n")
+
+    check_for_duplicates(data_out)
 
 def process_tsm():
     train_per_label = TRAINING_N // 2
@@ -660,18 +709,23 @@ def main() -> None:
     # print("Preparing apt data...")
     # process_apt()
 
+    # apt DATASETS with M4 train
+    print("="*60)
+    print("="*60)
+    print("Preparing apt data with m4 train...")
+    process_apt_with_m4_train()
+
     # M4 - generators
     # print("="*60)
     # print("="*60)
     # print("M4 - generators...")
     # process_m4()
 
-
     # D M4
-    print("="*60)
-    print("="*60)
-    print("D M4 - generators, domains, languages...")
-    process_d_M4()
+    # print("="*60)
+    # print("="*60)
+    # print("D M4 - generators, domains, languages...")
+    # process_d_M4()
 
 if __name__ == "__main__":
     main()

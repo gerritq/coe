@@ -431,12 +431,18 @@ class LinearProbing:
             else:
                 test_metrics = self._evaluate_meta_probe(train_out=train_out, test=test)
 
+
+            if target_dataset in ["apt", "apt_m4_train", "beemo_m4_train"]:
+                apt_correlations = self.correlate_apt(test_data=test, 
+                                                        scores=test_metrics['scores'])
+            else:
+                apt_correlations = None
+        
             # del scores
             del test_metrics['scores']
 
-            
             # SAVE OUTPUT
-            filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.training_size}_{args.dataset}_2_{target_dataset}.json"
+            filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_{args.dataset}_2_{target_dataset}.json"
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)
@@ -444,12 +450,9 @@ class LinearProbing:
             out_args['datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             out = {'args': out_args, 
-                    'test_metrics': test_metrics}
+                    'test_metrics': test_metrics,
+                    'apt_correlations': apt_correlations}
             
-            if target_dataset == "apt":
-                apt_correlations = self.correlate_apt(test_data=test, 
-                                                        scores=test_metrics['scores'])
-                out['apt_correlations'] = apt_correlations
             
             with open(os.path.join(OUT_DIR, filename), "w") as f:
                 json.dump(out, f, indent=4)
