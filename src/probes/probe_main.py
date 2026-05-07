@@ -430,6 +430,9 @@ class LinearProbing:
             else:
                 test_metrics = self._evaluate_meta_probe(train_out=train_out, test=test)
 
+            # del scores
+            del test_metrics['scores']
+
             
             # SAVE OUTPUT
             filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.training_size}_{args.dataset}_2_{target_dataset}.json"

@@ -2,32 +2,31 @@
 \toprule
 & \multicolumn{4}{c}{\textbf{DetectRL~\citep{wu2024detectrl}}} & \multicolumn{4}{c}{\textbf{DRL-Attack~\citep{wu2024detectrl}}} & \multicolumn{4}{c}{\textbf{MultiSocial~\citep{macko2025multi}}} & \multicolumn{4}{c}{\textbf{TSM-Bench~\citep{quaremba2026tsm}}} \\
 \cmidrule(lr){2-5}\cmidrule(lr){6-9}\cmidrule(lr){10-13}\cmidrule(lr){14-17}
-\textbf{Model} & \textbf{ArXiv} & \textbf{WritingPrompts} & \textbf{Yelp} & \textbf{XSum} & \textbf{Mixing} & \textbf{Paraphrase} & \textbf{Perturbation} & \textbf{Prompt} & \textbf{de} & \textbf{en} & \textbf{ru} & \textbf{zh} & \textbf{Extend} & \textbf{First} & \textbf{Sums} & \textbf{TST} \\
+\textbf{Model} & \textbf{ArXiv} & \textbf{WritingPrompts} & \textbf{Yelp} & \textbf{XSum} & \textbf{Mixing} & \textbf{Paraphrase} & \textbf{Perturbation} & \textbf{Prompt} & \textbf{en} & \textbf{de} & \textbf{ru} & \textbf{zh} & \textbf{First} & \textbf{Extend} & \textbf{Sums} & \textbf{TST} \\
 \midrule
 \multicolumn{17}{l}{\textbf{Zero-shot}} \\
 \midrule
-Binoculars &  &  &  &  & 0.150 & 0.281 & 0.442 & 0.198 &  &  &  &  & 0.490 & 0.441 & 0.373 & 0.490 \\
-Entropy &  &  &  &  & 0.112 & 0.405 & 0.396 & 0.107 &  &  &  &  & 0.548 & 0.469 & 0.530 & 0.489 \\
-FastDetectGPT &  &  &  &  & 0.891 & 0.786 & 0.622 & 0.893 &  &  &  &  & 0.435 & 0.506 & 0.608 & 0.496 \\
-Likelihood &  &  &  &  & 0.956 & 0.697 & 0.653 & 0.963 &  &  &  &  & 0.434 & 0.521 & 0.505 & 0.510 \\
-LLR &  &  &  &  & 0.923 & 0.681 & 0.688 & 0.929 &  &  &  &  & 0.413 & 0.503 & 0.515 & 0.511 \\
-Rank &  &  &  &  & 0.212 & 0.411 & 0.819 & 0.158 &  &  &  &  & 0.556 & 0.520 & 0.463 & 0.489 \\
-RepreGuard &  &  &  &  &  &  &  &  &  &  &  &  & 53.000 & 50.000 & 60.400 & 49.800 \\
-GEScore &  &  &  &  & 0.718 & 0.678 & 0.607 & 0.706 &  &  &  &  & 0.517 & 0.546 & 0.668 & 0.545 \\
+Binoculars &  &  &  &  & 0.150 & 0.281 & 0.442 & 0.198 &  &  &  &  & 0.441 & 0.490 & 0.373 & 0.490 \\
+Entropy &  &  &  &  & 0.112 & 0.405 & 0.396 & 0.107 &  &  &  &  & 0.469 & 0.548 & 0.530 & 0.489 \\
+FastDetectGPT &  &  &  &  & 0.891 & 0.786 & 0.622 & 0.893 &  &  &  &  & 0.506 & 0.435 & 0.608 & 0.496 \\
+Likelihood &  &  &  &  & 0.956 & 0.697 & 0.653 & 0.963 &  &  &  &  & 0.521 & 0.434 & 0.505 & 0.510 \\
+LLR &  &  &  &  & 0.923 & 0.681 & 0.688 & 0.929 &  &  &  &  & 0.503 & 0.413 & 0.515 & 0.511 \\
+Rank &  &  &  &  & 0.212 & 0.411 & 0.819 & 0.158 &  &  &  &  & 0.520 & 0.556 & 0.463 & 0.489 \\
+RepreGuard &  &  &  &  &  &  &  &  &  &  &  &  & 50.000 & 53.000 & 60.400 & 49.800 \\
+GEScore &  &  &  &  & 0.718 & 0.678 & 0.607 & 0.706 &  &  &  &  & 0.546 & 0.517 & 0.668 & 0.545 \\
 \midrule
 \multicolumn{17}{l}{\textbf{Supervised}} \\
 \midrule
-BiScope &  &  &  &  & 0.992 & 0.992 & 0.883 & 0.995 &  &  &  &  & 0.616 & 0.736 & 0.769 & 0.713 \\
-OpenAI-RoBERTa &  &  &  &  &  &  &  &  &  &  &  &  & 0.493 & 0.552 & 0.569 & 0.437 \\
+BiScope &  &  &  &  & 0.992 & 0.992 & 0.883 & 0.995 &  &  &  &  & 0.736 & 0.616 & 0.769 & 0.713 \\
+OpenAI-RoBERTa &  &  &  &  &  &  &  &  &  &  &  &  & 0.552 & 0.493 & 0.569 & 0.437 \\
 RAIDAR &  &  &  &  & 0.739 & 0.721 & 0.650 & 0.712 &  &  &  &  &  &  &  &  \\
-TextFluoroscopy &  &  &  &  & 0.993 & 0.987 & 0.990 & 0.993 &  &  &  &  & 0.359 & 0.510 & 0.228 & 0.409 \\
+TextFluoroscopy &  &  &  &  & 0.993 & 0.987 & 0.990 & 0.993 &  &  &  &  & 0.510 & 0.359 & 0.228 & 0.409 \\
 \midrule
 \multicolumn{17}{l}{\textbf{Linear Probes}} \\
 \midrule
-LP$_{\mathrm{default}}$ &  &  &  &  & 1.000 & 1.000 & 1.000 & 1.000 &  &  &  &  & 0.942 & 0.978 & 0.980 & 0.900 \\
-LP$_{\mathrm{pca}}$ &  &  &  &  & 1.000 & 1.000 & 1.000 & 0.998 &  &  &  &  & 0.930 & 0.961 & 0.970 & 0.876 \\
+LP$_{\mathrm{default}}$ & 1.000 & 1.000 & 1.000 &  & 1.000 & 1.000 & 1.000 & 1.000 &  &  &  &  & 0.978 & 0.941 & 0.980 & 0.898 \\
+LP$_{\mathrm{pca}}$ & 1.000 & 1.000 &  &  & 0.999 & 1.000 & 1.000 & 0.998 &  &  &  &  & 0.962 & 0.928 & 0.970 & 0.874 \\
 \cdashline{2-17}
-LP$_{\mathrm{meta}}$ &  &  &  &  & 0.999 & 1.000 & 1.000 & 0.999 &  &  &  &  & 0.920 & 0.968 & 0.961 & 0.877 \\
-LP$_{\mathrm{meta\_attn}}$ &  &  &  &  & 1.000 & 1.000 & 1.000 & 1.000 &  &  &  &  & 0.925 & 0.969 & 0.964 & 0.878 \\
+LP$_{\mathrm{meta}}$ & 1.000 & 1.000 & 1.000 &  & 0.999 & 1.000 & 1.000 & 0.999 &  &  &  &  & 0.968 & 0.920 & 0.961 & 0.877 \\
 \bottomrule
 \end{tabular}

@@ -8,11 +8,11 @@ PROBE_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 
 DATASET_GROUPS = {
-    "detectrl": [
-        "detectrl_arxiv",
-        "detectrl_writing_prompt",
-        "detectrl_yelp_review",
-        "detectrl_xsum",
+    "drlDomain": [
+        "drlDomain_arxiv",
+        "drlDomain_writing_prompt",
+        "drlDomain_yelp_review",
+        "drlDomain_xsum",
     ],
     "drlAttack": [
         "drlAttack_multi_llm_mixing",
@@ -21,14 +21,14 @@ DATASET_GROUPS = {
         "drlAttack_prompt_attacks_llm",
     ],
     "multisocial": [
-        "multisocial_de",
         "multisocial_en",
+        "multisocial_de",
         "multisocial_ru",
         "multisocial_zh",
     ],
     "tsm": [
-        "tsm_extend",
         "tsm_first",
+        "tsm_extend",
         "tsm_sums",
         "tsm_tst",
     ],
@@ -39,6 +39,10 @@ DATASET_LABELS = {
     "detectrl_writing_prompt": r"\textbf{WritingPrompts}",
     "detectrl_yelp_review": r"\textbf{Yelp}",
     "detectrl_xsum": r"\textbf{XSum}",
+    "drlDomain_arxiv": r"\textbf{ArXiv}",
+    "drlDomain_writing_prompt": r"\textbf{WritingPrompts}",
+    "drlDomain_yelp_review": r"\textbf{Yelp}",
+    "drlDomain_xsum": r"\textbf{XSum}",
     "drlAttack_multi_llm_mixing": r"\textbf{Mixing}",
     "drlAttack_paraphrase_attacks_llm": r"\textbf{Paraphrase}",
     "drlAttack_perturbation_attacks_llm": r"\textbf{Perturbation}",
@@ -101,19 +105,17 @@ def _fmt(score: float | None) -> str:
     return f"{score:.3f}"
 
 
-def _probe_auroc(test_metrics: dict) -> float | None:
-    if "meta_metrics" in test_metrics:
-        return test_metrics["meta_metrics"].get("auroc")
-    if "weighted_projection_metrics" in test_metrics:
-        return test_metrics["weighted_projection_metrics"].get("auroc")
-    if "mean_projection_metrics" in test_metrics:
-        return test_metrics["mean_projection_metrics"].get("auroc")
-    return None
 
+def _probe_auroc(test_metrics: dict, mode: str | None) -> float | None:
+    if mode in {"default", "pca"}:
+        metrics = test_metrics.get("mean_projection_metrics", {})
+    else:
+        metrics = test_metrics.get("meta_metrics", {})
+    return metrics.get("auroc")
 
 def _all_datasets() -> list[str]:
     datasets = []
-    for group in ["detectrl", "drlAttack", "multisocial", "tsm"]:
+    for group in ["drlDomain", "drlAttack", "multisocial", "tsm"]:
         datasets.extend(DATASET_GROUPS[group])
     return datasets
 
@@ -159,7 +161,7 @@ def collect_probes() -> dict[str, dict[str, float]]:
             continue
         mode_latex = mode.replace("_", r"\_")
         row = f"LP$_{{\\mathrm{{{mode_latex}}}}}$"
-        auroc = _probe_auroc(obj.get("test_metrics", {}))
+        auroc = _probe_auroc(obj.get("test_metrics", {}), mode)
         if auroc is None:
             continue
         table.setdefault(row, {})[ds] = auroc
@@ -174,14 +176,14 @@ def render_table(
     cols = "l" + "c" * len(datasets)
     n_data_cols = len(datasets)
 
-    detectrl_n = len(DATASET_GROUPS["detectrl"])
+    drldomain_n = len(DATASET_GROUPS["drlDomain"])
     drlattack_n = len(DATASET_GROUPS["drlAttack"])
     multisocial_n = len(DATASET_GROUPS["multisocial"])
     tsm_n = len(DATASET_GROUPS["tsm"])
 
-    start_detectrl = 2
-    end_detectrl = start_detectrl + detectrl_n - 1
-    start_drlattack = end_detectrl + 1
+    start_drldomain = 2
+    end_drldomain = start_drldomain + drldomain_n - 1
+    start_drlattack = end_drldomain + 1
     end_drlattack = start_drlattack + drlattack_n - 1
     start_multisocial = end_drlattack + 1
     end_multisocial = start_multisocial + multisocial_n - 1
@@ -192,10 +194,10 @@ def render_table(
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
         "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{DRL-Attack~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM-Bench~\\citep{{quaremba2026tsm}}}}}} \\\\".format(
-            detectrl_n, drlattack_n, multisocial_n, tsm_n
+            drldomain_n, drlattack_n, multisocial_n, tsm_n
         ),
         "\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}".format(
-            start_detectrl, end_detectrl,
+            start_drldomain, end_drldomain,
             start_drlattack, end_drlattack,
             start_multisocial, end_multisocial,
             start_tsm, end_tsm,
