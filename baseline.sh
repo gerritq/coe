@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=b_ood
+#SBATCH --job-name=b_cb
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
 #SBATCH --time=05:00:00
@@ -23,26 +23,27 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
-DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
+
 
 SMOKE_TEST=0
-OOD=0
+OOD=1
 MODELS=(
         # "revise"
         # "gescore"
-        # "biscope"
+        "biscope"
         # "raidar"
-        # "text_fluoroscopy"
+        "text_fluoroscopy"
         # "radar"
         # "openai_roberta"
-        # "repreguard"
+        "repreguard"
         "encoder" 
-        "llr" 
-        "fastdetectgpt" 
-        "rank" 
-        "entropy"
-        "likelihood"
-        "binoculars" 
+        # "llr" 
+        # "fastdetectgpt" 
+        # "rank" 
+        # "entropy"
+        # "likelihood"
+        # "binoculars" 
         )        
 
 
