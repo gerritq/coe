@@ -10,38 +10,46 @@ import torch
 from sklearn.decomposition import PCA
 
 from src.inference import Inference
-
-
 BASE_DIR = os.getenv("BASE_COE", ".")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 SEED = 42
 
+TOKEN_MODE = "last_token"
 
 def load_jsonl(path: str, smoke_test: bool = False) -> list[dict[str, Any]]:
+    
+    # load data
     with open(path, "r", encoding="utf-8") as f:
-        items = [json.loads(line) for line in f if line.strip()]
+        data = [json.loads(line) for line in f if line.strip()]
+
+    # get wiki and gpt4
+    data = [item for item in data if item["source"] == "wikipedia" or item["source"] == "gpt4"]
+
+    
+    assert set(item["label"] for item in data) == {0, 1}, "labels must be 0 and 1"
+    assert len([x for x in data if x["label"] == 1]) == len([x for x in data if x["label"] == 0]), "human and mgt not same size"
+
+    print(f"Loaded {len(data)} items from {path}")
 
     if not smoke_test:
-        return items
-
-    print(f"Running smoke test: sampling 20 items per label from {len(items)} total items.")
-    by_label: dict[int, list[dict[str, Any]]] = {}
-    for item in items:
+        return data
+    
+    # smoke test: sample 50 items per label
+    
+    by_label = {}
+    for item in data:
         label = int(item["label"])
         by_label.setdefault(label, []).append(item)
 
-    random.seed(SEED)
     sampled = []
     for label in sorted(by_label.keys()):
-        label_items = by_label[label]
-        random.shuffle(label_items)
-        sampled.extend(label_items[:20])
+        sampled.extend(by_label[label][:50])
     return sampled
 
 
 def collect_hidden_states(items: list[dict[str, Any]], model_name: str) -> np.ndarray:
     inference = Inference(model_name=model_name)
-    infer_args = Namespace(mode="default", token_mode="last_token")
+    infer_args = Namespace(mode="default", token_mode=TOKEN_MODE)
 
     all_hidden = []
     for item in items:
