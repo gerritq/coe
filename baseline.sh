@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=b_ood_m4_and_domain
+#SBATCH --job-name=b_2_domain_tsm_multi
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
 #SBATCH --time=08:00:00
@@ -27,27 +27,27 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
 # Missing OOD
-DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz" "drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
+DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 
 SMOKE_TEST=0
-OOD=1
+OOD=0
 # "raidar"
 MODELS=(
         # "revise"
         # "gescore"
-        "biscope"
+        # "biscope"
         # "raidar"
-        "text_fluoroscopy"
+        # "text_fluoroscopy"
         # "radar"
         # "openai_roberta"
         "repreguard"
         "encoder" 
-        # "llr" 
-        # "fastdetectgpt" 
-        # "rank" 
-        # "entropy"
-        # "likelihood"
-        # "binoculars" 
+        "llr" 
+        "fastdetectgpt" 
+        "rank" 
+        "entropy"
+        "likelihood"
+        "binoculars" 
         )        
 
 

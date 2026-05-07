@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_m4
+#SBATCH --job-name=probe_apt_and_apt_m4
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=03:00:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -22,12 +22,12 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 # DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
-DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
-# DATASETS=("atp")
+# DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
+DATASETS=("apt" "apt_m4_train")
 
 TOKEN_MODE="last_token"
 MODES=("default" "meta" "meta_attn" "pca") # default | pca | meta | meta_attn
-OOD=1
+OOD=0
 COMPONENTS=50
 SMOKE_TEST=0
 
