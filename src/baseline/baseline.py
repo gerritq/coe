@@ -56,7 +56,7 @@ def supervised_models(args):
         print(f"Loading target dataset: {target_dataset}")
         print("="*60)
 
-        target_data = load_dataset(args=Namespace(dataset=target_dataset, smoke_test=args.smoke_test))
+        target_data = load_dataset(args=Namespace(dataset=target_dataset, smoke_test=args.smoke_test, training_size=args.training_size))
         ood_data.append({"data": target_data, "name": target_dataset})
 
     scores = baseline.run(args=args, training_data=source_data, ood_data=ood_data)
@@ -134,7 +134,7 @@ def run(args):
             print("="*60)
 
             # bit reduant for the ID case but whatever
-            target_data = load_dataset(args=Namespace(dataset=target_dataset, smoke_test=args.smoke_test))
+            target_data = load_dataset(args=Namespace(dataset=target_dataset, smoke_test=args.smoke_test, training_size=args.training_size))
             target_y = target_data['test']["label"]
             target_text = target_data['test']["text"]
             

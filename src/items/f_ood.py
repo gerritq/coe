@@ -1,6 +1,5 @@
 import json
 import os
-import re
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
@@ -9,189 +8,248 @@ import numpy as np
 
 BASE_DIR = os.getenv("BASE_COE", ".")
 PROBE_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
+BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 
-FAMILIES = ["detectrl", "multisocial", "tsm"]
+DATASET_GROUPS = {
+    "drlDomain": [
+        "drlDomain_arxiv",
+        "drlDomain_writing_prompt",
+        "drlDomain_yelp_review",
+        "drlDomain_xsum",
+    ],
+    "drlAttack": [
+        "drlAttack_multi_llm_mixing",
+        "drlAttack_paraphrase_attacks_llm",
+        "drlAttack_perturbation_attacks_llm",
+        "drlAttack_prompt_attacks_llm",
+    ],
+    "multisocial": [
+        "multisocial_en",
+        "multisocial_de",
+        "multisocial_ru",
+        "multisocial_zh",
+    ],
+    "tsm": [
+        "tsm_first",
+        "tsm_extend",
+        "tsm_sums",
+        "tsm_tst",
+    ],
+}
+
+FAMILY_ORDER = ["drlDomain", "drlAttack", "multisocial", "tsm"]
+
+METHOD_SPECS = {
+    "probe_default": {"kind": "probe", "mode": "default", "label": "Probe (default)"},
+    "encoder": {"kind": "baseline", "model": "encoder", "label": "Encoder"},
+    "text_fluoroscopy": {"kind": "baseline", "model": "text_fluoroscopy", "label": "Fluoroscopy"},
+    "biscope": {"kind": "baseline", "model": "biscope", "label": "BiScope"},
+    "repreguard": {"kind": "baseline", "model": "repreguard", "label": "RepreGuard"},
+}
 
 
-def _family(dataset_name: str) -> str | None:
-    if dataset_name.startswith("detectrl_"):
-        return "detectrl"
-    if dataset_name.startswith("multisocial_"):
-        return "multisocial"
-    if dataset_name.startswith("tsm_"):
-        return "tsm"
-    return None
-
-
-def _short_label(dataset_name: str) -> str:
-    fam = _family(dataset_name)
-    if fam == "detectrl":
-        return dataset_name.replace("detectrl_", "")
-    if fam == "multisocial":
-        return dataset_name.replace("multisocial_", "")
-    if fam == "tsm":
-        # tsm_paras_en -> paras-en, tsm_sums_pt -> sums-pt
-        return dataset_name.replace("tsm_", "").replace("_", "-")
-    return dataset_name
-
-
-def _extract_auroc(obj: dict) -> float | None:
-    tm = obj.get("test_metrics", {})
-    if "meta_metrics" in tm:
-        return tm["meta_metrics"].get("auroc")
-    if "weighted_projection_metrics" in tm:
-        return tm["weighted_projection_metrics"].get("auroc")
-    if "mean_projection_metrics" in tm:
-        return tm["mean_projection_metrics"].get("auroc")
-    return None
-
-
-def _parse_filename(filename: str) -> tuple[str, str, str] | None:
-    # Example: default_last_token_detectrl_arxiv_2_detectrl_writing_prompt.json
-    m = re.match(r"^(.*?)_last_token_(.+)_2_(.+)\.json$", filename)
-    if not m:
-        return None
-    mode = m.group(1)
-    src = m.group(2)
-    tgt = m.group(3)
-    return mode, src, tgt
-
-
-def load_probe_ood_aurocs() -> dict[str, dict[str, dict[str, float]]]:
-    # mode -> src -> tgt -> auroc
-    out: dict[str, dict[str, dict[str, float]]] = defaultdict(lambda: defaultdict(dict))
-
-    for filename in sorted(os.listdir(PROBE_DIR)):
-        if not filename.endswith(".json"):
-            continue
-        parsed = _parse_filename(filename)
-        if parsed is None:
-            continue
-        mode, src, tgt = parsed
-        if _family(src) != _family(tgt):
-            continue
-        path = os.path.join(PROBE_DIR, filename)
-        with open(path, "r") as f:
-            obj = json.load(f)
-        auroc = _extract_auroc(obj)
-        if auroc is None:
-            continue
-        out[mode][src][tgt] = float(auroc)
+def _dataset_to_family() -> dict[str, str]:
+    out = {}
+    for fam, ds_list in DATASET_GROUPS.items():
+        for ds in ds_list:
+            out[ds] = fam
     return out
 
 
-def build_matrices(data: dict[str, dict[str, dict[str, float]]]):
-    # mode -> family -> (labels, matrix)
-    result: dict[str, dict[str, tuple[list[str], np.ndarray]]] = defaultdict(dict)
-    for mode, src_map in data.items():
-        by_family: dict[str, set[str]] = defaultdict(set)
-        for src, tgt_map in src_map.items():
-            fam = _family(src)
-            if fam is None:
+def _short_label(dataset_name: str) -> str:
+    if dataset_name.startswith("drlDomain_"):
+        return dataset_name.replace("drlDomain_", "")
+    if dataset_name.startswith("drlAttack_"):
+        return dataset_name.replace("drlAttack_", "").replace("_attacks_llm", "").replace("_", "-")
+    if dataset_name.startswith("multisocial_"):
+        return dataset_name.replace("multisocial_", "")
+    if dataset_name.startswith("tsm_"):
+        return dataset_name.replace("tsm_", "")
+    return dataset_name
+
+
+def _probe_auroc(test_metrics: dict) -> float | None:
+    wm = test_metrics.get("weighted_projection_metrics", {})
+    if "auroc" in wm:
+        return wm.get("auroc")
+    mm = test_metrics.get("mean_projection_metrics", {})
+    if "auroc" in mm:
+        return mm.get("auroc")
+    return None
+
+
+def _collect_method_entries(method_key: str) -> dict[str, dict[str, float]]:
+    spec = METHOD_SPECS[method_key]
+    ds_to_family = _dataset_to_family()
+
+    # family -> train_ds -> test_ds -> auroc
+    out: dict[str, dict[str, dict[str, float]]] = defaultdict(lambda: defaultdict(dict))
+
+    if spec["kind"] == "probe":
+        for filename in sorted(os.listdir(PROBE_DIR)):
+            if not filename.endswith(".json"):
                 continue
-            by_family[fam].add(src)
-            for tgt in tgt_map:
-                by_family[fam].add(tgt)
+            path = os.path.join(PROBE_DIR, filename)
+            with open(path, "r") as f:
+                obj = json.load(f)
 
-        for fam in FAMILIES:
-            labels = sorted(by_family.get(fam, set()))
-            if not labels:
+            args = obj.get("args", {})
+            if args.get("mode") != spec["mode"]:
                 continue
-            idx = {d: i for i, d in enumerate(labels)}
-            mat = np.full((len(labels), len(labels)), np.nan, dtype=float)
-            for src, tgt_map in src_map.items():
-                if _family(src) != fam:
-                    continue
-                for tgt, val in tgt_map.items():
-                    if tgt in idx and src in idx:
-                        mat[idx[src], idx[tgt]] = val
-            result[mode][fam] = (labels, mat)
-    return result
+
+            train_ds = args.get("dataset")
+            test_ds = args.get("target_dataset")
+            if train_ds is None or test_ds is None:
+                continue
+            if train_ds == test_ds:
+                continue  # OOD only
+
+            fam_train = ds_to_family.get(train_ds)
+            fam_test = ds_to_family.get(test_ds)
+            if fam_train is None or fam_train != fam_test:
+                continue
+
+            auroc = _probe_auroc(obj.get("test_metrics", {}))
+            if auroc is None:
+                continue
+            out[fam_train][train_ds][test_ds] = float(auroc)
+
+    else:
+        for filename in sorted(os.listdir(BASELINE_DIR)):
+            if not filename.endswith(".json"):
+                continue
+            path = os.path.join(BASELINE_DIR, filename)
+            with open(path, "r") as f:
+                obj = json.load(f)
+
+            args = obj.get("args", {})
+            if args.get("model") != spec["model"]:
+                continue
+
+            train_ds = args.get("dataset")
+            test_ds = args.get("target_dataset")
+            if train_ds is None or test_ds is None:
+                continue
+            if train_ds == test_ds:
+                continue  # OOD only
+
+            fam_train = ds_to_family.get(train_ds)
+            fam_test = ds_to_family.get(test_ds)
+            if fam_train is None or fam_train != fam_test:
+                continue
+
+            auroc = obj.get("metrics", {}).get("auroc")
+            if auroc is None:
+                continue
+            out[fam_train][train_ds][test_ds] = float(auroc)
+
+    return out
 
 
-def plot_all_confusions(mats: dict[str, dict[str, tuple[list[str], np.ndarray]]]) -> str:
-    modes = sorted(mats.keys())
-    families_present = [f for f in FAMILIES if any(f in mats[m] for m in modes)]
-    if not modes or not families_present:
-        raise RuntimeError("No OOD probe matrices found in output/probe/sandbox.")
+def _build_family_matrix(family: str, entries: dict[str, dict[str, float]]) -> tuple[list[str], np.ndarray]:
+    labels = DATASET_GROUPS[family]
+    idx = {d: i for i, d in enumerate(labels)}
+    mat = np.full((len(labels), len(labels)), np.nan, dtype=float)
 
-    n_rows = len(modes)
-    n_cols = len(families_present)
-    fig, axes = plt.subplots(
-        n_rows,
-        n_cols,
-        figsize=(4.8 * n_cols, 4.4 * n_rows),
-        squeeze=False,
-        constrained_layout=True,
-    )
+    for src, tgt_map in entries.items():
+        if src not in idx:
+            continue
+        for tgt, val in tgt_map.items():
+            if tgt not in idx:
+                continue
+            mat[idx[src], idx[tgt]] = val
 
+    return labels, mat
+
+
+def _plot_family_matrix(ax, family: str, entries: dict[str, dict[str, float]], cmap, vmin=0.0, vmax=1.0):
     cmap = plt.get_cmap("viridis").copy()
     cmap.set_bad(color="#f0f0f0")
-
-    for r, mode in enumerate(modes):
-        for c, fam in enumerate(families_present):
-            ax = axes[r, c]
-            if fam not in mats[mode]:
-                ax.axis("off")
-                ax.set_title(f"{mode} | {fam}\n(no data)")
+    labels, mat = _build_family_matrix(family, entries)
+    im = ax.imshow(mat, vmin=vmin, vmax=vmax, cmap=cmap)
+    short_labels = [_short_label(x) for x in labels]
+    ax.set_xticks(range(len(labels)))
+    ax.set_yticks(range(len(labels)))
+    ax.set_xticklabels(short_labels, rotation=45, ha="right", fontsize=7)
+    ax.set_yticklabels(short_labels, fontsize=7)
+    ax.set_xlabel("Test", fontsize=8)
+    ax.set_ylabel("Train", fontsize=8)
+    ax.set_title(family, fontsize=9)
+    for rr in range(mat.shape[0]):
+        for cc in range(mat.shape[1]):
+            v = mat[rr, cc]
+            if np.isnan(v):
                 continue
-            labels, mat = mats[mode][fam]
-            im = ax.imshow(mat, vmin=0.0, vmax=1.0, cmap=cmap)
-            ax.set_xticks(range(len(labels)))
-            ax.set_yticks(range(len(labels)))
-            short_labels = [_short_label(x) for x in labels]
-            ax.set_xticklabels(short_labels, rotation=45, ha="right", fontsize=8)
-            ax.set_yticklabels(short_labels, fontsize=8)
-            ax.set_xlabel("Test subset")
-            ax.set_ylabel("Train subset")
-            ax.set_title(f"mode={mode} | {fam}")
-
-            for i in range(mat.shape[0]):
-                for j in range(mat.shape[1]):
-                    v = mat[i, j]
-                    if np.isnan(v):
-                        continue
-                    txt_color = "white" if v < 0.55 else "black"
-                    ax.text(j, i, f"{v:.3f}", ha="center", va="center", fontsize=7, color=txt_color)
-
-    cbar = fig.colorbar(im, ax=axes, location="right", shrink=0.92, pad=0.02)
-    cbar.set_label("AUROC")
-    fig.suptitle("Probe AUROC Matrices (including diagonal)", y=0.995, fontsize=13)
-
-    os.makedirs(OUT_DIR, exist_ok=True)
-    out_path = os.path.join(OUT_DIR, "ood_probe_confusion_matrices.png")
-    fig.savefig(out_path, dpi=220)
-    plt.close(fig)
-    return out_path
-
-
-def save_auroc_report(mats: dict[str, dict[str, tuple[list[str], np.ndarray]]]) -> str:
-    report = {}
-    for mode, fam_map in mats.items():
-        report[mode] = {}
-        for fam, (_, mat) in fam_map.items():
-            vals = mat[~np.isnan(mat)]
-            report[mode][fam] = {
-                "n_pairs": int(vals.size),
-                "mean_auroc": float(np.mean(vals)) if vals.size else None,
-                "min_auroc": float(np.min(vals)) if vals.size else None,
-                "max_auroc": float(np.max(vals)) if vals.size else None,
-            }
-    os.makedirs(OUT_DIR, exist_ok=True)
-    out_json = os.path.join(OUT_DIR, "ood_probe_auroc_report.json")
-    with open(out_json, "w") as f:
-        json.dump(report, f, indent=2)
-    return out_json
+            txt_color = "white" if v < 0.55 else "black"
+            ax.text(cc, rr, f"{v:.2f}", ha="center", va="center", fontsize=6, color=txt_color)
+    return im
 
 
 def main() -> None:
-    data = load_probe_ood_aurocs()
-    mats = build_matrices(data)
-    fig_path = plot_all_confusions(mats)
-    rep_path = save_auroc_report(mats)
-    print(f"Saved figure: {fig_path}")
-    print(f"Saved AUROC report: {rep_path}")
+    os.makedirs(OUT_DIR, exist_ok=True)
+    out_path = os.path.join(OUT_DIR, "ood_figure.pdf")
+
+    entries_fluo = _collect_method_entries("text_fluoroscopy")
+    entries_biscope = _collect_method_entries("biscope")
+    entries_repre = _collect_method_entries("repreguard")
+    entries_default = _collect_method_entries("probe_default")
+
+    panel_methods = [
+        ("Fluoroscopy", entries_fluo),
+        ("BiScope", entries_biscope),
+        ("RepreGuard", entries_repre),
+        ("Probe (default)", entries_default),
+    ]
+
+    fig, axes = plt.subplots(2, 8, figsize=(28, 8), squeeze=False, constrained_layout=True)
+    cmap = plt.get_cmap("viridis").copy()
+    cmap.set_bad(color="#f0f0f0")
+
+    im = None
+    # Row 1: fluo then biscope
+    for block_idx, (title, fam_entries) in enumerate(panel_methods[:2]):
+        col_offset = block_idx * 4
+        for i, family in enumerate(FAMILY_ORDER):
+            ax = axes[0, col_offset + i]
+            im = _plot_family_matrix(ax, family, fam_entries.get(family, {}), cmap)
+            if i == 0:
+                ax.text(
+                    -0.45,
+                    1.18,
+                    title,
+                    transform=ax.transAxes,
+                    fontsize=12,
+                    fontweight="bold",
+                    va="bottom",
+                )
+
+    # Row 2: repreguard then default probe
+    for block_idx, (title, fam_entries) in enumerate(panel_methods[2:]):
+        col_offset = block_idx * 4
+        for i, family in enumerate(FAMILY_ORDER):
+            ax = axes[1, col_offset + i]
+            im = _plot_family_matrix(ax, family, fam_entries.get(family, {}), cmap)
+            if i == 0:
+                ax.text(
+                    -0.45,
+                    1.18,
+                    title,
+                    transform=ax.transAxes,
+                    fontsize=12,
+                    fontweight="bold",
+                    va="bottom",
+                )
+
+    if im is not None:
+        cbar = fig.colorbar(im, ax=axes, location="right", shrink=0.85, pad=0.01)
+        cbar.set_label("AUROC")
+
+    fig.suptitle("OOD Confusion Matrices (4x4 per family)", fontsize=14)
+    fig.savefig(out_path, dpi=220)
+    plt.close(fig)
+
+    print(f"Saved figure: {out_path}")
 
 
 if __name__ == "__main__":

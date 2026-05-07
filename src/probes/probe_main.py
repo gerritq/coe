@@ -422,7 +422,8 @@ class LinearProbing:
             print("="*60)
 
             target_data = load_dataset(args=Namespace(dataset=target_dataset, 
-                                                    smoke_test=args.smoke_test))['test']
+                                                    smoke_test=args.smoke_test,
+                                                    training_size=args.training_size))['test']
             test = self._collect_model_states(target_data)
 
             if self.args.mode in ["default", "pca"]:

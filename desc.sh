@@ -32,7 +32,11 @@ echo "Running layer_pca with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
 
 
-PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/l1_probe.py \
+# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/l1_probe.py \
+# --model "${MODEL}" \
+# --smoke_test "${SMOKE_TEST}"
+
+PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/pca_ratio.py \
 --model "${MODEL}" \
 --smoke_test "${SMOKE_TEST}"
 

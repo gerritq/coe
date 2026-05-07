@@ -131,7 +131,10 @@ def collect_baselines() -> dict[str, dict[str, float]]:
             obj = json.load(f)
         args = obj.get("args", {})
         ds = args.get("dataset")
+        target_ds = args.get("target_dataset")
         model = args.get("model")
+        if ds != target_ds:
+            continue
         if ds not in datasets or model is None:
             continue
         auroc = obj.get("metrics", {}).get("auroc")

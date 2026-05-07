@@ -1,5 +1,11 @@
 # To do
+- check desc code + add generators
+- add editlens data
+
 - entropy scaled run results
+- fix roberta
+- ai degree editjung data
+
 
 1. Run CB with M4 for probing and roberta   
 - Run APT with M4
