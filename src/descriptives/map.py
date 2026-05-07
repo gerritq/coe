@@ -54,6 +54,9 @@ def load_generator_data(path: str, smoke_test: bool = False) -> list[dict[str, A
 
     if not smoke_test:
         return items
+    
+    # rm human subset
+    items = [item for item in items if item['model'] != 'human']
 
     by_label = {}
     for item in items:
@@ -136,24 +139,24 @@ def run(args: Namespace) -> None:
     suffix = "_smoke" if bool(args.smoke_test) else ""
 
     # A Domains plot
-    # domains_path = os.path.join(BASE_DIR, "data", "sets", "d_m4_domains", "data.jsonl")
-    # domain_items = load_domain_data(domains_path, smoke_test=bool(args.smoke_test))
-    # x, domains = collect_middle_layer_representations(
-    #     items=domain_items,
-    #     model_name=args.model,
-    #     token_mode="last_token",
-    #     group_key="label",
-    # )
-    # x_2d = project_tsne_2d(x)
-    # out_domains = os.path.join(OUT_DIR, f"d_m4_domains_mid_layer_{args.model}{suffix}.pdf")
-    # plot_domains_2d(
-    #     x_2d=x_2d,
-    #     domains=domains,
-    #     out_path=out_domains,
-    #     title_suffix="Domain",
-    #     legend_title="Domain",
-    # )
-    # print(f"Saved figure: {out_domains}")
+    domains_path = os.path.join(BASE_DIR, "data", "sets", "d_m4_domains", "data.jsonl")
+    domain_items = load_domain_data(domains_path, smoke_test=bool(args.smoke_test))
+    x, domains = collect_middle_layer_representations(
+        items=domain_items,
+        model_name=args.model,
+        token_mode="last_token",
+        group_key="label",
+    )
+    x_2d = project_tsne_2d(x)
+    out_domains = os.path.join(OUT_DIR, f"d_m4_domains_mid_layer_{args.model}{suffix}.pdf")
+    plot_domains_2d(
+        x_2d=x_2d,
+        domains=domains,
+        out_path=out_domains,
+        title_suffix="Domain",
+        legend_title="Domain",
+    )
+    print(f"Saved figure: {out_domains}")
 
     # B Generators plot
     generators_path = os.path.join(BASE_DIR, "data", "sets", "d_m4_generators", "data.jsonl")
@@ -165,7 +168,7 @@ def run(args: Namespace) -> None:
         group_key="model",
     )
     x_2d = project_tsne_2d(x)
-    out_generators = os.path.join(OUT_DIR, f"map_generators_mid_layer_{args.model}{suffix}.pdf")
+    out_generators = os.path.join(OUT_DIR, f"d_m4_map_generators_mid_layer_{args.model}{suffix}.pdf")
     plot_domains_2d(
         x_2d=x_2d,
         domains=generators,

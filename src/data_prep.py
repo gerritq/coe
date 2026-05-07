@@ -61,7 +61,7 @@ def check_for_duplicates(data: dict[str, list[dict]]) -> None:
 def process_d_M4():
     """This is M4 for descriptives, 
     """
-    n_per_label = 1000 // 2 
+    n_per_label = 2000 // 2 
 
     # load data
     file_path = os.path.join(M4_RAW_DATA_DIR, f"SubtaskB.jsonl")
@@ -71,13 +71,17 @@ def process_d_M4():
     # all_generators = set(x["model"] for x in data)
     # print(all_generators)
 
+    # fixing dolly in case there is a naming issue
+    for item in data:
+            if item["model"] == "dolly-v2-12b":
+                item["model"] = "dolly"
+                
     # check domains
     all_domains = set(x["source"] for x in data)
     print(all_domains)
 
-    generators = ["cohere", "gpt4", "bloomz"]
-    domains = ["wikipedia", "arxiv", "reddit"]
-    languages = ["en", "de", "zh"]
+    generators = ["cohere", "gpt4", "bloomz", "dolly"]
+    domains = ["wikipedia", "arxiv", "reddit", "peerread"]
 
     fix_generator = "gpt4"
     fix_domain = "wikipedia"
@@ -89,7 +93,6 @@ def process_d_M4():
 
         pos = [{"text": x["text"], "label": idx, "source": x["source"], "model": x["model"]} for x in subset if x["model"] == generator]
         generator_data.extend(pos[:n_per_label])
-
 
     neg = [{"text": x["text"], "label": 0, "source": fix_domain, "model": "human"} for x in data if x["model"] == "human" and x["source"] == fix_domain and x["text"].strip()]
     generator_data.extend(neg[:n_per_label])

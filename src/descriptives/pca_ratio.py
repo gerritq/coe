@@ -74,16 +74,20 @@ def layer_cumulative_variance(x_layer: np.ndarray) -> np.ndarray:
 
 def plot_cumulative_variance(x: np.ndarray, layer_indices: list[int], out_path: str) -> None:
     plt.figure(figsize=(9, 6))
+    max_components = 300
 
     for panel_idx, layer_idx in enumerate(layer_indices):
         cum_ratio = layer_cumulative_variance(x[:, layer_idx, :])
-        n_comp = np.arange(1, len(cum_ratio) + 1)
+        n_keep = min(max_components, len(cum_ratio))
+        cum_ratio = cum_ratio[:n_keep]
+        n_comp = np.arange(1, n_keep + 1)
         label = "Layer 0" if panel_idx == 0 else f"Layer {layer_idx}"
         plt.plot(n_comp, cum_ratio, linewidth=2.0, label=label)
 
     plt.xlabel("Number of Principal Components")
     plt.ylabel("Cumulative Explained Variance Ratio")
     plt.title("Cumulative PCA Variance Ratio by Layer")
+    plt.xlim(1, max_components)
     plt.ylim(0.0, 1.0)
     plt.grid(alpha=0.25)
     plt.legend()

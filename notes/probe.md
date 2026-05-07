@@ -1,6 +1,7 @@
 # To do
 - check desc code + add generators
 - add editlens data
+- add beemo with apt measures!
 
 - entropy scaled run results
 - fix roberta

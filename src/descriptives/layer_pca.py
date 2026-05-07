@@ -91,18 +91,20 @@ def plot_layer_projections(
     unique_labels = sorted(set(y.tolist()))
     cmap = plt.get_cmap("tab10")
     label_to_color = {lab: cmap(i % 10) for i, lab in enumerate(unique_labels)}
+    label_to_name = {0: "Human", 1: "Machine"}
 
     for panel_idx, (ax, layer_idx) in enumerate(zip(axes, layer_indices)):
         x_2d = project_layer_pca(x[:, layer_idx, :])
         for lab in unique_labels:
             mask = y == lab
+            legend_label = label_to_name.get(lab, str(lab))
             ax.scatter(
                 x_2d[mask, 0],
                 x_2d[mask, 1],
                 s=10,
                 alpha=0.65,
                 c=[label_to_color[lab]],
-                label=str(lab),
+                label=legend_label,
                 edgecolors="none",
             )
         if panel_idx == 0:
@@ -112,9 +114,8 @@ def plot_layer_projections(
         ax.set_xlabel("PC1")
         ax.set_ylabel("PC2")
         ax.grid(alpha=0.2)
-
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, title="Label", loc="upper center", ncol=max(2, len(unique_labels)))
+        if panel_idx == len(layer_indices) - 1:
+            ax.legend(title="Label", loc="best")
     fig.suptitle("Per-layer PCA Projections (2D)", y=1.03)
     fig.tight_layout()
     fig.savefig(out_path, dpi=240, bbox_inches="tight")
