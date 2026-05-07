@@ -704,16 +704,16 @@ def main() -> None:
     # process_editlens()
 
     # apt DATASETS
-    # print("="*60)
-    # print("="*60)
-    # print("Preparing apt data...")
-    # process_apt()
+    print("="*60)
+    print("="*60)
+    print("Preparing apt data...")
+    process_apt()
 
     # apt DATASETS with M4 train
-    print("="*60)
-    print("="*60)
-    print("Preparing apt data with m4 train...")
-    process_apt_with_m4_train()
+    # print("="*60)
+    # print("="*60)
+    # print("Preparing apt data with m4 train...")
+    # process_apt_with_m4_train()
 
     # M4 - generators
     # print("="*60)

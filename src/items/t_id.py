@@ -32,6 +32,12 @@ DATASET_GROUPS = {
         "tsm_sums",
         "tsm_tst",
     ],
+    "m4": [
+        "m4_bloomz",
+        "m4_cohere",
+        "m4_dolly",
+        "m4_gpt4",
+    ],
 }
 
 DATASET_LABELS = {
@@ -55,6 +61,10 @@ DATASET_LABELS = {
     "tsm_first": r"\textbf{First}",
     "tsm_sums": r"\textbf{Sums}",
     "tsm_tst": r"\textbf{TST}",
+    "m4_bloomz": r"\textbf{Bloomz}",
+    "m4_cohere": r"\textbf{Cohere}",
+    "m4_dolly": r"\textbf{Dolly}",
+    "m4_gpt4": r"\textbf{GPT4}",
 }
 
 MODEL_LABELS = {
@@ -115,7 +125,7 @@ def _probe_auroc(test_metrics: dict, mode: str | None) -> float | None:
 
 def _all_datasets() -> list[str]:
     datasets = []
-    for group in ["drlDomain", "drlAttack", "multisocial", "tsm"]:
+    for group in ["drlDomain", "drlAttack", "multisocial", "tsm", "m4"]:
         datasets.extend(DATASET_GROUPS[group])
     return datasets
 
@@ -183,6 +193,7 @@ def render_table(
     drlattack_n = len(DATASET_GROUPS["drlAttack"])
     multisocial_n = len(DATASET_GROUPS["multisocial"])
     tsm_n = len(DATASET_GROUPS["tsm"])
+    m4_n = len(DATASET_GROUPS["m4"])
 
     start_drldomain = 2
     end_drldomain = start_drldomain + drldomain_n - 1
@@ -192,18 +203,21 @@ def render_table(
     end_multisocial = start_multisocial + multisocial_n - 1
     start_tsm = end_multisocial + 1
     end_tsm = start_tsm + tsm_n - 1
+    start_m4 = end_tsm + 1
+    end_m4 = start_m4 + m4_n - 1
 
     lines = [
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
-        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{DRL-Attack~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM-Bench~\\citep{{quaremba2026tsm}}}}}} \\\\".format(
-            drldomain_n, drlattack_n, multisocial_n, tsm_n
+        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{DRL-Attack~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM-Bench~\\citep{{quaremba2026tsm}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{M4~\\citep{{wang2024m4}}}}}} \\\\".format(
+            drldomain_n, drlattack_n, multisocial_n, tsm_n, m4_n
         ),
-        "\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}".format(
+        "\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}".format(
             start_drldomain, end_drldomain,
             start_drlattack, end_drlattack,
             start_multisocial, end_multisocial,
             start_tsm, end_tsm,
+            start_m4, end_m4,
         ),
         "\\textbf{Model} & " + " & ".join(DATASET_LABELS[d] for d in datasets) + " \\\\",
         "\\midrule",
