@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=b_cb
+#SBATCH --job-name=b_2_multi_domain
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
 #SBATCH --time=05:00:00
@@ -23,21 +23,21 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
-DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
+DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 
 
 SMOKE_TEST=0
-OOD=1
+OOD=0
 MODELS=(
-        # "revise"
-        # "gescore"
+        "revise"
+        "gescore"
         "biscope"
         # "raidar"
         "text_fluoroscopy"
-        # "radar"
-        # "openai_roberta"
+        "radar"
+        "openai_roberta"
         "repreguard"
-        "encoder" 
+        # "encoder" 
         # "llr" 
         # "fastdetectgpt" 
         # "rank" 
