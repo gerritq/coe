@@ -29,7 +29,7 @@ OOD = {
 - hp sweep for 0-1 threshold only correct if the score are also in this range!
 """
 def load_dataset(args: Namespace):
-    
+    random.seed(42)
     data_path = os.path.join(DATA_DIR, f"{args.dataset}")
     data = DatasetDict({
         split: Dataset.from_json(os.path.join(data_path, f"{split}.jsonl"))
@@ -42,6 +42,19 @@ def load_dataset(args: Namespace):
                 split: d.shuffle(seed=42).select(range(min(len(d), 30))) 
                 for split, d in data.items()
             })
+
+    if args.training_size is not None:
+        pos = [x for x in data["train"] if x["label"] == 1][:args.training_size//2]
+        neg = [x for x in data["train"] if x["label"] == 0][:args.training_size//2]
+        data["train"] = Dataset.from_list(pos + neg)
+
+        assert len(data["train"]) == args.training_size, f"Too few training samples: {len(data['train'])} < {args.training_size}"
+
+        random.shuffle(data["train"])
+
+        print("="*60)
+        print(f"New training size: {len(data['train'])}")
+        print("="*60)
 
     return data
 

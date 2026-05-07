@@ -5,11 +5,11 @@ from src.utils import return_device
 from argparse import Namespace
 
 MODEL_DIR = {
+    "smol": "HuggingFaceTB/SmolLM-135M",
     "qwen_06b": "Qwen/Qwen3-0.6B",
     "qwen_8b": "Qwen/Qwen3-8B",
     "llama_8b": "meta-llama/Meta-Llama-3-8B-Instruct"
 }
-
 
 class Inference:
     def __init__(self, 

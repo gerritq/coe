@@ -1,41 +1,38 @@
 #!/bin/bash
-#SBATCH --job-name=ld_pca
+#SBATCH --job-name=desc_layer_pca
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=00:30:00
+#SBATCH --time=08:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
-#SBATCH --constraint=b200|h200
+#SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050,erc-hpc-comp031,erc-hpc-comp053,erc-hpc-comp040,erc-hpc-comp039,erc-hpc-comp032,erc-hpc-comp033
+#SBATCH --constraint=h200|b200|a100|l40s
 
-nvidia-smi
+set -euo pipefail
+
+# nvidia-smi
 
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-DATASETS=("multisocial_en" "multitude_en")
-MODELS=("llama_8b") # qwen_06b
-ANALYSIS="topic_sv"  # "ld", "traj", "sv", "topic_sv", "all"
-SPLIT="val"
-MODE="last_token"
-DIM=3
-PREFIX=0
-SMOKE_TEST=0
+MODEL="qwen_06b"
+SMOKE_TEST="1"
 
-for DATASET in "${DATASETS[@]}"; do
-    for MODEL in "${MODELS[@]}"; do
-        echo "------------------------------------------------"
-        echo "Running Descriptives: Dataset=$DATASET, Model=$MODEL, Split=$SPLIT, Mode=$MODE, Analysis=$ANALYSIS, Dim=$DIM"
-        echo "------------------------------------------------"
+echo "Running layer_pca with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
-        PYTHONPATH="${ROOT_DIR}"  uv run src/descriptives/desc_run.py \
-            --model "$MODEL" \
-            --data "$DATASET" \
-            --split "$SPLIT" \
-            --mode "$MODE" \
-            --dim "$DIM" \
-            --prefix "$PREFIX" \
-            --analysis "$ANALYSIS" \
-            --smoke_test "$SMOKE_TEST"
-    done
-done
+# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/layer_pca.py \
+#   --model "${MODEL}" \
+#   --smoke_test "${SMOKE_TEST}"
+
+
+# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/map.py \
+# --model "${MODEL}" \
+# --smoke_test "${SMOKE_TEST}"
+
+
+
+PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/l1_probe.py \
+--model "${MODEL}" \
+--smoke_test "${SMOKE_TEST}"
+

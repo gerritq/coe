@@ -12,9 +12,9 @@ DETECT_RL_DOMAINS_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "detectrl" , "task_2
 DETECT_RL_ATTACKS_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "detectrl" , "task_2_attacks")
 MULTISOCIAL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "multisocial")
 TSM_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "tsm")
-EDITLENS_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "editlens")
+M4_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "m4_multi")
 
-os.makedirs("data/raw/atp", exist_ok=True)
+os.makedirs("data/raw/apt", exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
 
 TRAINING_N = 1500
@@ -58,7 +58,140 @@ def check_for_duplicates(data: dict[str, list[dict]]) -> None:
     print(f"Found {count} duplicates across splits")
 
 
-def process_atp():
+def process_d_M4():
+    """This is M4 for descriptives, 
+    """
+    n_per_label = 1000 // 2 
+
+    # load data
+    file_path = os.path.join(M4_RAW_DATA_DIR, f"SubtaskB.jsonl")
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = [json.loads(line) for line in f]
+    # check generators
+    # all_generators = set(x["model"] for x in data)
+    # print(all_generators)
+
+    # check domains
+    all_domains = set(x["source"] for x in data)
+    print(all_domains)
+
+    generators = ["cohere", "gpt4", "bloomz"]
+    domains = ["wikipedia", "arxiv", "reddit"]
+    languages = ["en", "de", "zh"]
+
+    fix_generator = "gpt4"
+    fix_domain = "wikipedia"
+
+    # GENERATOR SPLIT
+    generator_data = []
+    for idx, generator in enumerate(generators, start=1):
+        subset = [x for x in data if x["model"] == generator and x["source"] == fix_domain and x["text"].strip()]
+
+        pos = [{"text": x["text"], "label": idx, "source": x["source"], "model": x["model"]} for x in subset if x["model"] == generator]
+        generator_data.extend(pos[:n_per_label])
+
+
+    neg = [{"text": x["text"], "label": 0, "source": fix_domain, "model": "human"} for x in data if x["model"] == "human" and x["source"] == fix_domain and x["text"].strip()]
+    generator_data.extend(neg[:n_per_label])
+
+    random.shuffle(generator_data)
+    
+    output_dir = os.path.join(DATA_DIR, f"d_m4_generators")
+    os.makedirs(output_dir, exist_ok=True)
+    with open(os.path.join(output_dir, f"data.jsonl"), "w", encoding="utf-8") as f:
+        for item in generator_data:
+            f.write(json.dumps(item) + "\n")
+
+    check_for_duplicates({"train": generator_data, "val": [], "test": []})
+
+    # DOMAIN SPLIT
+    domain_data = []
+    for domain in domains:
+        
+        pos = [{"text": x["text"], "label": 1, "source": domain, "model": fix_generator} for x in data if x["source"] == domain and x["model"] == fix_generator and x["text"].strip()]
+        neg = [{"text": x["text"], "label": 0, "source": domain, "model": "human"} for x in data if x["source"] == domain and x["model"] == "human" and x["text"].strip()]
+
+        domain_data.extend(pos[:n_per_label])
+        domain_data.extend(neg[:n_per_label])
+
+        
+    output_dir = os.path.join(DATA_DIR, f"d_m4_domains")
+    os.makedirs(output_dir, exist_ok=True)
+    with open(os.path.join(output_dir, f"data.jsonl"), "w", encoding="utf-8") as f:
+        for item in domain_data:
+            f.write(json.dumps(item) + "\n")
+
+    check_for_duplicates({"train": domain_data, "val": [], "test": []})
+
+
+
+
+
+
+
+
+
+def process_m4():
+    train_per_label = TRAINING_N // 2
+    val_per_label = VALIDATION_N // 2
+    test_per_label = TESTING_N // 2
+
+    # load data
+    file_path = os.path.join(M4_RAW_DATA_DIR, f"SubtaskB.jsonl")
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = [json.loads(line) for line in f]
+
+    # check generators
+    # all_generators = set(x["model"] for x in data)
+    # print(all_generators)
+
+    # correct dolly to 'dolly-v2-12b'
+    for item in data:
+        if item["model"] == "dolly-v2-12b":
+            item["model"] = "dolly"
+    
+    generators = ["cohere", "gpt4", 'dolly', "bloomz"]
+
+    for generator in generators:
+
+        print(f"Processing generator: {generator}")
+
+        subset = [x for x in data if x["model"] in [generator, 'human'] and x["text"].strip()]
+        pos = [{"text": x["text"], "label": 1} for x in subset if x["model"] == generator]
+        neg = [{"text": x["text"], "label": 0} for x in subset if x["model"] == "human"]
+
+        # suffle ensure mix of domains
+        random.shuffle(pos)
+        random.shuffle(neg)
+
+        train_split = []
+        val_split = []
+        test_split = []
+        
+        train_split.extend(pos[:train_per_label])
+        train_split.extend(neg[:train_per_label])
+
+        val_split.extend(pos[train_per_label:train_per_label + val_per_label])
+        val_split.extend(neg[train_per_label:train_per_label + val_per_label])
+
+        test_split.extend(pos[train_per_label + val_per_label:train_per_label + val_per_label + test_per_label])
+        test_split.extend(neg[train_per_label + val_per_label:train_per_label + val_per_label + test_per_label])
+
+        data_out = {"train": train_split, "val": val_split, "test": test_split}
+
+        output_dir = os.path.join(DATA_DIR, f"m4_{generator}")
+        os.makedirs(output_dir, exist_ok=True)
+        for split in ["train", "val", "test"]:
+            with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
+                for item in data_out[split]:
+                    f.write(json.dumps(item) + "\n")
+
+        check_for_duplicates(data_out)
+
+
+# {"text":"We consider a system of many polymers in solution that interact via an external force that is applied to each pair of polymers. We study the statistical equilibrium of this system, and find that the polymers form clusters whose sizes are given by a power law distribution. This is in contrast to the traditional picture of polymers in solution, where the thermodynamic equilibrium is described by a mean-field theory based on the solution of the mean-field Boltzmann equation. We show that this difference is due to a breakdown of the assumptions that were used to derive the mean-field theory. In particular, we show that the polymer-polymer interactions in the system considered are non-local, and are thus not described by the mean-field theory. We then derive a new theory for the statistical equilibrium in the presence of an external force, which includes a correction to the mean-field theory. The new theory predicts that the polymer clusters become less dense as the external force increases, in clear contrast to the predictions of the mean-field theory. We analyze this disagreement, and show that it is due to the fact that the mean-field theory predicts a non-monotonic dependence of the polymer-polymer interaction strength on the external force, while our theory predicts a strictly monotonic dependence. We then consider the limit of our theory as the number of polymers in the system tends to infinity, and show that it describes a model of polymer quantum mechanics in a Box, which is a system with a large number of infinitely-lived polymers that interact via a non-local potential, and are in statistical equilibrium in the presence of an external force. We analyze this model, and show that it describes a system with anomalous diffusion and ballistic transport, which is analogous to the anomalous behavior observed in recent experiments on pedestrians.","label":2,"source":"arxiv","model":"cohere","arxiv_0":"test","wikipedia_0":"train","wikihow_0":"train","reddit_0":"train","peerread_0":"train","outfox_0":"train","no_0":"train","arxiv_10":"test","wikipedia_10":"train","wikihow_10":"train","reddit_10":"train","peerread_10":"train","outfox_10":"train","no_10":"train","arxiv_30":"test","wikipedia_30":"train","wikihow_30":"train","reddit_30":"train","peerread_30":"valid","outfox_30":"train","no_30":"train","arxiv_55":"test","wikipedia_55":"train","wikihow_55":"train","reddit_55":"train","peerread_55":"train","outfox_55":"train","no_55":"test","arxiv_75":"test","wikipedia_75":"train","wikihow_75":"train","reddit_75":"train","peerread_75":"train","outfox_75":"train","no_75":"test"}
+
+def process_apt():
     
     # SAVE DATASET TO CSV
     # from datasets import load_dataset
@@ -75,7 +208,7 @@ def process_atp():
     # },
     # )
 
-    # out_dir = "data/raw/atp"
+    # out_dir = "data/raw/apt"
     # for split, ds in dataset.items():
     #     ds.to_csv(f"{out_dir}/{split}.csv", index=False)
     
@@ -85,7 +218,7 @@ def process_atp():
     data_out = {"train": [], "val": [], "test": []}
     
     # Load human data -> used only in training
-    human_df = pd.read_csv(os.path.join(RAW_DATA_DIR, "atp", "original.csv"))
+    human_df = pd.read_csv(os.path.join(RAW_DATA_DIR, "apt", "original.csv"))
     human_data = human_df.to_dict("records")
     random.shuffle(human_data)
     
@@ -93,12 +226,12 @@ def process_atp():
     data_out["train"].extend(human_data)
 
     # Load machine-generated data
-    test_df = pd.read_csv(os.path.join(RAW_DATA_DIR, "atp", "test.csv"))
+    test_df = pd.read_csv(os.path.join(RAW_DATA_DIR, "apt", "test.csv"))
     test_data = test_df.to_dict("records")
     test_data = [x for x in test_data if x["polish_type"] == "degree-based"]
 
     editing_types = set(x["polishing_degree"] for x in test_data)
-    print(f"Editing types in ATP dataset: {editing_types}")
+    print(f"Editing types in apt dataset: {editing_types}")
 
     for editing_degree in editing_types:
     
@@ -120,7 +253,7 @@ def process_atp():
     random.shuffle(data_out["train"])
     random.shuffle(data_out["test"])
 
-    output_dir = os.path.join(DATA_DIR, f"atp")
+    output_dir = os.path.join(DATA_DIR, f"apt")
     os.makedirs(output_dir, exist_ok=True)
     for split in ["train", "val", "test"]:
         with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
@@ -430,7 +563,7 @@ def cross_benchmark_datasets():
     n_val_per_subset = 125 // 2
     n_test_per_subset = 125 // 2
 
-    datasets = ["drlDomain", "multisocial", "tsm"]
+    datasets = ["drlDomain", "multisocial", "tsm", "m4"]
 
     for ds in datasets:
         
@@ -486,16 +619,16 @@ def cross_benchmark_datasets():
 def main() -> None:
 
     # DetectRL task_2 - domains
-    print("="*60)
-    print("="*60)
-    print("DETECTRL - task_2 DOMAINS...")
-    process_detectrl_domains()
+    # print("="*60)
+    # print("="*60)
+    # print("DETECTRL - task_2 DOMAINS...")
+    # process_detectrl_domains()
 
     # DetectRL task_2 - attacks
-    print("="*60)
-    print("="*60)
-    print("DETECTRL - task_2 ATTACKS...")
-    process_detectrl_attacks()
+    # print("="*60)
+    # print("="*60)
+    # print("DETECTRL - task_2 ATTACKS...")
+    # process_detectrl_attacks()
     
     # # Multisocial
     # print("Preparing Multisocial data...")
@@ -507,10 +640,10 @@ def main() -> None:
 
 
     # CROSS BENCHMARK DATASETS
-    print("="*60)
-    print("="*60)
-    print("Preparing CROSS BENCHMARK data...")
-    cross_benchmark_datasets()
+    # print("="*60)
+    # print("="*60)
+    # print("Preparing CROSS BENCHMARK data...")
+    # cross_benchmark_datasets()
 
     # EDITLENS DATASETS
     # print("="*60)
@@ -518,12 +651,24 @@ def main() -> None:
     # print("Preparing EDITLENS data...")
     # process_editlens()
 
-    # ATP DATASETS
+    # apt DATASETS
     # print("="*60)
     # print("="*60)
-    # print("Preparing ATP data...")
-    # process_atp()
+    # print("Preparing apt data...")
+    # process_apt()
 
+    # M4 - generators
+    # print("="*60)
+    # print("="*60)
+    # print("M4 - generators...")
+    # process_m4()
+
+
+    # D M4
+    print("="*60)
+    print("="*60)
+    print("D M4 - generators, domains, languages...")
+    process_d_M4()
 
 if __name__ == "__main__":
     main()

@@ -146,9 +146,12 @@ class LinearProbing:
         if self.args.mode == "meta_attn":
             # (n_layers, n_samples, n_heads) -> (n_samples, n_layers * n_heads)
             attn_features = np.transpose(x_attn_train, (1, 0, 2)).reshape(x_attn_train.shape[1], -1)
-            features = np.concatenate([hidden_pca_features_concatenated, attn_features], axis=1)
+            attn_scaler = StandardScaler()
+            attn_features_scaled = attn_scaler.fit_transform(attn_features)
+            features = np.concatenate([hidden_pca_features_concatenated, attn_features_scaled], axis=1)
         else:
             features = hidden_pca_features_concatenated
+            attn_scaler = None
 
 
         # Fit the meta probe
@@ -157,6 +160,7 @@ class LinearProbing:
 
         return {
             "scalers_by_layer": scalers_by_layer,
+            "attn_scaler": attn_scaler,
             "pca_by_layer": pca_by_layer,
             "meta_probe": meta_probe,
         }
@@ -249,8 +253,10 @@ class LinearProbing:
 
         # (n_layers, n_samples, n_heads) -> (n_samples, n_layers * n_heads)
         if self.args.mode == "meta_attn":
+            attn_scaler = train_out["attn_scaler"]
             attn_features = np.transpose(x_attn_test, (1, 0, 2)).reshape(x_attn_test.shape[1], -1)
-            features = np.concatenate([hidden_pca_features_concatenated, attn_features], axis=1)
+            attn_features_scaled = attn_scaler.transform(attn_features)
+            features = np.concatenate([hidden_pca_features_concatenated, attn_features_scaled], axis=1)
         else:
             features = hidden_pca_features_concatenated
 
@@ -426,7 +432,7 @@ class LinearProbing:
 
             
             # SAVE OUTPUT
-            filename = f"{args.mode}_{args.token_mode}_{args.dataset}_2_{target_dataset}.json"
+            filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.training_size}_{args.dataset}_2_{target_dataset}.json"
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)

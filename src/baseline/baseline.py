@@ -168,6 +168,7 @@ def main():
     parser.add_argument("--model", type=str, required=True)
     parser.add_argument("--smoke_test", type=int, required=True)
     parser.add_argument("--ood", type=int, default=0)
+    parser.add_argument("--training_size", type=int, default=None)
     args = parser.parse_args()
 
     if args.smoke_test not in (0, 1):

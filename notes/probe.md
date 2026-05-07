@@ -1,65 +1,43 @@
 # To do
-- DONE add paraphrase data
-- DONE Tasks of tsm in English
-- DONE ATP
-- DONE Cross-benchmark, by merging ds (maybe random, balanced 500 is fine)
+- entropy scaled run results
 
-- DONE remove weighted projections
-- Add M4 for generators
-    - Generator version + CB version
-- Run CB with M4 for probing and roberta  
+1. Run CB with M4 for probing and roberta   
 - Run APT with M4
-- ID and OOD tables
 
-- Create layer figures with nice point aliases
-- u-map for m4 + linear classifier
+2. Update ID table and OOD figure
+- rename detectrl
+- run the ATP with meta; add results
 
-GOING
-- run tsm and detectrl attacks
-- run new data + run cross benchmark
-- run with score for atp
-
-
-
-- Check revise and enc errors of inf. values; run better encoder! del files
-- Do the correlation study
-- Create layer plots for LP
-
-
-- entropy norm?
-- read: Context Matters: Analyzing the Generalizability of Linear Probing and Steering Across Diverse Scenarios
+3. Other runs
+- Run APT with M4
 
 ## Today 
-1. Add missing detectors
-- DONE GEScroe
-- DONE BiScope (likely needs spped up with batch inference)
-- DONE ReviseDetect
 
-2. Add a second dataset
-- Beemo? EditLens? RAID?
-- DONE Run ID performance with current baselines (exclude encoder)
-
-3.  Code the OOD setupt where one vs all
+1.  Code the OOD setupt where one vs all
     - Select Roberta + 3 other trained methods for this vs ours
-    - Or do we do leave one out val?
+    - Need to check bert results, too good overfitting?
 
-4. Run our first LP baseline
+2. Run our first LP baseline
     - DONE Add the attention features to the meta probe
-    - Create plots for ID and OOD performance by layer. 
-    - OOD can be more interesting as there is more variation.
-    - Layers should be one analysis for sure.
+    - Add summaries like mean etc.
+    - Begin ablations
 
 5. Universality of probing vectors
     - Take a dataset with varying domains, languages, and generators.
     - Run full OOD 
     - Obtain the probing vectors across those settings and show their similarity in a heatmap
 
+6. Descriptives
+- Check the descriptives code and run
+- Add human subset per domain in the t-sne plot
+- Add the pca per layer line plot
 
 ## Has to be done
 
 - Supervised detectors
-    - Editlens
+    - Editlens data and hf model
     - DNA GPT
+    - Shared task detector
 
 - Generator ds using M4!!! In appendeix, we use it for CB
 
@@ -73,6 +51,9 @@ GOING
     - Repreguard metrics
     - Try to run fluoscope with the old model
     - MLModel perform crap
+
+- entropy norm?
+- read: Context Matters: Analyzing the Generalizability of Linear Probing and Steering Across Diverse Scenarios
 
 
 ---
@@ -244,6 +225,8 @@ LHR: https://learnmechinterp.com/topics/linear-representation-hypothesis/
 
 Probing: https://learnmechinterp.com/topics/truthfulness-probing/#truth-directions-transfer-across-topics
 
+Probing: https://www.anthropic.com/research/probes-catch-sleeper-agents
+
 ## Lower dimensions
 
 [HF](https://huggingface.co/blog/TensorSlay/activation-steering-with-mean-response-probes)
@@ -253,3 +236,4 @@ Probing: https://learnmechinterp.com/topics/truthfulness-probing/#truth-directio
 [Famous mediation paper](https://www.lesswrong.com/posts/jGuXSZgv6qfdhMCuJ/refusal-in-llms-is-mediated-by-a-single-direction?utm_source=chatgpt.com)
 
 To better understand the representations of MGT and HWT, we perform PCA decomposition
+
