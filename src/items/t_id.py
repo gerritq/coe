@@ -14,20 +14,23 @@ DATASET_GROUPS = {
         "detectrl_yelp_review",
         "detectrl_xsum",
     ],
+    "drlAttack": [
+        "drlAttack_multi_llm_mixing",
+        "drlAttack_paraphrase_attacks_llm",
+        "drlAttack_perturbation_attacks_llm",
+        "drlAttack_prompt_attacks_llm",
+    ],
     "multisocial": [
         "multisocial_de",
         "multisocial_en",
-        "multisocial_pt",
         "multisocial_ru",
         "multisocial_zh",
     ],
     "tsm": [
-        "tsm_paras_en",
-        "tsm_paras_pt",
-        "tsm_paras_vi",
-        "tsm_sums_en",
-        "tsm_sums_pt",
-        "tsm_sums_vi",
+        "tsm_extend",
+        "tsm_first",
+        "tsm_sums",
+        "tsm_tst",
     ],
 }
 
@@ -36,17 +39,18 @@ DATASET_LABELS = {
     "detectrl_writing_prompt": r"\textbf{WritingPrompts}",
     "detectrl_yelp_review": r"\textbf{Yelp}",
     "detectrl_xsum": r"\textbf{XSum}",
+    "drlAttack_multi_llm_mixing": r"\textbf{Mixing}",
+    "drlAttack_paraphrase_attacks_llm": r"\textbf{Paraphrase}",
+    "drlAttack_perturbation_attacks_llm": r"\textbf{Perturbation}",
+    "drlAttack_prompt_attacks_llm": r"\textbf{Prompt}",
     "multisocial_de": r"\textbf{de}",
     "multisocial_en": r"\textbf{en}",
-    "multisocial_pt": r"\textbf{pt}",
     "multisocial_ru": r"\textbf{ru}",
     "multisocial_zh": r"\textbf{zh}",
-    "tsm_paras_en": r"\textbf{P-en}",
-    "tsm_paras_pt": r"\textbf{P-pt}",
-    "tsm_paras_vi": r"\textbf{P-vi}",
-    "tsm_sums_en": r"\textbf{S-en}",
-    "tsm_sums_pt": r"\textbf{S-pt}",
-    "tsm_sums_vi": r"\textbf{S-vi}",
+    "tsm_extend": r"\textbf{Extend}",
+    "tsm_first": r"\textbf{First}",
+    "tsm_sums": r"\textbf{Sums}",
+    "tsm_tst": r"\textbf{TST}",
 }
 
 MODEL_LABELS = {
@@ -109,7 +113,7 @@ def _probe_auroc(test_metrics: dict) -> float | None:
 
 def _all_datasets() -> list[str]:
     datasets = []
-    for group in ["detectrl", "multisocial", "tsm"]:
+    for group in ["detectrl", "drlAttack", "multisocial", "tsm"]:
         datasets.extend(DATASET_GROUPS[group])
     return datasets
 
@@ -146,7 +150,11 @@ def collect_probes() -> dict[str, dict[str, float]]:
             obj = json.load(f)
         args = obj.get("args", {})
         ds = args.get("dataset")
+        target_ds = args.get("target_dataset")
         mode = args.get("mode")
+        # ID condition: train/source dataset must equal test/target dataset.
+        if ds != target_ds:
+            continue
         if ds not in datasets or mode is None:
             continue
         mode_latex = mode.replace("_", r"\_")
@@ -167,12 +175,15 @@ def render_table(
     n_data_cols = len(datasets)
 
     detectrl_n = len(DATASET_GROUPS["detectrl"])
+    drlattack_n = len(DATASET_GROUPS["drlAttack"])
     multisocial_n = len(DATASET_GROUPS["multisocial"])
     tsm_n = len(DATASET_GROUPS["tsm"])
 
     start_detectrl = 2
     end_detectrl = start_detectrl + detectrl_n - 1
-    start_multisocial = end_detectrl + 1
+    start_drlattack = end_detectrl + 1
+    end_drlattack = start_drlattack + drlattack_n - 1
+    start_multisocial = end_drlattack + 1
     end_multisocial = start_multisocial + multisocial_n - 1
     start_tsm = end_multisocial + 1
     end_tsm = start_tsm + tsm_n - 1
@@ -180,11 +191,12 @@ def render_table(
     lines = [
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
-        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM-Bench~\\citep{{quaremba2026tsm}}}}}} \\\\".format(
-            detectrl_n, multisocial_n, tsm_n
+        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{DRL-Attack~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM-Bench~\\citep{{quaremba2026tsm}}}}}} \\\\".format(
+            detectrl_n, drlattack_n, multisocial_n, tsm_n
         ),
-        "\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}".format(
+        "\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}".format(
             start_detectrl, end_detectrl,
+            start_drlattack, end_drlattack,
             start_multisocial, end_multisocial,
             start_tsm, end_tsm,
         ),
@@ -216,7 +228,8 @@ def render_table(
     lines.append("\\midrule")
     ordered_probe_rows = []
     for mode in PROBE_MODE_ORDER:
-        key = f"LP$_{{\\mathrm{{{mode.replace('_', r'\\_')}}}}}$"
+        mode_latex = mode.replace("_", r"\_")
+        key = f"LP$_{{\\mathrm{{{mode_latex}}}}}$"
         if key in probe_rows:
             ordered_probe_rows.append(key)
     for model in probe_rows:
