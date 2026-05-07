@@ -1,0 +1,23 @@
+{
+  "args": {
+    "dataset": "m4_dolly",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": true,
+    "training_size": null,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "m4_dolly",
+    "datetime": "2026-05-07 21:02:38"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.973552,
+    "accuracy": 0.918,
+    "f1": 0.9188118811881189,
+    "tpr_at_fpr_0_05": 0.824,
+    "optimal_threshold_f1": 0.958958958958959,
+    "optimal_threshold_acc": 0.958958958958959,
+    "aupr": 0.9695624569555005
+  }
+}

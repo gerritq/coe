@@ -1,0 +1,23 @@
+{
+  "args": {
+    "dataset": "tsm_extend",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": true,
+    "training_size": null,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "tsm_first",
+    "datetime": "2026-05-07 18:28:56"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.80176,
+    "accuracy": 0.744,
+    "f1": 0.7319422150882825,
+    "tpr_at_fpr_0_05": 0.288,
+    "optimal_threshold_f1": 0.4144144144144144,
+    "optimal_threshold_acc": 0.4984984984984985,
+    "aupr": 0.803426963780628
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "args": {
+    "dataset": "drlDomain_writing_prompt",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": true,
+    "training_size": null,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "drlDomain_xsum",
+    "datetime": "2026-05-07 21:04:33"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.7925280000000001,
+    "accuracy": 0.502,
+    "f1": 0.6675567423230975,
+    "tpr_at_fpr_0_05": 0.432,
+    "optimal_threshold_f1": 0.5295295295295295,
+    "optimal_threshold_acc": 0.5295295295295295,
+    "aupr": 0.8291321804138796
+  }
+}

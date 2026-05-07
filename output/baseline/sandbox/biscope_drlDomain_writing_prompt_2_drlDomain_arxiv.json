@@ -1,0 +1,27 @@
+{
+  "args": {
+    "dataset": "drlDomain_writing_prompt",
+    "model": "biscope",
+    "smoke_test": false,
+    "ood": true,
+    "training_size": null,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "summary_model": "meta-llama/Meta-Llama-3-8B-instruct",
+    "detect_model": "meta-llama/Meta-Llama-3-8B-instruct",
+    "sample_clip": 2000,
+    "seed": 42,
+    "target_dataset": "drlDomain_arxiv",
+    "datetime": "2026-05-07 18:41:31"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.737888,
+    "accuracy": 0.53,
+    "f1": 0.6508172362555721,
+    "tpr_at_fpr_0_05": 0.396,
+    "optimal_threshold_f1": 0.5,
+    "optimal_threshold_acc": 0.5,
+    "aupr": 0.7899313874514199
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "args": {
+    "dataset": "multisocial_de",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": true,
+    "training_size": null,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "multisocial_zh",
+    "datetime": "2026-05-07 18:25:41"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.644592,
+    "accuracy": 0.504,
+    "f1": 0.015873015873015872,
+    "tpr_at_fpr_0_05": 0.12,
+    "optimal_threshold_f1": 0.5065065065065065,
+    "optimal_threshold_acc": 0.5065065065065065,
+    "aupr": 0.6143852192707202
+  }
+}

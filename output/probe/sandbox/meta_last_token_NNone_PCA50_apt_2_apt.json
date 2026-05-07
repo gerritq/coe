@@ -1,0 +1,34 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "apt",
+        "token_mode": "last_token",
+        "ood": false,
+        "smoke_test": false,
+        "components": 50,
+        "mode": "meta",
+        "training_size": null,
+        "model_name": "llama_8b",
+        "target_dataset": "apt",
+        "datetime": "2026-05-07 17:43:07"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 800,
+            "auroc": NaN,
+            "accuracy": 0.84375,
+            "f1": 0.9152542372881356,
+            "tpr_at_fpr_0_05": 0.0,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 1.0
+        }
+    },
+    "apt_correlations": {
+        "meta_scores": {
+            "sem_similarity": -0.26470588099561443,
+            "levenshtein_distance": 0.405301283446957,
+            "jaccard_distance": 0.41100804612838354
+        }
+    }
+}
