@@ -1,0 +1,29 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "drlAttack_prompt_attacks_llm",
+        "token_mode": "last_token",
+        "ood": true,
+        "smoke_test": false,
+        "components": 50,
+        "mode": "meta_no_pca",
+        "training_size": null,
+        "folder": "sandbox",
+        "model_name": "llama_8b",
+        "target_dataset": "drlAttack_perturbation_attacks_llm",
+        "datetime": "2026-05-08 16:02:38"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.999216,
+            "accuracy": 0.982,
+            "f1": 0.9817444219066938,
+            "tpr_at_fpr_0_05": 1.0,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.9991883004325415
+        }
+    },
+    "sim_correlations": null
+}

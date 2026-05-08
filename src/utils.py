@@ -54,7 +54,7 @@ def load_dataset(args: Namespace):
 
         assert len(data["train"]) == args.training_size, f"Too few training samples: {len(data['train'])} < {args.training_size}"
 
-        random.shuffle(data["train"])
+        data["train"] = data["train"].shuffle(seed=42)
 
         print("="*60)
         print(f"New training size: {len(data['train'])}")

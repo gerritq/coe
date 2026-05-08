@@ -1,0 +1,29 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "drlDomain_yelp_review",
+        "token_mode": "last_token",
+        "ood": true,
+        "smoke_test": false,
+        "components": 50,
+        "mode": "meta_attn",
+        "training_size": null,
+        "folder": "sandbox",
+        "model_name": "llama_8b",
+        "target_dataset": "drlDomain_writing_prompt",
+        "datetime": "2026-05-08 16:57:00"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.993424,
+            "accuracy": 0.826,
+            "f1": 0.8517887563884157,
+            "tpr_at_fpr_0_05": 0.968,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.993528874838858
+        }
+    },
+    "sim_correlations": null
+}

@@ -1,0 +1,35 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "beemo_machine_edits",
+        "token_mode": "last_token",
+        "ood": false,
+        "smoke_test": false,
+        "components": 50,
+        "mode": "meta",
+        "training_size": null,
+        "folder": "sandbox",
+        "model_name": "llama_8b",
+        "target_dataset": "beemo_machine_edits",
+        "datetime": "2026-05-08 15:53:41"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": NaN,
+            "accuracy": 0.604,
+            "f1": 0.7531172069825436,
+            "tpr_at_fpr_0_05": 0.0,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 1.0
+        }
+    },
+    "sim_correlations": {
+        "meta_scores": {
+            "sem_similarity": -0.07270269528346257,
+            "levenshtein_distance": 0.11635279180431018,
+            "jaccard_distance": 0.09219838802037501
+        }
+    }
+}

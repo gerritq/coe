@@ -22,9 +22,9 @@ DATASETS=("drlDomain_arxiv" "tsm_first" "drlAttack_multi_llm_mixing" "multisocia
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 TOKEN_MODE="last_token"
-MODES=("meta_no_pca" "default") # default | pca | meta | meta_attn
+MODES=("default") # default | pca | meta | meta_attn
 COMPONENTS_LIST=(50)
-TRAINING_SIZES=(5 10 50 100 250 500 none)
+TRAINING_SIZES=(50 100 250 500)
 
 FOLDER="ablation"
 SMOKE_TEST=0

@@ -2,7 +2,7 @@
 #SBATCH --job-name=b_editlens_all
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=06:00:00
+#SBATCH --time=05:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
