@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_pca
+#SBATCH --job-name=probe_edits
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=02:00:00
+#SBATCH --time=03:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -26,10 +26,10 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 # DATASETS=("apt" "apt_m4_train")
 
-DATASETS=("drlDomain_xsum" "drlDomain_yelp_review" "m4_bloomz")
+DATASETS=("apt" "apt_m4_train" "beemo_human_edits", "beemo_machine_edits")
 
 TOKEN_MODE="last_token"
-MODES=("pca") # "default" "meta" "meta_attn" "pca"
+MODES=("default" "meta" "meta_attn" "pca") # "default" "meta" "meta_attn" "pca"
 OOD=0
 COMPONENTS=50
 SMOKE_TEST=0

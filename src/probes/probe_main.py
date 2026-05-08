@@ -440,7 +440,7 @@ class LinearProbing:
                 test_metrics = self._evaluate_meta_probe(train_out=train_out, test=test)
 
 
-            if target_dataset in ["apt", "apt_m4_train", "beemo_m4_train"]:
+            if target_dataset in ["apt", "apt_m4_train", "beemo_human_edits", "beemo_machine_edits"]:
                 apt_correlations = self.correlate_apt(test_data=test, 
                                                         scores=test_metrics['scores'])
             else:
@@ -459,7 +459,7 @@ class LinearProbing:
 
             out = {'args': out_args, 
                     'test_metrics': test_metrics,
-                    'apt_correlations': apt_correlations}
+                    'sim_correlations': apt_correlations}
             
             
             with open(os.path.join(self.out_dir, filename), "w") as f:

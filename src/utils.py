@@ -179,7 +179,7 @@ def return_device():
 class SimCalculator:
     def __init__(self, model_name="allenai/scibert_scivocab_uncased"):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModel.from_pretrained(model_name)
+        self.model = AutoModel.from_pretrained(model_name, use_safetensors=True)
         self.device = return_device()
         self.model.to(self.device)
 

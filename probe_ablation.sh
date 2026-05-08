@@ -2,7 +2,7 @@
 #SBATCH --job-name=probe_ablation
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=03:00:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -20,8 +20,8 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 TOKEN_MODE="last_token"
-MODES=("pca") # default | pca | meta | meta_attn
-COMPONENTS_LIST=(5 10 20 30 50 75 100)
+MODES=("meta") # default | pca | meta | meta_attn
+COMPONENTS_LIST=(10 20 30 50 75 100)
 
 FOLDER="ablation"
 SMOKE_TEST=0
