@@ -1,8 +1,10 @@
 import json
+import ast
 import os
 import random
 import re
 import pandas as pd
+from utils import SimCalculator
 
 BASE_DIR = os.getenv("BASE_COE")
 RAW_DATA_DIR = os.path.join(BASE_DIR, "data", "raw")
@@ -13,9 +15,12 @@ DETECT_RL_ATTACKS_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "detectrl" , "task_2
 MULTISOCIAL_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "multisocial")
 TSM_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "tsm")
 M4_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "m4_multi")
+BEEMO_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "beemo")
+APT_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "apt")
 
-os.makedirs("data/raw/apt", exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(BEEMO_RAW_DATA_DIR, exist_ok=True)
+os.makedirs(APT_RAW_DATA_DIR, exist_ok=True)
 
 TRAINING_N = 1500
 VALIDATION_N = 500
@@ -61,6 +66,94 @@ def check_for_duplicates(data: dict[str, list[dict]]) -> None:
             else:
                 seen.add(text)
     print(f"Found {count} duplicates across splits")
+
+
+def process_beemo():
+    # SAVE DATASET TO CSV
+    # from datasets import load_dataset
+    # ds = load_dataset("toloka/beemo")
+
+    # os.makedirs(BEEMO_RAW_DATA_DIR, exist_ok=True)
+    # for split, subset in ds.items():
+    #     subset.to_csv(f"{BEEMO_RAW_DATA_DIR}/{split}.csv", index=False)
+
+    similarity_calculator = SimCalculator()
+    
+    training_size = 500 # 500 per labels
+    test_size = 500 # 500 machine in total
+    
+    data = pd.read_csv(os.path.join(BEEMO_RAW_DATA_DIR, "train.csv"))
+    data = data.to_dict("records")
+
+    random.shuffle(data)
+    
+    # TRAIN SET
+    # Create the training dataset from non-edited text
+    train = []
+    for i in range(training_size):
+        human = data[i]['human_output']
+        machine = data[i]['model_output']
+
+        train.append({"text": human, "label": 0})
+        train.append({"text": machine, "label": 1})
+
+
+    random.shuffle(train)
+
+    remaining = data[training_size:]
+
+    # TEST SET - Human edits
+    test_human_edits = []
+    for i in range(test_size):
+        human = remaining[i]['human_output'].strip()
+        machine = remaining[i]['human_edits'].strip() # machine edited by human
+
+        sim = similarity_calculator.cal_similarity(human, machine)
+
+        test_human_edits.append({"text": machine, 
+                                 "label": 1,
+                                 "sem_similarity": sim['sem_similarity'],
+                                 "levenshtein_distance": sim['levenshtein_distance'],
+                                 "jaccard_distance": sim['jaccard_distance']})
+        
+    # we do not need train
+    data_human_edits = {"train": train, "val": train, "test": test_human_edits}
+
+    output_dir = os.path.join(DATA_DIR, f"beemo_human_edits")
+    os.makedirs(output_dir, exist_ok=True)
+    for split in ["train", "val", "test"]:
+        with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
+            for item in data_human_edits[split]:
+                f.write(json.dumps(item) + "\n")
+
+    check_for_duplicates(data_human_edits)
+
+    # TEST SET - Machine edits
+    test_machine_edits = []
+    for i in range(test_size):
+        human = remaining[i]['human_output'].strip()
+        machine = ast.literal_eval(remaining[i]['gpt-4o_edits'])
+        machine = machine[0]["P1"].strip()
+        
+        sim = similarity_calculator.cal_similarity(human, machine)
+
+        test_machine_edits.append({"text": machine, 
+                                   "label": 1,
+                                   "sem_similarity": sim['sem_similarity'],
+                                   "levenshtein_distance": sim['levenshtein_distance'],
+                                   "jaccard_distance": sim['jaccard_distance']})
+
+    # we do not need train
+    data_machine_edits = {"train": train, "val": train, "test": test_machine_edits}
+
+    output_dir = os.path.join(DATA_DIR, f"beemo_machine_edits")
+    os.makedirs(output_dir, exist_ok=True)
+    for split in ["train", "val", "test"]:
+        with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
+            for item in data_machine_edits[split]:
+                f.write(json.dumps(item) + "\n")
+
+    check_for_duplicates(data_machine_edits)
 
 
 def process_d_M4():
@@ -209,9 +302,8 @@ def process_apt():
     # },
     # )
 
-    # out_dir = "data/raw/apt"
     # for split, ds in dataset.items():
-    #     ds.to_csv(f"{out_dir}/{split}.csv", index=False)
+    #     ds.to_csv(f"{APT_RAW_DATA_DIR}/{split}.csv", index=False)
     
     n_machine = 200
 
@@ -704,10 +796,10 @@ def main() -> None:
     # process_editlens()
 
     # apt DATASETS
-    print("="*60)
-    print("="*60)
-    print("Preparing apt data...")
-    process_apt()
+    # print("="*60)
+    # print("="*60)
+    # print("Preparing apt data...")
+    # process_apt()
 
     # apt DATASETS with M4 train
     # print("="*60)
@@ -726,6 +818,12 @@ def main() -> None:
     # print("="*60)
     # print("D M4 - generators, domains, languages...")
     # process_d_M4()
+
+    # beemo DATASETS
+    print("="*60)
+    print("="*60)
+    print("Preparing beemo data...")
+    process_beemo()
 
 if __name__ == "__main__":
     main()

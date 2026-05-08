@@ -13,8 +13,8 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-MODEL="llama_8b" # llama_8b
-SMOKE_TEST="0"
+MODEL="qwen_06b" # llama_8b qwen_06b
+SMOKE_TEST="1"
 
 echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
@@ -22,17 +22,19 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 #   --model "${MODEL}" \
 #   --smoke_test "${SMOKE_TEST}"
 
-PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/map.py \
---model "${MODEL}" \
---smoke_test "${SMOKE_TEST}"
-
-
+# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/map.py \
+# --model "${MODEL}" \
+# --smoke_test "${SMOKE_TEST}"
 
 # PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/l1_probe.py \
 # --model "${MODEL}" \
 # --smoke_test "${SMOKE_TEST}"
 
-PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/pca_ratio.py \
+# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/pca_ratio.py \
+# --model "${MODEL}" \
+# --smoke_test "${SMOKE_TEST}"
+
+PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/lp.py \
 --model "${MODEL}" \
 --smoke_test "${SMOKE_TEST}"
 

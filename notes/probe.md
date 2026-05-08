@@ -1,23 +1,40 @@
 # To do
 
+
+1. **Edit distance**
+- Next: Run Beemo data set creation on the HPC
+    - Add a histogram of edit strength using the metrics (either main or appendix)
+- Table of 
+- Check M4 results but it does not seem to work
+
+2. **Ablations**
+- Create a table for the pca results
+- Further ablations
+    - Layer
+        - default/pca: linear probe vs non linear MLP (strong evidence for linearity if the same)
+        - default vs pca across values
+        - default/pca: mean vs last token pooling
+        - default/pca: mean aggregation vs weighted aggregation (try F1)
+    - Meta
+        - pca: Attention vs no attention
+        - No attention: default vs pca values
+
+3. **Efficiency**
+- Use ablation scrupt to run meta and layer for different sample sizes
+- Consider which sets and whether to include a comparison
+
+4. **OOD**
+- Consider which baselines to show + whether to show meta probe g
+- Beautify plot
+
+
+
+99. Misc
 - fix repre scores
 - fix PCA None
-- run ablations
-- create list
-
-Ablation
-- PCA components: 
-    - compare default vs various pca components
-    - compare meta (no pca!) vs various pca components
-    - compare meta (pca) vs meta_pca with attn features
+- can extend beemo to llama, but for now we do gpt4
 
 
-- add beemo with apt measures!
-    - leave val empty
-    - add beemo flag
-- atp where train ins m4 easy
-    - same for beemo
-- compile tables and run what is missing
 
 
 - entropy scaled run results
@@ -57,6 +74,9 @@ Ablation
 - Add the pca per layer line plot
 
 ## Has to be done
+
+- Do we need to scale entropy? Because with longer sequences we will have higher entropy
+    - I think yes
 
 - Add cool symbols top the table for reddit etc.
 
