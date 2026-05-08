@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=b_2_domain_tsm_multi
+#SBATCH --job-name=b_1_id_m4
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
 #SBATCH --time=08:00:00
@@ -7,6 +7,8 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
 #SBATCH --constraint=h200|b200
+#SBATCH --exclude=erc-hpc-vm053 
+
 
 set -euo pipefail
 
@@ -21,33 +23,29 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
-# DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
+DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
-# Missing ID
-# DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
-
-# Missing OOD
-DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
+# Missing repre for ood
+# DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 
 SMOKE_TEST=0
 OOD=0
 # "raidar"
 MODELS=(
-        # "revise"
-        # "gescore"
-        # "biscope"
-        # "raidar"
-        # "text_fluoroscopy"
-        # "radar"
-        # "openai_roberta"
-        "repreguard"
-        "encoder" 
-        "llr" 
-        "fastdetectgpt" 
-        "rank" 
-        "entropy"
-        "likelihood"
-        "binoculars" 
+        "revise"
+        "gescore"
+        "biscope"
+        "text_fluoroscopy"
+        "radar"
+        "openai_roberta"
+        # "repreguard"
+        # "encoder" 
+        # "llr" 
+        # "fastdetectgpt" 
+        # "rank" 
+        # "entropy"
+        # "likelihood"
+        # "binoculars" 
         )        
 
 

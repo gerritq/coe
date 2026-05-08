@@ -1,0 +1,79 @@
+{
+  "args": {
+    "dataset": "drlAttack_paraphrase_attacks_llm",
+    "model": "repreguard",
+    "smoke_test": false,
+    "ood": true,
+    "training_size": null,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "ntrain": 0,
+    "rep_token": 0.1,
+    "batch_size": 8,
+    "bootstrap_iter": -1,
+    "model_name_or_path": "meta-llama/Meta-Llama-3-8B",
+    "random_seed": 42,
+    "train_data_path": "skip",
+    "target_dataset": "drlAttack_multi_llm_mixing",
+    "datetime": "2026-05-08 00:16:04"
+  },
+  "train_results": {
+    "train_result": {
+      "roc_auc": 93.56,
+      "optimal_threshold": 1.6357968094878748,
+      "conf_matrix": [
+        [
+          191,
+          59
+        ],
+        [
+          18,
+          232
+        ]
+      ],
+      "precision": 79.73,
+      "recall": 92.8,
+      "f1": 85.77,
+      "accuracy": 84.6,
+      "tpr_at_fpr_0_01": 48.0
+    },
+    "test_result": {
+      "auroc": 83.0,
+      "optimal_threshold": 1.6357968094878748,
+      "conf_matrix": [
+        [
+          184,
+          66
+        ],
+        [
+          19,
+          231
+        ]
+      ],
+      "precision": 77.78,
+      "recall": 92.4,
+      "f1": 84.46,
+      "accuracy": 83.0,
+      "tpr_at_fpr_0_01": 51.6
+    }
+  },
+  "metrics": {
+    "auroc": 83.0,
+    "optimal_threshold": 1.6357968094878748,
+    "conf_matrix": [
+      [
+        184,
+        66
+      ],
+      [
+        19,
+        231
+      ]
+    ],
+    "precision": 77.78,
+    "recall": 92.4,
+    "f1": 84.46,
+    "accuracy": 83.0,
+    "tpr_at_fpr_0_01": 51.6
+  }
+}

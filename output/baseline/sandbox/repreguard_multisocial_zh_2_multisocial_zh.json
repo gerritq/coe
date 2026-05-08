@@ -3,7 +3,7 @@
     "dataset": "multisocial_zh",
     "model": "repreguard",
     "smoke_test": false,
-    "ood": true,
+    "ood": false,
     "training_size": null,
     "base_model_1": "meta-llama/Meta-Llama-3-8B",
     "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
@@ -15,12 +15,12 @@
     "random_seed": 42,
     "train_data_path": "skip",
     "target_dataset": "multisocial_zh",
-    "datetime": "2026-05-07 18:11:38"
+    "datetime": "2026-05-07 23:40:11"
   },
   "train_results": {
     "train_result": {
-      "roc_auc": 86.38,
-      "optimal_threshold": 0.37417601095785924,
+      "roc_auc": 86.39,
+      "optimal_threshold": 0.3754363681970627,
       "conf_matrix": [
         [
           232,
@@ -39,7 +39,7 @@
     },
     "test_result": {
       "auroc": 78.4,
-      "optimal_threshold": 0.37417601095785924,
+      "optimal_threshold": 0.3754363681970627,
       "conf_matrix": [
         [
           195,
@@ -59,7 +59,7 @@
   },
   "metrics": {
     "auroc": 78.4,
-    "optimal_threshold": 0.37417601095785924,
+    "optimal_threshold": 0.3754363681970627,
     "conf_matrix": [
       [
         195,
