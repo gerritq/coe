@@ -36,9 +36,15 @@ DATASET_GROUPS = {
         "tsm_sums",
         "tsm_tst",
     ],
+    "m4": [
+        "m4_bloomz",
+        "m4_cohere",
+        "m4_dolly",
+        "m4_gpt4",
+    ],
 }
 
-FAMILY_ORDER = ["drlDomain", "drlAttack", "multisocial", "tsm"]
+FAMILY_ORDER = ["drlDomain", "drlAttack", "multisocial", "tsm", "m4"]
 
 METHOD_SPECS = {
     "probe_default": {"kind": "probe", "mode": "default", "label": "Probe (default)"},
@@ -66,6 +72,8 @@ def _short_label(dataset_name: str) -> str:
         return dataset_name.replace("multisocial_", "")
     if dataset_name.startswith("tsm_"):
         return dataset_name.replace("tsm_", "")
+    if dataset_name.startswith("m4_"):
+        return dataset_name.replace("m4_", "")
     return dataset_name
 
 
@@ -142,6 +150,9 @@ def _collect_method_entries(method_key: str) -> dict[str, dict[str, float]]:
             auroc = obj.get("metrics", {}).get("auroc")
             if auroc is None:
                 continue
+            # RepreGuard reports AUROC on a 0-100 scale in this codebase.
+            if spec["model"] == "repreguard" and auroc > 1.0:
+                auroc = auroc / 100.0
             out[fam_train][train_ds][test_ds] = float(auroc)
 
     return out
@@ -194,6 +205,7 @@ def main() -> None:
     entries_biscope = _collect_method_entries("biscope")
     entries_repre = _collect_method_entries("repreguard")
     entries_default = _collect_method_entries("probe_default")
+    entries_encoder = _collect_method_entries("encoder")
 
     panel_methods = [
         ("Fluoroscopy", entries_fluo),
@@ -202,14 +214,16 @@ def main() -> None:
         ("Probe (default)", entries_default),
     ]
 
-    fig, axes = plt.subplots(2, 8, figsize=(28, 8), squeeze=False, constrained_layout=True)
+    n_families = len(FAMILY_ORDER)
+    n_cols = 2 * n_families
+    fig, axes = plt.subplots(3, n_cols, figsize=(34, 12), squeeze=False, constrained_layout=True)
     cmap = plt.get_cmap("viridis").copy()
     cmap.set_bad(color="#f0f0f0")
 
     im = None
     # Row 1: fluo then biscope
     for block_idx, (title, fam_entries) in enumerate(panel_methods[:2]):
-        col_offset = block_idx * 4
+        col_offset = block_idx * n_families
         for i, family in enumerate(FAMILY_ORDER):
             ax = axes[0, col_offset + i]
             im = _plot_family_matrix(ax, family, fam_entries.get(family, {}), cmap)
@@ -226,7 +240,7 @@ def main() -> None:
 
     # Row 2: repreguard then default probe
     for block_idx, (title, fam_entries) in enumerate(panel_methods[2:]):
-        col_offset = block_idx * 4
+        col_offset = block_idx * n_families
         for i, family in enumerate(FAMILY_ORDER):
             ax = axes[1, col_offset + i]
             im = _plot_family_matrix(ax, family, fam_entries.get(family, {}), cmap)
@@ -240,6 +254,23 @@ def main() -> None:
                     fontweight="bold",
                     va="bottom",
                 )
+
+    # Row 3: encoder in first block, second block left empty.
+    for i, family in enumerate(FAMILY_ORDER):
+        ax = axes[2, i]
+        im = _plot_family_matrix(ax, family, entries_encoder.get(family, {}), cmap)
+        if i == 0:
+            ax.text(
+                -0.45,
+                1.18,
+                "Encoder",
+                transform=ax.transAxes,
+                fontsize=12,
+                fontweight="bold",
+                va="bottom",
+            )
+    for j in range(n_families, n_cols):
+        axes[2, j].axis("off")
 
     if im is not None:
         cbar = fig.colorbar(im, ax=axes, location="right", shrink=0.85, pad=0.01)

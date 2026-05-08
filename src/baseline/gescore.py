@@ -68,11 +68,20 @@ class GECScore:
 
         return results
 
-    def gescore(self, item: dict) -> float:
-        text = item['text']
-        gec_text = item['gec_text']
-        rouge_score = rouge.get_scores(text, gec_text, avg=True)
-        return rouge_score['rouge-2']['f']
+    def gescore(self, item: dict) -> float | None:
+        text = (item.get("text") or "").strip()
+        gec_text = (item.get("gec_text") or "").strip()
+
+        # rouge package throws ValueError if either side is empty.
+        # Treat failed/empty generations as missing.
+        if not text or not gec_text:
+            return None
+
+        try:
+            rouge_score = rouge.get_scores(text, gec_text, avg=True)
+            return float(rouge_score["rouge-2"]["f"])
+        except ValueError:
+            return None
 
     def run(self, 
             texts: list[str],
@@ -89,6 +98,7 @@ class GECScore:
         
         for item in texts_dict:
             score = self.gescore(item)
-            scores.append(score)
+            if score is not None:
+                scores.append(score)
 
         return scores

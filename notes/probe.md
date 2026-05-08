@@ -1,4 +1,9 @@
 # To do
+
+- fix repre scores
+- create list
+
+
 - add beemo with apt measures!
     - leave val empty
     - add beemo flag
@@ -44,6 +49,8 @@
 - Add the pca per layer line plot
 
 ## Has to be done
+
+- Add cool symbols top the table for reddit etc.
 
 - Supervised detectors
     - Editlens data and hf model
