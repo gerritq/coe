@@ -131,8 +131,11 @@ class LinearProbing:
             scaler = StandardScaler()
             x_hidden_layer_train_scaled = scaler.fit_transform(x_hidden_layer_train)
             
-            layer_pca = PCA(n_components=self.args.components, random_state=42)
-            x_hidden_layer_train_scaled = layer_pca.fit_transform(x_hidden_layer_train_scaled)
+            if self.args.mode in ["meta", "meta_attn"]:
+                layer_pca = PCA(n_components=self.args.components, random_state=42)
+                x_hidden_layer_train_scaled = layer_pca.fit_transform(x_hidden_layer_train_scaled)
+            else:
+                layer_pca = None
 
             hidden_pca_features_concatenated.append(x_hidden_layer_train_scaled)
 
@@ -240,16 +243,19 @@ class LinearProbing:
 
         for layer in range(len(train_out["scalers_by_layer"])):
             scaler = train_out["scalers_by_layer"][layer]
-            pca = train_out["pca_by_layer"][layer]
             
-            # get hidden states
             x_layer_test = test["hidden_x"][layer]
             x_layer_test_scaled = scaler.transform(x_layer_test)
-            x_layer_test_scaled = pca.transform(x_layer_test_scaled)
+
+            # apply pca only for those
+            if self.args.mode in ["meta", "meta_attn"]:
+                pca = train_out["pca_by_layer"][layer]
+                x_layer_test_scaled = pca.transform(x_layer_test_scaled)
+            
             hidden_pca_features_concatenated.append(x_layer_test_scaled)
 
 
-        # Combine pca-ed hidden states and attention features
+        # Combine (pca-ed) hidden states and attention features
         hidden_pca_features_concatenated = np.concatenate(hidden_pca_features_concatenated, axis=1) 
 
         # (n_layers, n_samples, n_heads) -> (n_samples, n_layers * n_heads)
