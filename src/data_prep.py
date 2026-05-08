@@ -17,10 +17,12 @@ TSM_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "tsm")
 M4_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "m4_multi")
 BEEMO_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "beemo")
 APT_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "apt")
+EDITLENS_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "editlens")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(BEEMO_RAW_DATA_DIR, exist_ok=True)
 os.makedirs(APT_RAW_DATA_DIR, exist_ok=True)
+os.makedirs(EDITLENS_RAW_DATA_DIR, exist_ok=True)
 
 TRAINING_N = 1500
 VALIDATION_N = 500
@@ -67,6 +69,72 @@ def check_for_duplicates(data: dict[str, list[dict]]) -> None:
                 seen.add(text)
     print(f"Found {count} duplicates across splits")
 
+def process_editlens():
+    # SAVE DATASET TO CSV
+    # from datasets import load_dataset
+    # ds = load_dataset("pangram/editlens_iclr")
+
+    # os.makedirs(EDITLENS_RAW_DATA_DIR, exist_ok=True)
+    # for split, subset in ds.items():
+    #     subset.to_csv(f"{EDITLENS_RAW_DATA_DIR}/{split}.csv", index=False)
+
+    similarity_calculator = SimCalculator()
+
+    training_size = 500 # 500 per labels
+    test_size = 500 # 500 machine in total
+
+    # load data
+    data = pd.read_csv(os.path.join(EDITLENS_RAW_DATA_DIR, "train.csv"))
+    data = data.to_dict("records")
+
+    random.shuffle(data)
+    
+    # TRAIN SET
+    # Create the training dataset from non-edited text
+    train = []
+    human_train = [x for x in data if x['text_type'] == "human"]
+    machine_train = [x for x in data if x['text_type'] == "ai_generated"]
+    
+    train.extend([{"text_id": x['text_id'], "text": x['text'], "label": 0} for x in human_train[:training_size]])
+    train.extend([{"text_id": x['text_id'], "text": x['text'], "label": 1} for x in machine_train[:training_size]])
+
+    random.shuffle(train)
+
+    # TEST SET
+    # Approach try random sample
+    test = []
+    subset = [x for x in data if x['text_type'] == "ai_edited"]
+    random.shuffle(subset)
+
+    subset = subset[:test_size]
+
+    # add sim score
+    test = []
+    for item in subset:
+        human = item["source_text"].strip()
+        machine = item["text"].strip()
+
+        sim = similarity_calculator.cal_similarity(human, machine)
+
+        test.append({"text_id": item["text_id"], 
+                     "text": machine, 
+                     "label": 1,
+                     "sem_similarity": sim['sem_similarity'],
+                     "levenshtein_distance": sim['levenshtein_distance'],
+                     "jaccard_distance": sim['jaccard_distance']})
+        
+    # we do not need val
+    # we do not need train
+    data_out = {"train": train, "val": train, "test": test}
+
+    output_dir = os.path.join(DATA_DIR, f"editlens")
+    os.makedirs(output_dir, exist_ok=True)
+    for split in ["train", "val", "test"]:
+        with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
+            for item in data_out[split]:
+                f.write(json.dumps(item) + "\n")
+
+    check_for_duplicates(data_out)
 
 def process_beemo():
     # SAVE DATASET TO CSV
@@ -96,7 +164,6 @@ def process_beemo():
 
         train.append({"text": human, "label": 0})
         train.append({"text": machine, "label": 1})
-
 
     random.shuffle(train)
 
@@ -357,54 +424,6 @@ def process_apt():
                 f.write(json.dumps(item) + "\n")
 
     check_for_duplicates(data_out)
-
-
-def process_editlens():
-    train_per_label = 1000 // 2
-    val_per_label = 500 // 2
-    test_per_label = 500 // 2
-
-    # VAL
-    file_path_val = os.path.join(EDITLENS_RAW_DATA_DIR, "val.csv")
-    file_path_test = os.path.join(EDITLENS_RAW_DATA_DIR, "test.csv")
-
-    # merge two pds
-    ds_val = pd.read_csv(file_path_val)
-    ds_test = pd.read_csv(file_path_test)
-
-    df = pd.concat([ds_val, ds_test], ignore_index=True)
-    df = df[["text", "cosine_score", "soft_ngrams_score", "split", "text_type"]].copy()
-    data = df.to_dict("records")
-    
-    data_out = {"train": [], "val": [], "test": []}
-    for subset in ['val', "test"]:
-        if subset == "val":
-            n = train_per_label
-        else:
-            n = test_per_label
-        subset_data = [x for x in data if x["split"] == subset]
-        pos = [x for x in subset_data if x["text_type"] == "ai_edited" and x["text"].strip()][:n]
-        neg = [x for x in subset_data if x["text_type"] == "human_written" and x["text"].strip()][:n]
-
-        data_out[subset].extend([{"text": x["text"], "label": 1} for x in pos])
-        data_out[subset].extend([{"text": x["text"], "label": 0} for x in neg])
-
-    # shuffle splits
-    random.shuffle(data_out["val"])
-    random.shuffle(data_out["test"])
-    
-    # we do not need the val split
-    data_out["train"] = data_out["val"]
-    
-    output_dir = os.path.join(DATA_DIR, f"editlens")
-    os.makedirs(output_dir, exist_ok=True)
-    for split in ["train", "val", "test"]:
-        with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
-            for item in data_out[split]:
-                f.write(json.dumps(item) + "\n")
-
-    check_for_duplicates(data_out)
-    
 
 def process_apt_with_m4_train():
     
@@ -820,10 +839,16 @@ def main() -> None:
     # process_d_M4()
 
     # beemo DATASETS
+    # print("="*60)
+    # print("="*60)
+    # print("Preparing beemo data...")
+    # process_beemo()
+
+    # editlens DATASETS
     print("="*60)
     print("="*60)
-    print("Preparing beemo data...")
-    process_beemo()
+    print("Preparing editlens data...")
+    process_editlens()
 
 if __name__ == "__main__":
     main()

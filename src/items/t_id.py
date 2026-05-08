@@ -81,6 +81,7 @@ MODEL_LABELS = {
     "rank": "Rank",
     "repreguard": "RepreGuard",
     "text_fluoroscopy": "TextFluoroscopy",
+    "editlens": "EditLens",
     "encoder": "RoBERTa",
 }
 
@@ -101,7 +102,8 @@ SUPERVISED_MODELS = [
     "raidar",
     "radar",
     "text_fluoroscopy",
-    "encoder"
+    "encoder",
+    "editlens"
 ]
 
 PROBE_MODE_ORDER = ["default", "pca", "meta", "meta_attn"]

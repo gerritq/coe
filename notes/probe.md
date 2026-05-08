@@ -1,12 +1,8 @@
 # To do
-- run missing id; we have the latest table
-- ood
-    - probe_meta_no_pca_domain_attack all id and ood
-- run missing OOD:
-    - 33781446 run domain for all non-default => check whether there is __clear__ OOD improv
 
 1. **Edit distance**
 - Edit editlens data
+- Check beemo data
 - Create a hist of metrics for beemo, editlens, and apt
 - Create a table of all that atch
 - Check M4 results but it does not seem to work
@@ -34,8 +30,8 @@
 - Are the values actually correct?
 
 4. **OOD**
-- Consider which baselines to show + whether to show meta probe g
-- Beautify plot
+- Show 4 baselines (biscope, repre, fluo, encoder) vs layer and meta
+- Beautify plot (compact, better color, model naming)
 
 
 
@@ -44,7 +40,6 @@
 - fix repre scores
 - fix PCA None
 - can extend beemo to llama, but for now we do gpt4
-- add editlens to id table
 
 
 
