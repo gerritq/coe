@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_domain_all_but_meta_no_pca
+#SBATCH --job-name=probe_meta_no_pca_all_missing
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=04:00:00
+#SBATCH --time=05:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -22,15 +22,15 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
-# DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
 # DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
+# DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
 # DATASETS=("apt" "apt_m4_train")
 
-DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
+DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
 TOKEN_MODE="last_token"
-MODES=("default" "meta" "meta_attn" "pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
-OOD=1
+MODES=("meta_no_pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
+OOD=0
 COMPONENTS=50
 SMOKE_TEST=0
 FOLDER="sandbox"

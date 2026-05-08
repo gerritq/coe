@@ -1,7 +1,7 @@
-import torch
 from argparse import Namespace
+
+import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from peft import PeftModel, PeftConfig
 
 from src.utils import return_device
 
@@ -9,24 +9,12 @@ class MLModels:
     def __init__(self, model_name: str):
         self.model_name = model_name
         self.device = return_device()
-
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True)
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-
-        if "editlens" in self.model_name:
-            peft_config = PeftConfig.from_pretrained(self.model_name)
-            base_model_name = peft_config.base_model_name_or_path
-            
-            base_model = AutoModelForSequenceClassification.from_pretrained(base_model_name,trust_remote_code=True)
-            self.model = PeftModel.from_pretrained(base_model, self.model_name).to(self.device)
-        else:
-            attn_impl = "eager" if "radar" in self.model_name.lower() else None
-            self.model = AutoModelForSequenceClassification.from_pretrained(
-                    self.model_name,
-                    attn_implementation=attn_impl,
-                    trust_remote_code=True
-                ).to(self.device)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        attn_impl = "eager" if "radar" in self.model_name.lower() else None
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+                self.model_name,
+                attn_implementation=attn_impl,
+            ).to(self.device)
         self.model.eval()
 
     def run(
