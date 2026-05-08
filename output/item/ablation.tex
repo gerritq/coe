@@ -1,15 +1,38 @@
 \begin{tabular}{lcccc}
 \toprule
-\multicolumn{5}{l}{\textbf{Panel 1: PCA}} \\
+\multicolumn{5}{l}{\textbf{Panel A: PCA}} \\
 \midrule
-\textbf{Components} & tsm_extend & tsm_first & tsm_sums & tsm_tst \\
+\textbf{Components} & tsm_first & tsm_extend & tsm_sums & tsm_tst \\
+0 & 0.978 & 0.941 & 0.980 & 0.897 \\
 \midrule
-5 & 0.722 & 0.860 & 0.904 & 0.679 \\
-10 & 0.835 & 0.908 & 0.934 & 0.782 \\
-20 & 0.896 & 0.942 & 0.955 & 0.846 \\
-30 & 0.916 & 0.952 & 0.963 & 0.860 \\
-50 & 0.930 & 0.961 & 0.970 & 0.875 \\
-75 & 0.940 & 0.967 & 0.976 & 0.892 \\
-100 & 0.944 & 0.971 & 0.978 & 0.898 \\
+5 & 0.859 & 0.719 & 0.901 & 0.661 \\
+10 & 0.907 & 0.826 & 0.932 & 0.776 \\
+20 & 0.942 & 0.894 & 0.955 & 0.841 \\
+30 & 0.952 & 0.914 & 0.963 & 0.856 \\
+50 & 0.962 & 0.928 & 0.970 & 0.873 \\
+75 & 0.967 & 0.939 & 0.976 & 0.890 \\
+100 & 0.971 & 0.943 & 0.978 & 0.896 \\
+\midrule
+\multicolumn{5}{l}{\textbf{Panel B: Default Token Mode}} \\
+\midrule
+Mean Pooling & 0.971 & 0.868 & 0.969 & 0.851 \\
+Last Token & 0.978 & 0.941 & 0.980 & 0.897 \\
+\midrule
+\multicolumn{5}{l}{\textbf{Panel C: Meta}} \\
+\midrule
+Meta No PCA & 0.978 & 0.938 & 0.975 & 0.896 \\
+\midrule
+Meta PCA 10 & 0.937 & 0.910 & 0.961 & 0.834 \\
+Meta PCA 20 & 0.959 & 0.900 & 0.954 & 0.860 \\
+Meta PCA 30 & 0.963 & 0.918 & 0.960 & 0.868 \\
+Meta PCA 50 & 0.969 & 0.920 & 0.960 & 0.877 \\
+Meta PCA 75 & 0.972 & 0.921 & 0.968 & 0.892 \\
+Meta PCA 100 & 0.973 & 0.920 & 0.970 &  \\
+\midrule
+\multicolumn{5}{l}{\textbf{Panel D: Meta No PCA vs Meta Attn PCA 50}} \\
+\midrule
+Meta PCA 50 & 0.969 & 0.920 & 0.960 & 0.877 \\
+Meta No PCA & 0.978 & 0.938 & 0.975 & 0.896 \\
+Meta Attn PCA 50 & 0.969 & 0.923 & 0.962 & 0.877 \\
 \bottomrule
 \end{tabular}

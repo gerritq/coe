@@ -1,13 +1,21 @@
 # To do
-
+- probe_meta_no_pca_domain_attack all id and ood
+- run missing OOD:
+    - 33781446 run domain for all non-default => check whether there is __clear__ OOD improv
+- check beemo 
+- check others may have forgotten
 
 1. **Edit distance**
 - Next: Run Beemo data set creation on the HPC
     - Add a histogram of edit strength using the metrics (either main or appendix)
-- Table of 
+- Table of edit strength
 - Check M4 results but it does not seem to work
 
 2. **Ablations**
+- PCA does not seem to help, neither does attention
+- Check whether this is true for OOD
+    - Currentl running OOD with meta_no_pca
+
 - Create a table for the pca results
 - Further ablations
     - Layer
