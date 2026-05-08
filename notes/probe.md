@@ -1,21 +1,14 @@
 # To do
-- Editlens 
-    - model plus data
-
-- training size infinite or nan
-
-- probe_meta_no_pca_domain_attack all id and ood
+- run missing id; we have the latest table
+- ood
+    - probe_meta_no_pca_domain_attack all id and ood
 - run missing OOD:
     - 33781446 run domain for all non-default => check whether there is __clear__ OOD improv
-- check beemo; seems low, we should check the dsitribution and data
-    - do we need to norm?
-- check training size run; how to compare?
-- check others may have forgotten
 
 1. **Edit distance**
-- Next: Run Beemo data set creation on the HPC
-    - Add a histogram of edit strength using the metrics (either main or appendix)
-- Table of edit strength
+- Edit editlens data
+- Create a hist of metrics for beemo, editlens, and apt
+- Create a table of all that atch
 - Check M4 results but it does not seem to work
 
 2. **Ablations**
@@ -35,8 +28,10 @@
         - No attention: default vs pca values
 
 3. **Efficiency**
-- Use ablation scrupt to run meta and layer for different sample sizes
+- Use ablation script to run meta and layer for different sample sizes
 - Consider which sets and whether to include a comparison (same as OOD)
+- How to solve nan/inf error for small sizes
+- Are the values actually correct?
 
 4. **OOD**
 - Consider which baselines to show + whether to show meta probe g
@@ -45,10 +40,11 @@
 
 
 99. Misc
+- ensure that tables are pulling the correct numbers
 - fix repre scores
 - fix PCA None
 - can extend beemo to llama, but for now we do gpt4
-
+- add editlens to id table
 
 
 

@@ -81,6 +81,7 @@ MODEL_LABELS = {
     "rank": "Rank",
     "repreguard": "RepreGuard",
     "text_fluoroscopy": "TextFluoroscopy",
+    "encoder": "RoBERTa",
 }
 
 ZERO_SHOT_MODELS = [
@@ -100,6 +101,7 @@ SUPERVISED_MODELS = [
     "raidar",
     "radar",
     "text_fluoroscopy",
+    "encoder"
 ]
 
 PROBE_MODE_ORDER = ["default", "pca", "meta", "meta_attn"]
