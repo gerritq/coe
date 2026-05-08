@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_edits
+#SBATCH --job-name=probe_domain_all_but_meta_no_pca
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=03:00:00
+#SBATCH --time=04:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -26,11 +26,11 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 # DATASETS=("apt" "apt_m4_train")
 
-DATASETS=("apt" "apt_m4_train" "beemo_human_edits", "beemo_machine_edits")
+DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
 
 TOKEN_MODE="last_token"
-MODES=("default" "meta" "meta_attn" "pca") # "default" "meta" "meta_attn" "pca"
-OOD=0
+MODES=("default" "meta" "meta_attn" "pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
+OOD=1
 COMPONENTS=50
 SMOKE_TEST=0
 FOLDER="sandbox"
