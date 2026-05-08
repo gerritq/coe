@@ -440,7 +440,7 @@ class LinearProbing:
                 test_metrics = self._evaluate_meta_probe(train_out=train_out, test=test)
 
 
-            if target_dataset in ["apt", "apt_m4_train", "beemo_human_edits", "beemo_machine_edits"]:
+            if target_dataset in ["apt", "apt_m4_train", "beemo_human_edits", "beemo_machine_edits", "editlens"]:
                 apt_correlations = self.correlate_apt(test_data=test, 
                                                         scores=test_metrics['scores'])
             else:

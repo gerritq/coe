@@ -92,7 +92,7 @@ def process_editlens():
     # TRAIN SET
     # Create the training dataset from non-edited text
     train = []
-    human_train = [x for x in data if x['text_type'] == "human"]
+    human_train = [x for x in data if x['text_type'] == "human_written"]
     machine_train = [x for x in data if x['text_type'] == "ai_generated"]
     
     train.extend([{"text_id": x['text_id'], "text": x['text'], "label": 0} for x in human_train[:training_size]])
