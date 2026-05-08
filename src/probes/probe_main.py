@@ -13,12 +13,13 @@ from datetime import datetime
 from datetime import datetime
 
 BASE_DIR = os.getenv("BASE_COE")
-OUT_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
-os.makedirs(OUT_DIR, exist_ok=True)
 
 class LinearProbing:
     def __init__(self, args: Namespace) -> None:
         self.args = args
+        self.out_dir = os.path.join(BASE_DIR, "output", "probe", args.folder)
+        os.makedirs(self.out_dir, exist_ok=True)
+
         self.inference = Inference(self.args.model_name)
 
     def _collect_model_states(self, 
@@ -400,12 +401,13 @@ class LinearProbing:
 
 
         # TRAINING THE PROBE
+        # layer wise probe
         if self.args.mode in ["default", "pca"]:
             train_out = self._train_linear_probe(x_train=train["hidden_x"], 
                                                 y_train=train["y"],
                                                 x_val=val["hidden_x"], 
                                                 y_val=val["y"])
-
+        # meta probe
         else:
             train_out = self._train_meta_probe(x_hidden_train=train["hidden_x"],
                                     x_attn_train=train["attentions"],
@@ -454,5 +456,5 @@ class LinearProbing:
                     'apt_correlations': apt_correlations}
             
             
-            with open(os.path.join(OUT_DIR, filename), "w") as f:
+            with open(os.path.join(self.out_dir, filename), "w") as f:
                 json.dump(out, f, indent=4)

@@ -2,11 +2,11 @@
 #SBATCH --job-name=probe_ablation
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=05:00:00
+#SBATCH --time=03:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
-#SBATCH --constraint=h200|b200|a100|l40s
+#SBATCH --constraint=h200|b200|a100
 
 set -euo pipefail
 
@@ -20,12 +20,13 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 TOKEN_MODE="last_token"
-MODES=("default" "meta" "meta_attn" "pca") # default | pca | meta | meta_attn
-COMPONENTS_LIST=(10 20 50 100)
+MODES=("pca") # default | pca | meta | meta_attn
+COMPONENTS_LIST=(5 10 20 30 50 75 100)
 
-
+FOLDER="ablation"
 SMOKE_TEST=0
 OOD=0
+
 for MODEL in "${MODELS[@]}"; do
     for DATASET in "${DATASETS[@]}"; do
         for MODE in "${MODES[@]}"; do
@@ -42,7 +43,8 @@ for MODEL in "${MODELS[@]}"; do
                     --smoke_test "$SMOKE_TEST" \
                     --ood "$OOD" \
                     --components "$COMPONENTS" \
-                    --mode "$MODE"
+                    --mode "$MODE" \
+                    --folder "$FOLDER"
             done
         done
     done

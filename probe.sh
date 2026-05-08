@@ -33,6 +33,7 @@ MODES=("meta_attn") # "default" "meta" "meta_attn" "pca"
 OOD=0
 COMPONENTS=50
 SMOKE_TEST=0
+FOLDER="sandbox"
 
 for MODEL in "${MODELS[@]}"; do
     for DATASET in "${DATASETS[@]}"; do
@@ -49,7 +50,8 @@ for MODEL in "${MODELS[@]}"; do
                 --smoke_test "$SMOKE_TEST" \
                 --ood "$OOD" \
                 --components "$COMPONENTS" \
-                --mode "$MODE"
+                --mode "$MODE" \
+                --folder "$FOLDER"
         done
     done
 done

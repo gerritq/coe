@@ -1,7 +1,15 @@
 # To do
 
 - fix repre scores
+- fix PCA None
+- run ablations
 - create list
+
+Ablation
+- PCA components: 
+    - compare default vs various pca components
+    - compare meta (no pca!) vs various pca components
+    - compare meta (pca) vs meta_pca with attn features
 
 
 - add beemo with apt measures!

@@ -13,7 +13,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--smoke_test", type=int, default=0)
     parser.add_argument("--components", type=int, default=50)
     parser.add_argument("--mode", type=str, required=True)
-    parser.add_argument("--training_size", type=int, default=None)
+    parser.add_argument("--folder", type=str, default="sandbox")
     return parser.parse_args()
 
 

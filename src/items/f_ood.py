@@ -48,6 +48,9 @@ FAMILY_ORDER = ["drlDomain", "drlAttack", "multisocial", "tsm", "m4"]
 
 METHOD_SPECS = {
     "probe_default": {"kind": "probe", "mode": "default", "label": "Probe (default)"},
+    "probe_pca": {"kind": "probe", "mode": "pca", "label": "Probe (pca)"},
+    "probe_meta": {"kind": "probe", "mode": "meta", "label": "Probe (meta)"},
+    "probe_meta_attn": {"kind": "probe", "mode": "meta_attn", "label": "Probe (meta_attn)"},
     "encoder": {"kind": "baseline", "model": "encoder", "label": "Encoder"},
     "text_fluoroscopy": {"kind": "baseline", "model": "text_fluoroscopy", "label": "Fluoroscopy"},
     "biscope": {"kind": "baseline", "model": "biscope", "label": "BiScope"},
@@ -78,6 +81,9 @@ def _short_label(dataset_name: str) -> str:
 
 
 def _probe_auroc(test_metrics: dict) -> float | None:
+    meta = test_metrics.get("meta_metrics", {})
+    if "auroc" in meta:
+        return meta.get("auroc")
     wm = test_metrics.get("weighted_projection_metrics", {})
     if "auroc" in wm:
         return wm.get("auroc")
@@ -110,8 +116,6 @@ def _collect_method_entries(method_key: str) -> dict[str, dict[str, float]]:
             test_ds = args.get("target_dataset")
             if train_ds is None or test_ds is None:
                 continue
-            if train_ds == test_ds:
-                continue  # OOD only
 
             fam_train = ds_to_family.get(train_ds)
             fam_test = ds_to_family.get(test_ds)
@@ -139,8 +143,6 @@ def _collect_method_entries(method_key: str) -> dict[str, dict[str, float]]:
             test_ds = args.get("target_dataset")
             if train_ds is None or test_ds is None:
                 continue
-            if train_ds == test_ds:
-                continue  # OOD only
 
             fam_train = ds_to_family.get(train_ds)
             fam_test = ds_to_family.get(test_ds)
@@ -201,31 +203,31 @@ def main() -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = os.path.join(OUT_DIR, "ood_figure.pdf")
 
-    entries_fluo = _collect_method_entries("text_fluoroscopy")
-    entries_biscope = _collect_method_entries("biscope")
-    entries_repre = _collect_method_entries("repreguard")
-    entries_default = _collect_method_entries("probe_default")
-    entries_encoder = _collect_method_entries("encoder")
-
     panel_methods = [
-        ("Fluoroscopy", entries_fluo),
-        ("BiScope", entries_biscope),
-        ("RepreGuard", entries_repre),
-        ("Probe (default)", entries_default),
+        ("Fluoroscopy", _collect_method_entries("text_fluoroscopy")),
+        ("BiScope", _collect_method_entries("biscope")),
+        ("RepreGuard", _collect_method_entries("repreguard")),
+        ("Probe (default)", _collect_method_entries("probe_default")),
+        ("Probe (pca)", _collect_method_entries("probe_pca")),
+        ("Probe (meta)", _collect_method_entries("probe_meta")),
+        ("Probe (meta_attn)", _collect_method_entries("probe_meta_attn")),
+        ("Encoder", _collect_method_entries("encoder")),
     ]
 
     n_families = len(FAMILY_ORDER)
     n_cols = 2 * n_families
-    fig, axes = plt.subplots(3, n_cols, figsize=(34, 12), squeeze=False, constrained_layout=True)
+    n_rows = (len(panel_methods) + 1) // 2
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(34, 4 * n_rows), squeeze=False, constrained_layout=True)
     cmap = plt.get_cmap("viridis").copy()
     cmap.set_bad(color="#f0f0f0")
 
     im = None
-    # Row 1: fluo then biscope
-    for block_idx, (title, fam_entries) in enumerate(panel_methods[:2]):
+    for panel_idx, (title, fam_entries) in enumerate(panel_methods):
+        row_idx = panel_idx // 2
+        block_idx = panel_idx % 2
         col_offset = block_idx * n_families
         for i, family in enumerate(FAMILY_ORDER):
-            ax = axes[0, col_offset + i]
+            ax = axes[row_idx, col_offset + i]
             im = _plot_family_matrix(ax, family, fam_entries.get(family, {}), cmap)
             if i == 0:
                 ax.text(
@@ -238,39 +240,16 @@ def main() -> None:
                     va="bottom",
                 )
 
-    # Row 2: repreguard then default probe
-    for block_idx, (title, fam_entries) in enumerate(panel_methods[2:]):
-        col_offset = block_idx * n_families
-        for i, family in enumerate(FAMILY_ORDER):
-            ax = axes[1, col_offset + i]
-            im = _plot_family_matrix(ax, family, fam_entries.get(family, {}), cmap)
-            if i == 0:
-                ax.text(
-                    -0.45,
-                    1.18,
-                    title,
-                    transform=ax.transAxes,
-                    fontsize=12,
-                    fontweight="bold",
-                    va="bottom",
-                )
-
-    # Row 3: encoder in first block, second block left empty.
-    for i, family in enumerate(FAMILY_ORDER):
-        ax = axes[2, i]
-        im = _plot_family_matrix(ax, family, entries_encoder.get(family, {}), cmap)
-        if i == 0:
-            ax.text(
-                -0.45,
-                1.18,
-                "Encoder",
-                transform=ax.transAxes,
-                fontsize=12,
-                fontweight="bold",
-                va="bottom",
-            )
-    for j in range(n_families, n_cols):
-        axes[2, j].axis("off")
+    # Hide any unused blocks on the last row.
+    total_blocks = n_rows * 2
+    unused_blocks = total_blocks - len(panel_methods)
+    if unused_blocks > 0:
+        for b in range(total_blocks - unused_blocks, total_blocks):
+            row_idx = b // 2
+            block_idx = b % 2
+            col_offset = block_idx * n_families
+            for j in range(col_offset, col_offset + n_families):
+                axes[row_idx, j].axis("off")
 
     if im is not None:
         cbar = fig.colorbar(im, ax=axes, location="right", shrink=0.85, pad=0.01)
