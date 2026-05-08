@@ -1,28 +1,28 @@
 {
     "args": {
         "model": "llama_8b",
-        "dataset": "tsm_first",
+        "dataset": "tsm_tst",
         "token_mode": "last_token",
         "ood": false,
         "smoke_test": false,
-        "components": 50,
+        "components": 20,
         "mode": "meta",
         "training_size": null,
         "folder": "ablation",
         "model_name": "llama_8b",
-        "target_dataset": "tsm_first",
-        "datetime": "2026-05-08 13:38:43"
+        "target_dataset": "tsm_tst",
+        "datetime": "2026-05-08 14:20:06"
     },
     "test_metrics": {
         "meta_metrics": {
             "n_total": 500,
-            "auroc": 0.968992,
-            "accuracy": 0.904,
-            "f1": 0.902834008097166,
-            "tpr_at_fpr_0_05": 0.856,
+            "auroc": 0.8595200000000001,
+            "accuracy": 0.804,
+            "f1": 0.8070866141732284,
+            "tpr_at_fpr_0_05": 0.46,
             "optimal_threshold_f1": 0.5,
             "optimal_threshold_acc": 0.5,
-            "aupr": 0.9691398486481771
+            "aupr": 0.8659112980088557
         }
     },
     "sim_correlations": null

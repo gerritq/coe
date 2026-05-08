@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=probe_ablation
+#SBATCH --job-name=probe_ablation_meta_no_pca
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=01:00:00
@@ -20,8 +20,8 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 TOKEN_MODE="last_token"
-MODES=("meta") # default | pca | meta | meta_attn
-COMPONENTS_LIST=(10 20 30 50 75 100)
+MODES=("meta_no_pca") # default | pca | meta | meta_attn
+COMPONENTS_LIST=(50)
 
 FOLDER="ablation"
 SMOKE_TEST=0
