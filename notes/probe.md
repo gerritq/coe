@@ -1,8 +1,15 @@
 # To do
+- Editlens 
+    - model plus data
+
+- training size infinite or nan
+
 - probe_meta_no_pca_domain_attack all id and ood
 - run missing OOD:
     - 33781446 run domain for all non-default => check whether there is __clear__ OOD improv
-- check beemo 
+- check beemo; seems low, we should check the dsitribution and data
+    - do we need to norm?
+- check training size run; how to compare?
 - check others may have forgotten
 
 1. **Edit distance**
@@ -29,7 +36,7 @@
 
 3. **Efficiency**
 - Use ablation scrupt to run meta and layer for different sample sizes
-- Consider which sets and whether to include a comparison
+- Consider which sets and whether to include a comparison (same as OOD)
 
 4. **OOD**
 - Consider which baselines to show + whether to show meta probe g

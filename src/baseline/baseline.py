@@ -96,6 +96,10 @@ def return_model(args: Namespace):
         from src.baseline.mlmodel import MLModels
         return MLModels(model_name="openai-community/roberta-base-openai-detector")
     
+    if args.model == "editlens":
+        from src.baseline.mlmodel import MLModels
+        return MLModels(model_name="pangram/editlens_Llama-3.2-3B")
+
     if args.model == "gescore":
         from src.baseline.gescore import GECScore
         return GECScore() # we use LLama 70b here

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=b_raidar_domain
+#SBATCH --job-name=b_editlens_all
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
 #SBATCH --time=06:00:00
@@ -24,14 +24,13 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 # DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
-
-DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
-
+DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 SMOKE_TEST=0
 OOD=0
+
 # "raidar"
 MODELS=(
-        "raidar"
+        "editlens"
         # "revise"
         # "gescore"
         # "biscope"
