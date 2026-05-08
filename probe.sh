@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=probe_meta_attn
+#SBATCH --job-name=probe_pca
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=02:00:00
@@ -26,10 +26,10 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 # DATASETS=("apt" "apt_m4_train")
 
-DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+DATASETS=("drlDomain_xsum" "drlDomain_yelp_review" "m4_bloomz")
 
 TOKEN_MODE="last_token"
-MODES=("meta_attn") # "default" "meta" "meta_attn" "pca"
+MODES=("pca") # "default" "meta" "meta_attn" "pca"
 OOD=0
 COMPONENTS=50
 SMOKE_TEST=0
