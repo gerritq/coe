@@ -114,7 +114,7 @@ class EncoderBaseline:
                                   acc_threshold=optimal_thresholds_dict["threshold_acc"],
                                   f1_threshold=optimal_thresholds_dict["threshold_f1"])
             
-            file_name = f"{args.model}_{args.dataset}_2_{ood_name}.json"
+            file_name = f"{args.model}_{args.dataset}_2_{ood_name}_N{args.training_size}.json"
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)

@@ -101,6 +101,9 @@
 
 ## Has to be done
 
+- rerun encoder, biscope, and repreguard on the four sample efficency data sets
+
+
 - Do we need to scale entropy? Because with longer sequences we will have higher entropy
     - I think yes
 

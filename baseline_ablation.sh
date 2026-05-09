@@ -19,7 +19,7 @@ cd "${ROOT_DIR}"
 export CUDA_LAUNCH_BLOCKING=1
 
 """
-- folder adjusted for encoder, biscope, and repre
+- folder and file_name adjusted ONLY for encoder, biscope, and repre
 """
 
 DATASETS=("tsm_first" "drlAttack_multi_llm_mixing" "multisocial_en" "m4_gpt4")
@@ -45,7 +45,8 @@ for MODEL in "${MODELS[@]}"; do
                     --model "$MODEL" \
                     --smoke_test "$SMOKE_TEST" \
                     --ood "$OOD" \
-                    --training_size "$TRAINING_SIZE"
+                    --training_size "$TRAINING_SIZE" \
+                    --folder "$FOLDER"
         done
     done
 done
