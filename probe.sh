@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_meta_no_pca_def_editlens
+#SBATCH --job-name=probe_meta_no_pca_ood
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=06:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -26,10 +26,10 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
 # DATASETS=("apt" "apt_m4_train")
 
-DATASETS=("editlens")
+DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
 TOKEN_MODE="last_token"
-MODES=("default" "meta_no_pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
+MODES=("meta_no_pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
 OOD=0
 COMPONENTS=50
 SMOKE_TEST=0
