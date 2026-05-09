@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_pooling
+#SBATCH --job-name=probe_ablation_mlp
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=02:00:00
+#SBATCH --time=04:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -19,10 +19,10 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
 # DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
 # Ablations
-DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
+DATASETS=("tsm_extend" "tsm_sums" "tsm_tst")
 
-TOKEN_MODE="pooling"
-MODES=("default") # default | pca | meta | meta_attn
+TOKEN_MODE="last_token"
+MODES=("mlp") # default | pca | meta | meta_attn
 COMPONENTS_LIST=(50)
 TRAINING_SIZES=(-1)
 C_LIST=(1)
