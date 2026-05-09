@@ -30,7 +30,7 @@ DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "t
 
 TOKEN_MODE="last_token"
 MODES=("meta_no_pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
-OOD=0
+OOD=1
 COMPONENTS=50
 SMOKE_TEST=0
 FOLDER="sandbox"
