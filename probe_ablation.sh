@@ -22,10 +22,9 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
 
 TOKEN_MODE="last_token"
-MODES=("default") # default | pca | meta | meta_attn
+MODES=("mlp") # default | pca | meta | meta_attn
 COMPONENTS_LIST=(50)
 TRAINING_SIZES=(-1)
-C_LIST=(0.01 0.1 1 10)
 
 FOLDER="ablation"
 SMOKE_TEST=0
