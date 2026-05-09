@@ -18,12 +18,6 @@ DATASET_GROUPS = {
         "drlDomain_yelp_review",
         "drlDomain_xsum",
     ],
-    "drlAttack": [
-        "drlAttack_multi_llm_mixing",
-        "drlAttack_paraphrase_attacks_llm",
-        "drlAttack_perturbation_attacks_llm",
-        "drlAttack_prompt_attacks_llm",
-    ],
     "multisocial": [
         "multisocial_en",
         "multisocial_de",
@@ -44,17 +38,21 @@ DATASET_GROUPS = {
     ],
 }
 
-FAMILY_ORDER = ["drlDomain", "drlAttack", "multisocial", "tsm", "m4"]
+FAMILY_ORDER = ["drlDomain", "multisocial", "tsm", "m4"]
+FAMILY_LABELS = {
+    "drlDomain": "DetectRL",
+    "multisocial": "Multisocial",
+    "tsm": "TSM",
+    "m4": "M4GT",
+}
 
 METHOD_SPECS = {
-    "probe_default": {"kind": "probe", "mode": "default", "label": "Probe (default)"},
-    "probe_pca": {"kind": "probe", "mode": "pca", "label": "Probe (pca)"},
-    "probe_meta": {"kind": "probe", "mode": "meta", "label": "Probe (meta)"},
-    "probe_meta_attn": {"kind": "probe", "mode": "meta_attn", "label": "Probe (meta_attn)"},
-    "encoder": {"kind": "baseline", "model": "encoder", "label": "Encoder"},
-    "text_fluoroscopy": {"kind": "baseline", "model": "text_fluoroscopy", "label": "Fluoroscopy"},
-    "biscope": {"kind": "baseline", "model": "biscope", "label": "BiScope"},
-    "repreguard": {"kind": "baseline", "model": "repreguard", "label": "RepreGuard"},
+    "probe_default": {"kind": "probe", "mode": "default"},
+    "probe_meta_no_pca": {"kind": "probe", "mode": "meta_no_pca"},
+    "encoder": {"kind": "baseline", "model": "encoder"},
+    "text_fluoroscopy": {"kind": "baseline", "model": "text_fluoroscopy"},
+    "biscope": {"kind": "baseline", "model": "biscope"},
+    "repreguard": {"kind": "baseline", "model": "repreguard"},
 }
 
 
@@ -68,9 +66,12 @@ def _dataset_to_family() -> dict[str, str]:
 
 def _short_label(dataset_name: str) -> str:
     if dataset_name.startswith("drlDomain_"):
-        return dataset_name.replace("drlDomain_", "")
-    if dataset_name.startswith("drlAttack_"):
-        return dataset_name.replace("drlAttack_", "").replace("_attacks_llm", "").replace("_", "-")
+        label = dataset_name.replace("drlDomain_", "")
+        if label == "writing_prompt":
+            return "Reddit"
+        if label == "yelp_review":
+            return "yelp"
+        return label
     if dataset_name.startswith("multisocial_"):
         return dataset_name.replace("multisocial_", "")
     if dataset_name.startswith("tsm_"):
@@ -176,26 +177,45 @@ def _build_family_matrix(family: str, entries: dict[str, dict[str, float]]) -> t
     return labels, mat
 
 
-def _plot_family_matrix(ax, family: str, entries: dict[str, dict[str, float]], cmap, vmin=0.0, vmax=1.0):
-    cmap = plt.get_cmap("viridis").copy()
+def _plot_family_matrix(
+    ax,
+    family: str,
+    entries: dict[str, dict[str, float]],
+    vmin: float = 0.0,
+    vmax: float = 1.0,
+    show_xlabel: bool = True,
+    show_ylabel: bool = True,
+    show_xticklabels: bool = True,
+):
+    cmap = plt.get_cmap("viridis_r").copy()
     cmap.set_bad(color="#f0f0f0")
     labels, mat = _build_family_matrix(family, entries)
     im = ax.imshow(mat, vmin=vmin, vmax=vmax, cmap=cmap)
     short_labels = [_short_label(x) for x in labels]
     ax.set_xticks(range(len(labels)))
     ax.set_yticks(range(len(labels)))
-    ax.set_xticklabels(short_labels, rotation=45, ha="right", fontsize=7)
-    ax.set_yticklabels(short_labels, fontsize=7)
-    ax.set_xlabel("Test", fontsize=8)
-    ax.set_ylabel("Train", fontsize=8)
-    ax.set_title(family, fontsize=9)
+    if show_xticklabels:
+        ax.set_xticklabels(short_labels, rotation=45, ha="right", fontsize=17)
+    else:
+        ax.set_xticklabels([])
+    ax.set_yticklabels(short_labels, fontsize=17)
+    ax.set_xlabel("Test" if show_xlabel else "", fontsize=18)
+    ax.set_ylabel("Train" if show_ylabel else "", fontsize=18)
+    ax.set_title(FAMILY_LABELS.get(family, family), fontsize=20)
     for rr in range(mat.shape[0]):
         for cc in range(mat.shape[1]):
             v = mat[rr, cc]
             if np.isnan(v):
                 continue
-            txt_color = "white" if v < 0.55 else "black"
-            ax.text(cc, rr, f"{v:.2f}", ha="center", va="center", fontsize=6, color=txt_color)
+            denom = max(vmax - vmin, 1e-12)
+            norm_v = (v - vmin) / denom
+            txt_color = "white" if norm_v >= 0.6 else "black"
+            label = f"{v:.2f}"
+            if label.startswith("0"):
+                label = label[1:]
+            elif label.startswith("-0"):
+                label = "-" + label[2:]
+            ax.text(cc, rr, label, ha="center", va="center", fontsize=20, color=txt_color)
     return im
 
 
@@ -204,41 +224,55 @@ def main() -> None:
     out_path = os.path.join(OUT_DIR, "ood_figure.pdf")
 
     panel_methods = [
-        ("Fluoroscopy", _collect_method_entries("text_fluoroscopy")),
+        ("TextFluoroscopy", _collect_method_entries("text_fluoroscopy")),
         ("BiScope", _collect_method_entries("biscope")),
         ("RepreGuard", _collect_method_entries("repreguard")),
-        ("Probe (default)", _collect_method_entries("probe_default")),
-        ("Probe (pca)", _collect_method_entries("probe_pca")),
-        ("Probe (meta)", _collect_method_entries("probe_meta")),
-        ("Probe (meta_attn)", _collect_method_entries("probe_meta_attn")),
-        ("Encoder", _collect_method_entries("encoder")),
+        ("RoBERTa", _collect_method_entries("encoder")),
+        ("LP (default)", _collect_method_entries("probe_default")),
+        ("LP (meta_no_pca)", _collect_method_entries("probe_meta_no_pca")),
     ]
+
+    # Relative color scale from observed AUROC values only.
+    observed_vals = []
+    for _, fam_entries in panel_methods:
+        for fam in FAMILY_ORDER:
+            for _, tgt_map in fam_entries.get(fam, {}).items():
+                for val in tgt_map.values():
+                    observed_vals.append(float(val))
+    if observed_vals:
+        global_vmin = min(observed_vals)
+        global_vmax = max(observed_vals)
+        if global_vmax <= global_vmin:
+            global_vmax = global_vmin + 1e-6
+    else:
+        global_vmin, global_vmax = 0.0, 1.0
 
     n_families = len(FAMILY_ORDER)
     n_cols = 2 * n_families
     n_rows = (len(panel_methods) + 1) // 2
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(34, 4 * n_rows), squeeze=False, constrained_layout=True)
-    cmap = plt.get_cmap("viridis").copy()
-    cmap.set_bad(color="#f0f0f0")
-
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(44, 6 * n_rows), squeeze=False, constrained_layout=True)
     im = None
+    block_specs: list[tuple[int, int, str]] = []
     for panel_idx, (title, fam_entries) in enumerate(panel_methods):
         row_idx = panel_idx // 2
         block_idx = panel_idx % 2
         col_offset = block_idx * n_families
+        block_specs.append((row_idx, col_offset, title))
         for i, family in enumerate(FAMILY_ORDER):
             ax = axes[row_idx, col_offset + i]
-            im = _plot_family_matrix(ax, family, fam_entries.get(family, {}), cmap)
-            if i == 0:
-                ax.text(
-                    -0.45,
-                    1.18,
-                    title,
-                    transform=ax.transAxes,
-                    fontsize=12,
-                    fontweight="bold",
-                    va="bottom",
-                )
+            show_xlabel = row_idx == (n_rows - 1)
+            show_ylabel = row_idx == (n_rows - 1) and (col_offset + i) == 0
+            show_xticklabels = row_idx == (n_rows - 1)
+            im = _plot_family_matrix(
+                ax,
+                family,
+                fam_entries.get(family, {}),
+                vmin=global_vmin,
+                vmax=global_vmax,
+                show_xlabel=show_xlabel,
+                show_ylabel=show_ylabel,
+                show_xticklabels=show_xticklabels,
+            )
 
     # Hide any unused blocks on the last row.
     total_blocks = n_rows * 2
@@ -252,10 +286,60 @@ def main() -> None:
                 axes[row_idx, j].axis("off")
 
     if im is not None:
-        cbar = fig.colorbar(im, ax=axes, location="right", shrink=0.85, pad=0.01)
-        cbar.set_label("AUROC")
+        cbar = fig.colorbar(im, ax=axes.ravel().tolist(), location="right", shrink=0.9, pad=0.02)
+        cbar.set_label("AUROC", fontsize=16)
+        cbar.ax.tick_params(labelsize=14)
 
-    fig.suptitle("OOD Confusion Matrices (4x4 per family)", fontsize=14)
+    for ax in axes.ravel():
+        ax.set_aspect("equal")
+    fig.canvas.draw()
+    for row_idx, col_offset, title in block_specs:
+        block_axes = [axes[row_idx, col_offset + i] for i in range(n_families)]
+        x0 = min(ax.get_position().x0 for ax in block_axes)
+        x1 = max(ax.get_position().x1 for ax in block_axes)
+        y1 = max(ax.get_position().y1 for ax in block_axes)
+        fig.text(
+            (x0 + x1) / 2,
+            y1 + 0.02,
+            title,
+            ha="center",
+            va="bottom",
+            fontsize=24,
+            fontweight="bold",
+        )
+
+    # Left-side group labels: Baselines (first two rows) and Linear Probes (last row).
+    n_rows_actual = axes.shape[0]
+    if n_rows_actual >= 3:
+        row0 = axes[0, 0].get_position()
+        row1 = axes[1, 0].get_position()
+        row2 = axes[2, 0].get_position()
+
+        y_baselines = 0.5 * (row0.y0 + row0.y1 + row1.y0 + row1.y1) / 2
+        y_linear = 0.5 * (row2.y0 + row2.y1)
+        x_label = max(0.005, min(row0.x0, row1.x0, row2.x0) - 0.055)
+
+        fig.text(
+            x_label,
+            y_baselines,
+            "Baselines",
+            rotation=90,
+            va="center",
+            ha="center",
+            fontsize=22,
+            fontweight="bold",
+        )
+        fig.text(
+            x_label,
+            y_linear,
+            "Linear Probes",
+            rotation=90,
+            va="center",
+            ha="center",
+            fontsize=22,
+            fontweight="bold",
+        )
+
     fig.savefig(out_path, dpi=220)
     plt.close(fig)
 

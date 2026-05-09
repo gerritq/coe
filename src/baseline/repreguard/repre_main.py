@@ -98,7 +98,7 @@ class RepreGuard:
             ) -> None:
         
         # process
-        train_json_data = self.model.process_train_data(train_data=training_data['val'])
+        train_json_data = self.model.process_train_data(train_data=training_data['train'])
 
         for ood_dict in ood_data:
             ood_ds = ood_dict['data']

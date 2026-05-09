@@ -1,7 +1,9 @@
 # To do
 
 - run default probe now with safeguard
-
+- add biscope and repreguard to the plots
+- repre runs with val!
+    - needs to change to train for sample
 
 1. **ID**
 - TO DO:  
@@ -55,6 +57,8 @@
 
 
 99. Misc
+- ensure we use mean projection metrics
+    - compare to weighted metrics
 - Check that repre does use the correct split for training
 - The L1 penalty regression is still an interesting case which I would like to see somewhere
 - ensure that tables are pulling the correct numbers
