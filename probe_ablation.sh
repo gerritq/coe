@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=probe_C
+#SBATCH --job-name=probe_pooling
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=02:00:00
@@ -21,10 +21,11 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # Ablations
 DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
 
-TOKEN_MODE="last_token"
-MODES=("mlp") # default | pca | meta | meta_attn
+TOKEN_MODE="pooling"
+MODES=("default") # default | pca | meta | meta_attn
 COMPONENTS_LIST=(50)
 TRAINING_SIZES=(-1)
+C_LIST=(1)
 
 FOLDER="ablation"
 SMOKE_TEST=0

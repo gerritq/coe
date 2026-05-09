@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=b_gescore
+#SBATCH --job-name=baseline_raidar
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=02:00:00
+#SBATCH --time=04:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|b200|a100
+#SBATCH --constraint=h200|b200
 #SBATCH --exclude=erc-hpc-vm053 
 
 # set -euo pipefail
@@ -22,14 +22,15 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
-DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
+
+DATASETS=("drlDomain_xsum" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
 SMOKE_TEST=0
 OOD=0
 
 # "raidar"
 MODELS=(
-        # "raidar"
+        "raidar"
         # "editlens"
         # "revise"
         # "gescore"
