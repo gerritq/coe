@@ -318,6 +318,10 @@ class LinearProbing:
             # project 
             # n_samples x d_model/d_pca  x  d_model/d_pca -> n_samples
             x_proj = np.dot(x_layer_test_scaled, probe_vector)
+
+            # for small N; replace nan/and inf
+            x_proj = np.nan_to_num(x_proj, nan=0.0, posinf=0.0, neginf=0.0)
+
             all_projections.append(x_proj)
 
             # layer metrics
@@ -332,6 +336,10 @@ class LinearProbing:
 
         # A aggregate projection score, mean projection
         all_projections = np.stack(all_projections, axis=0)  # (n_layers, n_samples)
+        
+        # for small N; replace nan/and inf
+        all_projections = np.nan_to_num(all_projections, nan=0.0, posinf=0.0, neginf=0.0)
+        
         mean_projection = all_projections.mean(axis=0)  # (n_samples,)
         mean_projection_metrics = metrics(
             y_true=y_true,

@@ -8,16 +8,19 @@ import numpy as np
 
 BASE_DIR = os.getenv("BASE_COE", ".")
 ABLATION_DIR = os.path.join(BASE_DIR, "output", "probe", "ablation")
+BASELINE_ABLATION_DIR = os.path.join(BASE_DIR, "output", "baseline", "ablation")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 
-MODES = ["default", "meta_no_pca"]
+MODES = ["default", "meta_no_pca", "encoder"]
 MODE_MARKERS = {
     "default": "o",
     "meta_no_pca": "s",
+    "encoder": "^",
 }
 MODE_COLORS = {
     "default": "#1f77b4",
     "meta_no_pca": "#d62728",
+    "encoder": "#2ca02c",
 }
 DATASET_ORDER = ["drlDomain_arxiv", "multisocial_en", "tsm_first", "m4_gpt4"]
 DATASET_TITLES = {
@@ -73,6 +76,40 @@ def collect_points() -> tuple[dict[tuple[str, str], list[tuple[int, float]]], li
 
         datasets.add(dataset)
         points[(dataset, mode)].append((n, float(auroc)))
+
+    # baseline encoder ablations
+    if os.path.isdir(BASELINE_ABLATION_DIR):
+        for filename in sorted(os.listdir(BASELINE_ABLATION_DIR)):
+            if not filename.endswith(".json"):
+                continue
+
+            path = os.path.join(BASELINE_ABLATION_DIR, filename)
+            with open(path, "r", encoding="utf-8") as f:
+                obj = json.load(f)
+
+            args = obj.get("args", {})
+            model = args.get("model")
+            dataset = args.get("dataset")
+            target = args.get("target_dataset")
+            n = args.get("training_size")
+
+            if model != "encoder":
+                continue
+            if not isinstance(dataset, str) or dataset != target:
+                continue
+            if n is None:
+                continue
+            try:
+                n = int(n)
+            except (TypeError, ValueError):
+                continue
+
+            auroc = obj.get("metrics", {}).get("auroc")
+            if auroc is None:
+                continue
+
+            datasets.add(dataset)
+            points[(dataset, "encoder")].append((n, float(auroc)))
 
     for key in points:
         points[key] = sorted(points[key], key=lambda x: x[0])
