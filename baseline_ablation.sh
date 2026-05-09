@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_ablation_encoder
+#SBATCH --job-name=baseline_ablation_repre_biscope
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
 #SBATCH --time=04:00:00
