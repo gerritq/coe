@@ -1,5 +1,6 @@
 # To do
 
+- in ood table: i think there are duplicates and they overwrite each other!!
 - Check: new run for default and meta-no-pca for m4 gpt4 and yelp
 
 1. **ID**

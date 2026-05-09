@@ -175,7 +175,7 @@ class LinearProbing:
 
 
         # Fit the meta probe
-        meta_probe = LogisticRegression(max_iter=2000, random_state=42)
+        meta_probe = LogisticRegression(max_iter=2000, random_state=42, C=self.args.C)
         meta_probe.fit(features, y_train)
 
         return {
@@ -220,7 +220,8 @@ class LinearProbing:
                 )
             else:
                 clf_binary = LogisticRegression(max_iter=2000, 
-                                                random_state=42)
+                                                random_state=42,
+                                                C=self.args.C)
                 clf_binary.fit(x_layer_train_scaled, y_train)
 
             # find optimal thresholds on val set
@@ -518,7 +519,7 @@ class LinearProbing:
             del test_metrics['scores']
 
             # SAVE OUTPUT
-            filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_{args.dataset}_2_{target_dataset}.json"
+            filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_C{args.C}_{args.dataset}_2_{target_dataset}.json"
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)

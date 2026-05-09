@@ -15,6 +15,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--mode", type=str, required=True)
     parser.add_argument("--training_size", type=int, default=None)
     parser.add_argument("--folder", type=str, default="sandbox")
+    parser.add_argument("--C", type=float, default=1.0)
     return parser.parse_args()
 
 

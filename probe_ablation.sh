@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=probe_mlp
+#SBATCH --job-name=probe_C
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=02:00:00
@@ -22,9 +22,10 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
 
 TOKEN_MODE="last_token"
-MODES=("mlp") # default | pca | meta | meta_attn
-COMPONENTS_LIST=(-1)
-TRAINING_SIZES=("none")
+MODES=("default") # default | pca | meta | meta_attn
+COMPONENTS_LIST=(50)
+TRAINING_SIZES=(-1)
+C_LIST=(0.01 0.1 1 10)
 
 FOLDER="ablation"
 SMOKE_TEST=0
@@ -35,21 +36,24 @@ for MODEL in "${MODELS[@]}"; do
         for MODE in "${MODES[@]}"; do
             for COMPONENTS in "${COMPONENTS_LIST[@]}"; do
                 for TRAINING_SIZE in "${TRAINING_SIZES[@]}"; do
-                    echo "------------------------------------------------"
-                    echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE, Mode=$MODE"
-                    echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, COMPONENTS=$COMPONENTS, TRAINING_SIZE=$TRAINING_SIZE"
-                    echo "------------------------------------------------"
-
-                    PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.run \
-                        --model "$MODEL" \
-                        --dataset "$DATASET" \
-                        --token_mode "$TOKEN_MODE" \
-                        --smoke_test "$SMOKE_TEST" \
-                        --ood "$OOD" \
-                        --components "$COMPONENTS" \
-                        --training_size "$TRAINING_SIZE" \
-                        --mode "$MODE" \
-                        --folder "$FOLDER"
+                    for C in "${C_LIST[@]}"; do
+                        echo "------------------------------------------------"
+                        echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE, Mode=$MODE"
+                        echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, COMPONENTS=$COMPONENTS, TRAINING_SIZE=$TRAINING_SIZE, C=$C"
+                        echo "------------------------------------------------"
+                
+                        PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.run \
+                            --model "$MODEL" \
+                            --dataset "$DATASET" \
+                            --token_mode "$TOKEN_MODE" \
+                            --smoke_test "$SMOKE_TEST" \
+                            --ood "$OOD" \
+                            --components "$COMPONENTS" \
+                            --training_size "$TRAINING_SIZE" \
+                            --mode "$MODE" \
+                            --C "$C" \
+                            --folder "$FOLDER"
+                    done
                 done
             done
         done
