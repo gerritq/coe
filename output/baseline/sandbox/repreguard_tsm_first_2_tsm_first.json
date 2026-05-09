@@ -4,7 +4,8 @@
     "model": "repreguard",
     "smoke_test": false,
     "ood": false,
-    "training_size": null,
+    "training_size": 10,
+    "folder": "sandbox",
     "base_model_1": "meta-llama/Meta-Llama-3-8B",
     "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
     "ntrain": 0,
@@ -15,65 +16,65 @@
     "random_seed": 42,
     "train_data_path": "skip",
     "target_dataset": "tsm_first",
-    "datetime": "2026-05-07 21:37:44"
+    "datetime": "2026-05-09 11:46:21"
   },
   "train_results": {
     "train_result": {
-      "roc_auc": 53.77,
-      "optimal_threshold": 1.5409423732084648,
+      "roc_auc": 53.79,
+      "optimal_threshold": 1.5355963617822346,
       "conf_matrix": [
         [
           38,
           212
         ],
         [
-          18,
-          232
+          17,
+          233
         ]
       ],
-      "precision": 52.25,
-      "recall": 92.8,
-      "f1": 66.86,
-      "accuracy": 54.0,
+      "precision": 52.36,
+      "recall": 93.2,
+      "f1": 67.05,
+      "accuracy": 54.2,
       "tpr_at_fpr_0_01": 0.0
     },
     "test_result": {
-      "auroc": 50.0,
-      "optimal_threshold": 1.5409423732084648,
+      "auroc": 50.4,
+      "optimal_threshold": 1.5355963617822346,
       "conf_matrix": [
         [
           26,
           224
         ],
         [
-          26,
-          224
+          24,
+          226
         ]
       ],
-      "precision": 50.0,
-      "recall": 89.6,
-      "f1": 64.18,
-      "accuracy": 50.0,
+      "precision": 50.22,
+      "recall": 90.4,
+      "f1": 64.57,
+      "accuracy": 50.4,
       "tpr_at_fpr_0_01": 0.8
     }
   },
   "metrics": {
-    "auroc": 50.0,
-    "optimal_threshold": 1.5409423732084648,
+    "auroc": 50.4,
+    "optimal_threshold": 1.5355963617822346,
     "conf_matrix": [
       [
         26,
         224
       ],
       [
-        26,
-        224
+        24,
+        226
       ]
     ],
-    "precision": 50.0,
-    "recall": 89.6,
-    "f1": 64.18,
-    "accuracy": 50.0,
+    "precision": 50.22,
+    "recall": 90.4,
+    "f1": 64.57,
+    "accuracy": 50.4,
     "tpr_at_fpr_0_01": 0.8
   }
 }

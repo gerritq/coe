@@ -2,7 +2,7 @@
 #SBATCH --job-name=baseline_ablation_encoder
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=04:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -30,7 +30,7 @@ FOLDER="ablation"
 SMOKE_TEST=0
 OOD=0
 
-MODELS=("encoder")        
+MODELS=("repreguard" "biscope")        
 
 # Nested loop to run every model on every dataset
 for MODEL in "${MODELS[@]}"; do
