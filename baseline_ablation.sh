@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_ablation_repre_biscope
+#SBATCH --job-name=baseline_ablation_repre
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=05:00:00
+#SBATCH --time=03:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|b200
+#SBATCH --constraint=h200|b200|a100
 #SBATCH --exclude=erc-hpc-vm053 
 
 # set -euo pipefail
@@ -22,7 +22,7 @@ export CUDA_LAUNCH_BLOCKING=1
 - folder and file_name adjusted ONLY for encoder, biscope, and repre
 """
 
-DATASETS=("m4_gpt4")
+DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en")
 
 TRAINING_SIZES=(10 50 100 250 500)
 
@@ -30,7 +30,7 @@ FOLDER="ablation"
 SMOKE_TEST=0
 OOD=0
 
-MODELS=("repreguard" "biscope") 
+MODELS=("repreguard") 
 
 # Nested loop to run every model on every dataset
 for MODEL in "${MODELS[@]}"; do
