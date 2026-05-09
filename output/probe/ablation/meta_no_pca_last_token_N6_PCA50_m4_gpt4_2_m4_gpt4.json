@@ -1,0 +1,29 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "m4_gpt4",
+        "token_mode": "last_token",
+        "ood": false,
+        "smoke_test": false,
+        "components": 50,
+        "mode": "meta_no_pca",
+        "training_size": 6,
+        "folder": "ablation",
+        "model_name": "llama_8b",
+        "target_dataset": "m4_gpt4",
+        "datetime": "2026-05-09 11:05:37"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.991168,
+            "accuracy": 0.802,
+            "f1": 0.8341708542713567,
+            "tpr_at_fpr_0_05": 0.968,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.9918558767389246
+        }
+    },
+    "sim_correlations": null
+}

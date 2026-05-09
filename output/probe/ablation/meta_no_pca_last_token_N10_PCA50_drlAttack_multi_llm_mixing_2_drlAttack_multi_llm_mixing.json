@@ -1,0 +1,29 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "drlAttack_multi_llm_mixing",
+        "token_mode": "last_token",
+        "ood": false,
+        "smoke_test": false,
+        "components": 50,
+        "mode": "meta_no_pca",
+        "training_size": 10,
+        "folder": "ablation",
+        "model_name": "llama_8b",
+        "target_dataset": "drlAttack_multi_llm_mixing",
+        "datetime": "2026-05-09 10:47:30"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.8854240000000001,
+            "accuracy": 0.79,
+            "f1": 0.8,
+            "tpr_at_fpr_0_05": 0.568,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.8992153407512874
+        }
+    },
+    "sim_correlations": null
+}

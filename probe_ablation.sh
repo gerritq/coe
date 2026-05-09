@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=probe_training_sizes
+#SBATCH --job-name=probe_training_sizes_meta_no_pca
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=01:00:00
@@ -17,14 +17,14 @@ cd "${ROOT_DIR}"
 
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
-DATASETS=("drlDomain_arxiv" "tsm_first" "drlAttack_multi_llm_mixing" "multisocial_en" "m4_gpt4")
+# DATASETS=("drlDomain_arxiv" "tsm_first" "drlAttack_multi_llm_mixing" "multisocial_en" "m4_gpt4")
 # Ablations
-# DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+DATASETS=("tsm_first" "drlAttack_multi_llm_mixing" "multisocial_en" "m4_gpt4")
 
 TOKEN_MODE="last_token"
-MODES=("default") # default | pca | meta | meta_attn
+MODES=("meta_no_pca") # default | pca | meta | meta_attn
 COMPONENTS_LIST=(50)
-TRAINING_SIZES=(50 100 250 500)
+TRAINING_SIZES=(6 10 50 100 250 500)
 
 FOLDER="ablation"
 SMOKE_TEST=0
