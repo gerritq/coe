@@ -24,7 +24,6 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
-
 SMOKE_TEST=0
 OOD=0
 
@@ -33,7 +32,7 @@ MODELS=(
         # "raidar"
         # "editlens"
         # "revise"
-        "gescore"
+        # "gescore"
         # "biscope"
         # "text_fluoroscopy"
         # "radar"
