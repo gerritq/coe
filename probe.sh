@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_meta_no_pca_ood
+#SBATCH --job-name=probe_meta_no_pca_default_m4_gpt4_yelp
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=06:00:00
+#SBATCH --time=04:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -26,10 +26,10 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
 # DATASETS=("apt" "apt_m4_train")
 
-DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
+DATASETS=("m4_gpt4" "drlDomain_yelp_review")
 
 TOKEN_MODE="last_token"
-MODES=("meta_no_pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
+MODES=("meta_no_pca" "default") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
 OOD=1
 COMPONENTS=50
 SMOKE_TEST=0

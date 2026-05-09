@@ -30,6 +30,10 @@ def main() -> None:
     if args.mode not in {"default", "pca", "meta", "meta_attn", "meta_no_pca", "mlp"}:
         raise ValueError("mode must be one of: default, pca, meta, meta_attn, meta_no_pca, mlp")
 
+    if args.training_size == -1:
+        args.training_size = None
+
+
     args.smoke_test = bool(args.smoke_test)
     args.ood = bool(args.ood)
     args.model_name = args.model

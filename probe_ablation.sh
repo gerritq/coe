@@ -23,7 +23,7 @@ DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
 
 TOKEN_MODE="last_token"
 MODES=("mlp") # default | pca | meta | meta_attn
-COMPONENTS_LIST=(50)
+COMPONENTS_LIST=(-1)
 TRAINING_SIZES=("none")
 
 FOLDER="ablation"
