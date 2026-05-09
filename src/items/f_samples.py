@@ -154,6 +154,14 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float]]], datasets
     for idx, (ax, dataset) in enumerate(zip(axes, datasets)):
         x_values_for_ticks = set()
         y_values_for_ylim: list[float] = []
+        x_to_ymax: dict[int, float] = {}
+
+        for mode in MODES:
+            series = points.get((dataset, mode), [])
+            for n, auroc in series:
+                if n not in x_to_ymax or auroc > x_to_ymax[n]:
+                    x_to_ymax[n] = auroc
+
         for mode in MODES:
             series = points.get((dataset, mode), [])
             if not series:
@@ -169,7 +177,7 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float]]], datasets
             ax.vlines(
                 x,
                 ymin=y_line_floor,
-                ymax=y,
+                ymax=np.array([x_to_ymax[int(v)] for v in x], dtype=np.float64),
                 colors=MODE_COLORS[mode],
                 alpha=0.25,
                 linewidth=1.0,

@@ -1,9 +1,6 @@
 # To do
 
-- run default probe now with safeguard
-- add biscope and repreguard to the plots
-- repre runs with val!
-    - needs to change to train for sample
+- Check: new run for default and meta-no-pca for m4 gpt4 and yelp
 
 1. **ID**
 - TO DO:  
@@ -26,17 +23,13 @@
     - Writing 
 
 4. **Efficiency**
-- DO: check the issue with training size for layer-wise
-- Use ablation script to run meta and layer for different sample sizes
-- DO Consider which sets and whether to include a comparison (same as OOD)
-- How to solve nan/inf error for small sizes
-- Are the values actually correct?
+- TO DO
+    - Check the figure file
+    - Writing
 
-
-2. **OOD**
-- Show 4 baselines (biscope, repre, fluo, encoder) vs layer and meta
-- Beautify plot (compact, better color, model naming)
-
+5. **OOD**
+- Check new defualt/meta-no-pca runs
+- Figure out why BiScope is so good
 
 
 2. **Ablations**
@@ -57,9 +50,11 @@
 
 
 99. Misc
+- Probing vector similarity plot
+    - Could be a nice argument for universal, rather than relying on the numbers; to show this also visually
 - ensure we use mean projection metrics
     - compare to weighted metrics
-- Check that repre does use the correct split for training
+- We ran Repre with val, rerun with training split
 - The L1 penalty regression is still an interesting case which I would like to see somewhere
 - ensure that tables are pulling the correct numbers
 - fix repre scores
@@ -67,44 +62,8 @@
 - can extend beemo to llama, but for now we do gpt4
 - add new detector: https://github.com/ranhli/Learning2Rewrite
 - norm scores?
+- We could to the CB if we have space
 
-
-
-- entropy scaled run results
-- fix roberta
-- ai degree editjung data
-
-
-1. Run CB with M4 for probing and roberta   
-- Run APT with M4
-
-2. Update ID table and OOD figure
-- rename detectrl
-- run the ATP with meta; add results
-
-3. Other runs
-- Run APT with M4
-
-## Today 
-
-1.  Code the OOD setupt where one vs all
-    - Select Roberta + 3 other trained methods for this vs ours
-    - Need to check bert results, too good overfitting?
-
-2. Run our first LP baseline
-    - DONE Add the attention features to the meta probe
-    - Add summaries like mean etc.
-    - Begin ablations
-
-5. Universality of probing vectors
-    - Take a dataset with varying domains, languages, and generators.
-    - Run full OOD 
-    - Obtain the probing vectors across those settings and show their similarity in a heatmap
-
-6. Descriptives
-- Check the descriptives code and run
-- Add human subset per domain in the t-sne plot
-- Add the pca per layer line plot
 
 ## Has to be done
 

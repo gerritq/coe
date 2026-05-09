@@ -3,6 +3,9 @@
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
+# t_ood
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood
+
 # t_id
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id
 

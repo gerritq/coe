@@ -14,6 +14,22 @@ from datetime import datetime
 
 BASE_DIR = os.getenv("BASE_COE")
 
+import torch.nn as nn
+
+class MLPProbe(nn.Module):
+    def __init__(self, input_dim: int, hidden_dim: int):
+        super().__init__()
+
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim, 1)
+        )
+
+    def forward(self, x):
+        return self.net(x).squeeze(-1)
+
 class LinearProbing:
     def __init__(self, args: Namespace) -> None:
         self.args = args
@@ -197,9 +213,15 @@ class LinearProbing:
                 x_layer_train_scaled = pca.fit_transform(x_layer_train_scaled)
 
             # train probe
-            clf_binary = LogisticRegression(max_iter=2000, 
-                                            random_state=42)
-            clf_binary.fit(x_layer_train_scaled, y_train)
+            if self.args.mode == "mlp":
+                clf_binary = self._train_mlp_probe(
+                    x_train=x_layer_train_scaled,
+                    y_train=y_train,
+                )
+            else:
+                clf_binary = LogisticRegression(max_iter=2000, 
+                                                random_state=42)
+                clf_binary.fit(x_layer_train_scaled, y_train)
 
             # find optimal thresholds on val set
             x_layer_val = x_val[layer]  # (n_samples, d_model)
@@ -207,7 +229,13 @@ class LinearProbing:
 
             if self.args.mode == "pca":
                 x_layer_val_scaled = pca.transform(x_layer_val_scaled)
-            y_val_score = clf_binary.predict_proba(x_layer_val_scaled)[:, 1]
+            if self.args.mode == "mlp":
+                y_val_score = self._predict_mlp_prob(
+                    model=clf_binary,
+                    x=x_layer_val_scaled,
+                )
+            else:
+                y_val_score = clf_binary.predict_proba(x_layer_val_scaled)[:, 1]
             thresholds = optimal_thresholds(y_true=y_val, y_predict=y_val_score)
             
             # collect
@@ -231,6 +259,35 @@ class LinearProbing:
             "optimal_thresholds_by_layer": optimal_thresholds_by_layer,
             "val_metrics_by_layer": val_metrics_by_layer,
         }
+
+    def _train_mlp_probe(self, x_train: np.ndarray, y_train: np.ndarray) -> MLPProbe:
+        input_dim = x_train.shape[1]
+        hidden_dim = max(32, min(256, input_dim // 2))
+        model = MLPProbe(input_dim=input_dim, hidden_dim=hidden_dim)
+
+        x_t = torch.tensor(x_train, dtype=torch.float32)
+        y_t = torch.tensor(y_train, dtype=torch.float32)
+
+        criterion = nn.BCEWithLogitsLoss()
+        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+
+        model.train()
+        for _ in range(5):
+            optimizer.zero_grad()
+            logits = model(x_t)
+            loss = criterion(logits, y_t)
+            loss.backward()
+            optimizer.step()
+
+        model.eval()
+        return model
+
+    def _predict_mlp_prob(self, model: MLPProbe, x: np.ndarray) -> np.ndarray:
+        x_t = torch.tensor(x, dtype=torch.float32)
+        with torch.no_grad():
+            logits = model(x_t)
+            probs = torch.sigmoid(logits).cpu().numpy()
+        return probs
     
     def _evaluate_meta_probe(self,
                              train_out: dict[str, Any],
@@ -311,13 +368,16 @@ class LinearProbing:
             if self.args.mode == "pca":
                 x_layer_test_scaled = pca.transform(x_layer_test_scaled)
 
-            # A Probing vector
-            probe_vector = model.coef_[0]
-            probe_vector = probe_vector / np.linalg.norm(probe_vector)
+            if self.args.mode == "mlp":
+                x_proj = self._predict_mlp_prob(model=model, x=x_layer_test_scaled)
+            else:
+                # A Probing vector
+                probe_vector = model.coef_[0]
+                probe_vector = probe_vector / np.linalg.norm(probe_vector)
 
-            # project 
-            # n_samples x d_model/d_pca  x  d_model/d_pca -> n_samples
-            x_proj = np.dot(x_layer_test_scaled, probe_vector)
+                # project 
+                # n_samples x d_model/d_pca  x  d_model/d_pca -> n_samples
+                x_proj = np.dot(x_layer_test_scaled, probe_vector)
 
             # for small N; replace nan/and inf
             x_proj = np.nan_to_num(x_proj, nan=0.0, posinf=0.0, neginf=0.0)
@@ -416,7 +476,7 @@ class LinearProbing:
 
         # TRAINING THE PROBE
         # layer wise probe
-        if self.args.mode in ["default", "pca"]:
+        if self.args.mode in ["default", "pca", "mlp"]:
             train_out = self._train_linear_probe(x_train=train["hidden_x"], 
                                                 y_train=train["y"],
                                                 x_val=val["hidden_x"], 
@@ -442,7 +502,7 @@ class LinearProbing:
                                                     training_size=args.training_size))['test']
             test = self._collect_model_states(target_data)
 
-            if self.args.mode in ["default", "pca"]:
+            if self.args.mode in ["default", "pca", "mlp"]:
                 test_metrics = self._evaluate(train_out=train_out, test=test)
             else:
                 test_metrics = self._evaluate_meta_probe(train_out=train_out, test=test)

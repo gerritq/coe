@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_training_sizes_default
+#SBATCH --job-name=probe_mlp
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -19,12 +19,12 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
 # DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
 # Ablations
-DATASETS=("m4_gpt4")
+DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
 
 TOKEN_MODE="last_token"
-MODES=("default") # default | pca | meta | meta_attn
+MODES=("mlp") # default | pca | meta | meta_attn
 COMPONENTS_LIST=(50)
-TRAINING_SIZES=(10 50 100 750)
+TRAINING_SIZES=("none")
 
 FOLDER="ablation"
 SMOKE_TEST=0

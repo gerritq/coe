@@ -27,8 +27,8 @@ def main() -> None:
         raise ValueError("smoke_test must be 0 or 1")
     if args.ood not in (0, 1):
         raise ValueError("ood must be 0 or 1")
-    if args.mode not in {"default", "pca", "meta", "meta_attn", "meta_no_pca"}:
-        raise ValueError("mode must be one of: default, pca, meta, meta_attn")
+    if args.mode not in {"default", "pca", "meta", "meta_attn", "meta_no_pca", "mlp"}:
+        raise ValueError("mode must be one of: default, pca, meta, meta_attn, meta_no_pca, mlp")
 
     args.smoke_test = bool(args.smoke_test)
     args.ood = bool(args.ood)
