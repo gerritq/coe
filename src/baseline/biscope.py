@@ -15,9 +15,6 @@ from datetime import datetime
 
 from src.utils import return_device, metrics, return_args
 BASE_DIR = os.getenv("BASE_COE")
-BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
-os.makedirs(BASELINE_DIR, exist_ok=True)
-
 
 COMPLETION_PROMPT_ONLY = "Complete the following text: "
 COMPLETION_PROMPT = "Given the summary:\n{prompt}\n Complete the following text: "
@@ -284,6 +281,8 @@ class BiScope:
 
             out = {"args": out_args, 
                    "metrics": metrics_results}
-            with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
+            self.out_dir = os.path.join(BASE_DIR, "output", "baseline", args.folder)
+            os.makedirs(self.out_dir, exist_ok=True)
+            with open(os.path.join(self.out_dir, file_name), "w") as f:
                 json.dump(out, f, indent=2)
     

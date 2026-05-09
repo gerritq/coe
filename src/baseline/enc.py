@@ -18,8 +18,6 @@ import os
 from datetime import datetime
 
 BASE_DIR = os.getenv("BASE_COE")
-BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
-os.makedirs(BASELINE_DIR, exist_ok=True)
 
 MAX_LENGTH = 256
 BATCH_SIZE = 32
@@ -55,6 +53,9 @@ class EncoderBaseline:
             ood_data: list[Dataset]
             ) -> None:
         
+        self.out_dir = os.path.join(BASE_DIR, "output", "baseline", args.folder)
+        os.makedirs(self.out_dir, exist_ok=True)
+
         set_seed(self.seed)
 
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
@@ -122,5 +123,5 @@ class EncoderBaseline:
 
             out = {"args": out_args, 
                    "metrics": ds_metrics}
-            with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
+            with open(os.path.join(self.out_dir, file_name), "w") as f:
                 json.dump(out, f, indent=2)

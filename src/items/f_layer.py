@@ -1,6 +1,5 @@
 import json
 import os
-import re
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
@@ -12,43 +11,51 @@ PROBE_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 
 MODE = "default"
-FAMILIES = ["detectrl", "multisocial", "tsm", "CB"]
+FAMILIES = ["drlDomain", "multisocial", "tsm", "m4"]
+FAMILY_LABELS = {
+    "drlDomain": "DetectRL",
+    "multisocial": "Multisocial",
+    "tsm": "TSM-Bench",
+    "m4": "M4",
+}
 COLORS = {
-    "detectrl": "#1f77b4",
+    "drlDomain": "#1f77b4",
     "multisocial": "#d62728",
     "tsm": "#2ca02c",
-    "CB": "#ff7f0e",
+    "m4": "#ff7f0e",
 }
 MARKERS = {
-    "detectrl": "o",
+    "drlDomain": "o",
     "multisocial": "s",
     "tsm": "^",
-    "CB": "D",
+    "m4": "D",
+}
+FONT_SIZES = {
+    "axis": 16,
+    "ticks": 14,
+    "legend": 14,
 }
 
 
 def _family(dataset_name: str) -> str | None:
-    if dataset_name.startswith("detectrl_"):
-        return "detectrl"
+    if dataset_name.startswith("drlDomain_"):
+        return "drlDomain"
     if dataset_name.startswith("multisocial_"):
         return "multisocial"
     if dataset_name.startswith("tsm_"):
         return "tsm"
-    if dataset_name.startswith("CB_"):
-        return "CB"
+    if dataset_name.startswith("m4_"):
+        return "m4"
     return None
 
 
-def _parse_filename(filename: str) -> tuple[str, str, str] | None:
-    m = re.match(r"^(.*?)_last_token_(.+)_2_(.+)\.json$", filename)
-    if not m:
-        return None
-    return m.group(1), m.group(2), m.group(3)
-
-
-def _read_layer_aurocs(path: str) -> np.ndarray | None:
+def _read_layer_aurocs(path: str) -> tuple[dict, np.ndarray] | None:
     with open(path, "r", encoding="utf-8") as f:
         obj = json.load(f)
+
+    args = obj.get("args")
+    if not isinstance(args, dict):
+        return None
 
     tm = obj.get("test_metrics", {})
     by_layer = tm.get("test_metrics_by_layer")
@@ -60,7 +67,7 @@ def _read_layer_aurocs(path: str) -> np.ndarray | None:
         if not isinstance(x, dict) or "auroc" not in x:
             return None
         vals.append(float(x["auroc"]))
-    return np.asarray(vals, dtype=np.float64)
+    return args, np.asarray(vals, dtype=np.float64)
 
 
 def collect_layer_curves(id_only: bool) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray], dict[str, int]]:
@@ -71,11 +78,16 @@ def collect_layer_curves(id_only: bool) -> tuple[dict[str, np.ndarray], dict[str
         if not filename.endswith(".json"):
             continue
 
-        parsed = _parse_filename(filename)
-        if parsed is None:
+        read_out = _read_layer_aurocs(os.path.join(PROBE_DIR, filename))
+        if read_out is None:
             continue
 
-        mode, src, tgt = parsed
+        args, layer_aurocs = read_out
+        mode = args.get("mode")
+        src = args.get("dataset")
+        tgt = args.get("target_dataset")
+        if not isinstance(src, str) or not isinstance(tgt, str):
+            continue
         if mode != MODE:
             continue
 
@@ -88,10 +100,6 @@ def collect_layer_curves(id_only: bool) -> tuple[dict[str, np.ndarray], dict[str
         if id_only and src != tgt:
             continue
         if (not id_only) and src == tgt:
-            continue
-
-        layer_aurocs = _read_layer_aurocs(os.path.join(PROBE_DIR, filename))
-        if layer_aurocs is None:
             continue
 
         curves_by_family[fam].append(layer_aurocs)
@@ -129,6 +137,7 @@ def _plot(
     counts: dict[str, int],
     out_path: str,
     zoom: bool = False,
+    vline_layer: int | None = None,
 ) -> None:
     if not means:
         raise RuntimeError("No ID default-mode per-layer AUROC curves found.")
@@ -154,7 +163,7 @@ def _plot(
         plt.plot(
             x,
             y,
-            label=f"{fam} (n={counts[fam]})",
+            label=f"{FAMILY_LABELS.get(fam, fam)} (n={counts[fam]})",
             color=COLORS[fam],
             marker=MARKERS[fam],
             linewidth=2.0,
@@ -162,12 +171,17 @@ def _plot(
             alpha=0.95,
         )
 
-    plt.xlabel("Layer")
-    plt.ylabel("Mean AUROC")
+    if vline_layer is not None:
+        plt.axvline(vline_layer, color="gray", linestyle="--", linewidth=1.2, alpha=0.8)
+
+    plt.xlabel("Layer", fontsize=FONT_SIZES["axis"])
+    plt.ylabel("Mean AUROC", fontsize=FONT_SIZES["axis"])
     title_suffix = " (Zoomed)" if zoom else ""
-    plt.title(f"ID Per-Layer Mean AUROC by Dataset Family | mode={MODE}{title_suffix}")
+    # plt.title(f"ID Per-Layer Mean AUROC by Dataset Family | mode={MODE}{title_suffix}")
     plt.grid(alpha=0.25)
-    plt.legend(frameon=True)
+    plt.legend(frameon=True, fontsize=FONT_SIZES["legend"])
+    plt.xticks(fontsize=FONT_SIZES["ticks"])
+    plt.yticks(fontsize=FONT_SIZES["ticks"])
     if zoom:
         low = max(0.0, global_min - 0.02)
         high = min(1.0, global_max + 0.02)
@@ -189,13 +203,10 @@ def main() -> None:
     for split_name, id_only in [("id", True), ("ood", False)]:
         means, cis, counts = collect_layer_curves(id_only=id_only)
         out_main = os.path.join(OUT_DIR, f"{split_name}_probe_layer_auroc_default.pdf")
-        out_zoom = os.path.join(OUT_DIR, f"{split_name}_probe_layer_auroc_default_zoom.pdf")
-
-        _plot(means, cis, counts, out_main, zoom=False)
-        _plot(means, cis, counts, out_zoom, zoom=True)
+        vline_layer = 5 if split_name == "id" else 10
+        _plot(means, cis, counts, out_main, zoom=True, vline_layer=vline_layer)
 
         print(f"Saved figure: {out_main}")
-        print(f"Saved figure: {out_zoom}")
         print(f"{split_name.upper()} families plotted: {', '.join(sorted(means.keys()))}")
         for fam in sorted(counts.keys()):
             print(f"{fam}: n_{split_name}_pairs={counts[fam]}")

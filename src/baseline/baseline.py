@@ -15,9 +15,6 @@ from src.utils import (load_dataset,
 
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data/sets")
-BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
-os.makedirs(BASELINE_DIR, exist_ok=True)
-
 
 DEVICE = return_device()
 SEED = 42
@@ -110,13 +107,14 @@ def return_model(args: Namespace):
 
 def run(args):
 
+    # SUPERVISED MODELS
     if args.model in ['encoder', "repreguard", "text_fluoroscopy", "raidar", "biscope"]:
         supervised_models(args)
-    
+    # UNSUPERVISED MODELS
     else:
         # Source dataset for calibration.
         source_data = load_dataset(args=args)
-        baseline = return_model(args)
+        baseline = return_model (args)
         
         # VAL
         texts_val = source_data["val"]["text"]
@@ -159,7 +157,9 @@ def run(args):
             out_args['target_dataset'] = target_dataset
             out_args['datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
-            out_path = os.path.join(BASELINE_DIR, file_name)
+            out_dir = os.path.join(BASE_DIR, "output", "baseline", args.folder)
+            os.makedirs(out_dir, exist_ok=True)
+            out_path = os.path.join(out_dir, file_name)
             
             out = {"args": out_args,
                     "metrics": test_metrics}
@@ -173,6 +173,7 @@ def main():
     parser.add_argument("--smoke_test", type=int, required=True)
     parser.add_argument("--ood", type=int, default=0)
     parser.add_argument("--training_size", type=int, default=None)
+    parser.add_argument("--folder", type=str, default="sandbox")
     args = parser.parse_args()
 
     if args.smoke_test not in (0, 1):

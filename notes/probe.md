@@ -1,18 +1,44 @@
 # To do
 
-1. **Edit distance**
-- Edit editlens data
-- Check beemo data
-- Create a hist of metrics for beemo, editlens, and apt
-- Create a table of all that atch
-- Check M4 results but it does not seem to work
+1. **ID**
+- TO DO:  
+    - Run missing models
+    - Add learn2rewrite
+    - Keep only our models
+    - Other tables comments
+    - Writing 
+
+2. **Edit distance**
+- TO DO:  
+    - Table comments and writing
+- POTENTIAL TO DO:  
+    - Reason why it not works with Beemo is that there is not variability
+    - We could try their other prompts and/or Llama
+
+3. **Layer-analysis**
+- TO DO:  
+    - Check that the aggregation is correct
+    - Writing 
+
+4. **Efficiency**
+- DO: check the issue with training size for layer-wise
+- Use ablation script to run meta and layer for different sample sizes
+- DO Consider which sets and whether to include a comparison (same as OOD)
+- How to solve nan/inf error for small sizes
+- Are the values actually correct?
+
+
+2. **OOD**
+- Show 4 baselines (biscope, repre, fluo, encoder) vs layer and meta
+- Beautify plot (compact, better color, model naming)
+
+
 
 2. **Ablations**
-- PCA does not seem to help, neither does attention
-- Check whether this is true for OOD
-    - Currentl running OOD with meta_no_pca
+- We could keep PCA and then they we try but it does not work; we were motivated to use PCA componensts base don the findings that activations are separable in low-dimensions; but we did not find any imoprovement. We believe this is because the logistic regression with l2 penalty performs feature selection anywyas.
+- Check PCA one last time; attn does not make sense, this is a different space!
+- Confirm that PCA does not benefit for OOD
 
-- Create a table for the pca results
 - Further ablations
     - Layer
         - default/pca: linear probe vs non linear MLP (strong evidence for linearity if the same)
@@ -23,23 +49,17 @@
         - pca: Attention vs no attention
         - No attention: default vs pca values
 
-3. **Efficiency**
-- Use ablation script to run meta and layer for different sample sizes
-- Consider which sets and whether to include a comparison (same as OOD)
-- How to solve nan/inf error for small sizes
-- Are the values actually correct?
-
-4. **OOD**
-- Show 4 baselines (biscope, repre, fluo, encoder) vs layer and meta
-- Beautify plot (compact, better color, model naming)
-
 
 
 99. Misc
+- Check that repre does use the correct split for training
+- The L1 penalty regression is still an interesting case which I would like to see somewhere
 - ensure that tables are pulling the correct numbers
 - fix repre scores
 - fix PCA None
 - can extend beemo to llama, but for now we do gpt4
+- add new detector: https://github.com/ranhli/Learning2Rewrite
+- norm scores?
 
 
 

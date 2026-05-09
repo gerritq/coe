@@ -125,5 +125,7 @@ class RepreGuard:
                    "metrics": test_result}
             
             file_name = f"{args.model}_{args.dataset}_2_{ood_name}.json"
-            with open(os.path.join(BASELINE_DIR, file_name), "w") as f:
+            self.out_dir = os.path.join(BASE_DIR, "output", "baseline", args.folder)
+            os.makedirs(self.out_dir, exist_ok=True)
+            with open(os.path.join(self.out_dir, file_name), "w") as f:
                 json.dump(out, f, indent=2)
