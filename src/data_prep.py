@@ -18,11 +18,13 @@ M4_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "m4_multi")
 BEEMO_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "beemo")
 APT_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "apt")
 EDITLENS_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "editlens")
+RAID_RAW_DATA_DIR = os.path.join(RAW_DATA_DIR, "raid")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(BEEMO_RAW_DATA_DIR, exist_ok=True)
 os.makedirs(APT_RAW_DATA_DIR, exist_ok=True)
 os.makedirs(EDITLENS_RAW_DATA_DIR, exist_ok=True)
+os.makedirs(RAID_RAW_DATA_DIR, exist_ok=True)
 
 TRAINING_N = 1500
 VALIDATION_N = 500
@@ -68,6 +70,73 @@ def check_for_duplicates(data: dict[str, list[dict]]) -> None:
             else:
                 seen.add(text)
     print(f"Found {count} duplicates across splits")
+
+def process_raid():
+
+    train_per_label = TRAINING_N // 2
+    val_per_label = VALIDATION_N // 2
+    test_per_label = TESTING_N // 2
+
+    # from datasets import load_dataset
+    # ds = load_dataset("liamdugan/raid", "raid", split="train")
+
+    # # save to csv
+    # for split, subset in ds.items():
+    #     subset.to_csv(f"{RAW_DATA_DIR}/raid/{split}.csv", index=False)
+
+    # load data
+    data = pd.read_csv(os.path.join(RAID_RAW_DATA_DIR, "train.csv"))
+    data = data.to_dict("records")
+
+    models = set([x["model"] for x in data])
+    domains = set([x["domain"] for x in data])
+
+    print(f"Models in RAID dataset: {models}")
+    print(f"Domains in RAID dataset: {domains}")
+
+    human = [{"text": x["text"], "label": 0} for x in data if x["model"] == "human" and x["text"].strip()]
+    random.shuffle(human)
+
+    human_train = human[:train_per_label]
+    human_val = human[train_per_label:train_per_label + val_per_label]
+    human_test = human[train_per_label + val_per_label:train_per_label + val_per_label + test_per_label]
+
+    selected_models = ["gpt4", "llama-chat", "cohere-chat", "mistral-chat"]
+
+    for model in selected_models:
+        data_out = {"train": [], "val": [], "test": []}
+        print(f"Processing data for model: {model}")
+
+        subset = [x for x in data if x["model"] == model and x["text"].strip()]
+        # shuffle to mix domains/attacks etc
+        random.shuffle(subset)
+
+        pos = [{"text": x["text"], "label": 1} for x in subset if x["model"] == model]
+
+        data_out["train"].extend(pos[:train_per_label])
+        data_out["val"].extend(pos[train_per_label:train_per_label + val_per_label])
+        data_out["test"].extend(pos[train_per_label + val_per_label:train_per_label + val_per_label + test_per_label])
+
+        # add human
+        data_out["train"].extend(human_train)
+        data_out["val"].extend(human_val)
+        data_out["test"].extend(human_test)
+        
+        # shuffle splits
+        random.shuffle(data_out["train"])
+        random.shuffle(data_out["val"])
+        random.shuffle(data_out["test"])
+
+        output_dir = os.path.join(DATA_DIR, f"raid_{model.replace('-', '_')}")
+        os.makedirs(output_dir, exist_ok=True)
+        for split in ["train", "val", "test"]:
+            with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
+                for item in data_out[split]:
+                    f.write(json.dumps(item) + "\n")
+
+        check_for_duplicates(data_out)
+
+
 
 def process_editlens():
     # SAVE DATASET TO CSV
@@ -845,10 +914,16 @@ def main() -> None:
     # process_beemo()
 
     # editlens DATASETS
+    # print("="*60)
+    # print("="*60)
+    # print("Preparing editlens data...")
+    # process_editlens()
+
+    # raid DATASETS
     print("="*60)
     print("="*60)
-    print("Preparing editlens data...")
-    process_editlens()
+    print("Preparing raid data...")
+    process_raid()
 
 if __name__ == "__main__":
     main()

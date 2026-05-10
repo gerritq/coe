@@ -1,12 +1,14 @@
 # To do
 
+- run raid on the hpc, to avoid gbs
+
 - in ood table: i think there are duplicates and they overwrite each other!!
 - Check: new run for default and meta-no-pca for m4 gpt4 and yelp
 
 1. **ID**
 - TO DO:  
     - Run missing models
-    - Add learn2rewrite
+    - Add learn2rewrite, maybe DNA-GPT
     - Keep only our models
     - Other tables comments
     - Writing 
@@ -32,6 +34,16 @@
 - Check new defualt/meta-no-pca runs
 - Figure out why BiScope is so good
 
+6. **Descriptives**
+- L1 plot is interesting as it confirms the low-dim space
+- HOT!
+- Some good plots: https://transformer-circuits.pub/2026/emotions/index.html
+    - Maybe we can also do PCA on multiple probes?
+    - Or can we do PCA on all layer probes?
+        - We can plot the probes in to 2D space?s
+
+
+
 
 2. **Ablations**
 - We could keep PCA and then they we try but it does not work; we were motivated to use PCA componensts base don the findings that activations are separable in low-dimensions; but we did not find any imoprovement. We believe this is because the logistic regression with l2 penalty performs feature selection anywyas.
@@ -53,6 +65,11 @@
 99. Misc
 - Probing vector similarity plot
     - Could be a nice argument for universal, rather than relying on the numbers; to show this also visually
+
+
+- rerun encoder, biscope, and repreguard on the four sample efficency data sets
+- M4 generators: are we mixing the data? Should check if we wanna use it
+- Maybe another dataset to consider: https://aclanthology.org/2024.findings-naacl.29.pdf
 - ensure we use mean projection metrics
     - compare to weighted metrics
 - We ran Repre with val, rerun with training split
@@ -64,22 +81,11 @@
 - add new detector: https://github.com/ranhli/Learning2Rewrite
 - norm scores?
 - We could to the CB if we have space
+- Add cool symbols top the table for reddit etc.
 
 
 ## Has to be done
 
-- rerun encoder, biscope, and repreguard on the four sample efficency data sets
-
-
-- Do we need to scale entropy? Because with longer sequences we will have higher entropy
-    - I think yes
-
-- Add cool symbols top the table for reddit etc.
-
-- Supervised detectors
-    - Editlens data and hf model
-    - DNA GPT
-    - Shared task detector
 
 - Generator ds using M4!!! In appendeix, we use it for CB
 

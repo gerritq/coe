@@ -1,38 +1,23 @@
 \begin{tabular}{lcccc}
 \toprule
-\multicolumn{5}{l}{\textbf{Panel A: PCA}} \\
+\textbf{Setting} & \textbf{First} & \textbf{Extend} & \textbf{Sums} & \textbf{TST} \\
 \midrule
-\textbf{Components} & tsm_first & tsm_extend & tsm_sums & tsm_tst \\
-0 & 0.978 & 0.941 & 0.980 & 0.897 \\
-\midrule
-5 & 0.859 & 0.719 & 0.901 & 0.661 \\
-10 & 0.907 & 0.826 & 0.932 & 0.776 \\
-20 & 0.942 & 0.894 & 0.955 & 0.841 \\
-30 & 0.952 & 0.914 & 0.963 & 0.856 \\
-50 & 0.962 & 0.928 & 0.970 & 0.873 \\
-75 & 0.967 & 0.939 & 0.976 & 0.890 \\
-100 & 0.971 & 0.943 & 0.978 & 0.896 \\
-\midrule
-\multicolumn{5}{l}{\textbf{Panel B: Default Token Mode}} \\
-\midrule
-Mean Pooling & 0.971 & 0.868 & 0.969 & 0.851 \\
-Last Token & 0.978 & 0.941 & 0.980 & 0.897 \\
-\midrule
-\multicolumn{5}{l}{\textbf{Panel C: Meta}} \\
-\midrule
-Meta No PCA & 0.978 & 0.938 & 0.975 & 0.896 \\
-\midrule
-Meta PCA 10 & 0.937 & 0.910 & 0.961 & 0.834 \\
-Meta PCA 20 & 0.959 & 0.900 & 0.954 & 0.860 \\
-Meta PCA 30 & 0.963 & 0.918 & 0.960 & 0.868 \\
-Meta PCA 50 & 0.969 & 0.920 & 0.960 & 0.877 \\
-Meta PCA 75 & 0.972 & 0.921 & 0.968 & 0.892 \\
-Meta PCA 100 & 0.973 & 0.920 & 0.970 &  \\
-\midrule
-\multicolumn{5}{l}{\textbf{Panel D: Meta No PCA vs Meta Attn PCA 50}} \\
-\midrule
-Meta PCA 50 & 0.969 & 0.920 & 0.960 & 0.877 \\
-Meta No PCA & 0.978 & 0.938 & 0.975 & 0.896 \\
-Meta Attn PCA 50 & 0.969 & 0.923 & 0.962 & 0.877 \\
+Baseline & 0.978 & 0.941 & 0.980 & 0.897 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Token Aggregation}} \\
+\hspace*{1em}Pooling & -0.008 & -0.073 & -0.011 & -0.046 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Probe}} \\
+\hspace*{1em}MLP & -0.013 & -0.010 & -0.018 & -0.010 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Regularization Penalty}} \\
+\hspace*{1em}C=0.01 & -0.002 & +0.003 & +0.001 & +0.002 \\
+\hspace*{1em}C=0.1 & -0.001 & +0.002 & +0.001 & -0.001 \\
+\hspace*{1em}C=10 & +0.000 & -0.000 & -0.000 & +0.001 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{PCA Activations}} \\
+\hspace*{1em}k=10 & -0.072 & -0.115 & -0.048 & -0.121 \\
+\hspace*{1em}k=50 & -0.017 & -0.013 & -0.011 & -0.024 \\
+\hspace*{1em}k=100 & -0.008 & +0.002 & -0.002 & -0.002 \\
 \bottomrule
 \end{tabular}
