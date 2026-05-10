@@ -8,7 +8,7 @@
 1. **ID**
 - TO DO:  
     - Run missing models
-    - Add learn2rewrite, maybe DNA-GPT
+    - Add learn2rewrite, maybe DNA-GPT; maybe learn 2 distance
     - Keep only our models
     - Other tables comments
     - Writing 
@@ -119,6 +119,8 @@
     - https://aclanthology.org/2026.eacl-long.324.pdf also investigate heads. Then we could also identify which heads are important
 
 - Try different performance weight taus; try different pca components; can we try other metrics?
+
+- Attention probes: https://learnmechinterp.com/topics/attention-probes/
 
 ---
 

@@ -77,16 +77,21 @@ def process_raid():
     val_per_label = VALIDATION_N // 2
     test_per_label = TESTING_N // 2
 
-    # from datasets import load_dataset
-    # ds = load_dataset("liamdugan/raid", "raid", split="train")
+    train_jsonl = os.path.join(RAID_RAW_DATA_DIR, "train.jsonl")
+    if not os.path.exists(train_jsonl):
+        from datasets import load_dataset
 
-    # # save to csv
-    # for split, subset in ds.items():
-    #     subset.to_csv(f"{RAW_DATA_DIR}/raid/{split}.csv", index=False)
+        ds = load_dataset("liamdugan/raid", "raid", split="train")
+        ds.to_json(
+            os.path.join(RAID_RAW_DATA_DIR, f"{split}.jsonl"),
+            orient="records",
+            lines=True,
+            force_ascii=False,)
+            
 
-    # load data
-    data = pd.read_csv(os.path.join(RAID_RAW_DATA_DIR, "train.csv"))
-    data = data.to_dict("records")
+    # load data from jsonl
+    with open(train_jsonl, "r", encoding="utf-8") as f:
+        data = [json.loads(line) for line in f]
 
     models = set([x["model"] for x in data])
     domains = set([x["domain"] for x in data])
@@ -94,7 +99,7 @@ def process_raid():
     print(f"Models in RAID dataset: {models}")
     print(f"Domains in RAID dataset: {domains}")
 
-    human = [{"text": x["text"], "label": 0} for x in data if x["model"] == "human" and x["text"].strip()]
+    human = [{"text": x["generation"], "domain": x["domain"], "attack": x["attack"], "label": 0} for x in data if x["model"] == "human" and x["text"].strip()]
     random.shuffle(human)
 
     human_train = human[:train_per_label]
@@ -107,11 +112,11 @@ def process_raid():
         data_out = {"train": [], "val": [], "test": []}
         print(f"Processing data for model: {model}")
 
-        subset = [x for x in data if x["model"] == model and x["text"].strip()]
+        subset = [x for x in data if x["model"] == model and x["generation"].strip()]
         # shuffle to mix domains/attacks etc
         random.shuffle(subset)
 
-        pos = [{"text": x["text"], "label": 1} for x in subset if x["model"] == model]
+        pos = [{"text": x["generation"], "domain": x["domain"], "attack": x["attack"], "label": 1} for x in subset if x["model"] == model]
 
         data_out["train"].extend(pos[:train_per_label])
         data_out["val"].extend(pos[train_per_label:train_per_label + val_per_label])
@@ -121,7 +126,7 @@ def process_raid():
         data_out["train"].extend(human_train)
         data_out["val"].extend(human_val)
         data_out["test"].extend(human_test)
-        
+
         # shuffle splits
         random.shuffle(data_out["train"])
         random.shuffle(data_out["val"])
