@@ -139,6 +139,18 @@ def process_raid():
                 for item in data_out[split]:
                     f.write(json.dumps(item) + "\n")
 
+        # domain and attack distribution check
+        for split in data_out:
+            domain_dist = {}
+            attack_dist = {}
+            for item in data_out[split]:
+                domain = item["domain"]
+                attack = item["attack"]
+                domain_dist[domain] = domain_dist.get(domain, 0) + 1
+                attack_dist[attack] = attack_dist.get(attack, 0) + 1
+            print(f"{split} domain distribution: {domain_dist}")
+            print(f"{split} attack distribution: {attack_dist}")
+
         check_for_duplicates(data_out)
 
 
