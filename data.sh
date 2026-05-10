@@ -5,7 +5,7 @@
 #SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu,interruptible_gpu
 #SBATCH --gres=gpu:1
-#SBATCH --mem=20GB
+#SBATCH --mem=50GB
 #SBATCH --exclude=erc-hpc-comp054
 
 nvidia-smi
