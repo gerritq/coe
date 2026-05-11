@@ -80,7 +80,6 @@ class LinearProbing:
             # otbain the probing vector
 
             probe_vector = clf_binary.coef_[0]
-            probe_vector = probe_vector / np.linalg.norm(probe_vector)
 
             probing_vectors_by_layer.append(probe_vector)
         probing_vectors_by_layer = np.stack(probing_vectors_by_layer, axis=0)  # (n_layers, d_model)
