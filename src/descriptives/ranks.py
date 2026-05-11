@@ -41,7 +41,7 @@ def load_train_items(dataset_name: str, smoke_test: bool) -> list[dict]:
     return sampled
 
 
-def collect_last_layer_embeddings(items: list[dict], model_name: str) -> tuple[np.ndarray, np.ndarray]:
+def collect_middle_layer_embeddings(items: list[dict], model_name: str) -> tuple[np.ndarray, np.ndarray]:
     inference = Inference(model_name=model_name)
     infer_args = Namespace(mode="default", token_mode="last_token")
 
@@ -49,8 +49,10 @@ def collect_last_layer_embeddings(items: list[dict], model_name: str) -> tuple[n
     y = []
     for item in items:
         out = inference.run(item=item, args=infer_args)
-        # final token representation from the last layer
-        vec = out["hidden_states"][-1].detach().to(torch.float32).cpu().numpy()
+        # token representation from the middle layer
+        hidden_states = out["hidden_states"]
+        mid_idx = len(hidden_states) // 2
+        vec = hidden_states[mid_idx].detach().to(torch.float32).cpu().numpy()
         x.append(vec)
         y.append(int(out["label"]))
 
@@ -108,7 +110,7 @@ def run(args: Namespace) -> None:
 
     for dataset_name in ["raidDomain_wiki", "raidDomain_reddit", "multisocial_de", "multisocial_en"]:
         items = load_train_items(dataset_name=dataset_name, smoke_test=smoke)
-        x, y = collect_last_layer_embeddings(items=items, model_name=args.model)
+        x, y = collect_middle_layer_embeddings(items=items, model_name=args.model)
         out_path = os.path.join(OUT_DIR, f"{dataset_name}_cumvar_{args.model}{suffix}.pdf")
         plot_domain_curves(
             dataset_name=dataset_name,
