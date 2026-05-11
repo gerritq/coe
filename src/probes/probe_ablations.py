@@ -38,6 +38,7 @@ class Probe:
         self.p = p
         self.model = None
         self.poly = None
+        self.post_poly_scaler = None
 
     def fit(self, x: np.ndarray, y: np.ndarray) -> None:
         if self.kind == "mlp":
@@ -62,6 +63,9 @@ class Probe:
         if self.kind == "poly":
             self.poly = PolynomialFeatures(degree=self.p, include_bias=False)
             x = self.poly.fit_transform(x)
+            # Additional scaling after polynomial expansion improves conditioning.
+            self.post_poly_scaler = StandardScaler()
+            x = self.post_poly_scaler.fit_transform(x)
 
         model = LogisticRegression(max_iter=2000, random_state=42, C=self.c)
         model.fit(x, y)
@@ -77,6 +81,7 @@ class Probe:
 
         if self.kind == "poly":
             x = self.poly.transform(x)
+            x = self.post_poly_scaler.transform(x)
         return self.model.predict_proba(x)[:, 1]
 
 class Probing:

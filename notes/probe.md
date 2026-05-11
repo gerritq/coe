@@ -1,33 +1,12 @@
 # To do
 
-1. Run with Raid domain
+1. Running
+    - Biscope OOD RAID Models
+    - All baselines ID and OOD Raid domains
 2. Non-linearity
+    - __CHECK__ poly for TSM
 3. Layer ablations
-
-- run missing ID
-- run Biscope raid Models 
-- sort Hanqi feedback
-
-- Why LP works so well OOD
-- Ablation: first vs last layer
-- Limited samples
-    - CI around
-
-- Introduction
-    - increase non-linearely then w see worse
-    - x axis is non-linearly of probes - and ya-axis performance drop => so non linear
-    - MLP with or various activations 
-- OOD more sensitive to linearity 
-    - Non linear is worse
-    - Select on one and apply to three others 
-    - Train non-linear with different degrees
-- Combine datasets, apply pca
-    - Get SV and the plot
-    - Or show the decision boundary bc orthogonal
-
----
----
----
+    - Running first and last layer
 
 - about heatmps: https://transformer-circuits.pub/2026/emotions/index.html
 
@@ -102,28 +81,18 @@
 67. Hanqi Feedback
     
     1.  Can we understand why LP works so well OOD?
-    - Can we see increase non-linearity and seeh whether it is getting worse?
-    - x-axis is non-linearly of probes - and y-axis performance => so non linear
-    - MLP with or various activations or probe with higher exponents
+        - Can we see increase non-linearity and seeh whether it is getting worse?
+        - x-axis is non-linearly of probes - and y-axis performance => so non linear
+        - MLP with or various activations or probe with higher exponents
+        - Test this for OOD
 
+    2. Ablations with first and last layer
 
-- Ablation: first vs last layer
-- Limited samples
-    - CI around
+    3. For sample efficiency: add CI, run with different seeds
 
-- Introduction
-    - increase non-linearely then w see worse
-    - x axis is non-linearly of probes - and ya-axis performance drop => so non linear
-    - MLP with or various activations 
-- OOD more sensitive to linearity 
-    - Non linear is worse
-    - Select on one and apply to three others 
-    - Train non-linear with different degrees
-- Combine datasets, apply pca
-    - Get SV and the plot
-    - Or show the decision boundary bc orthogonal
-
-
+    4. Combine datasets, apply pca
+        - Get SV and the plot
+        - Or show the decision boundary bc orthogonal
 
 99. Misc
 - ensure in all tables that we take the mean not weighted
@@ -131,20 +100,31 @@
 - Probing vector similarity plot
     - Could be a nice argument for universal, rather than relying on the numbers; to show this also visually
 
-
 - rerun encoder, biscope, and repreguard on the four sample efficency data sets
+
 - M4 generators: are we mixing the data? Should check if we wanna use it
+
 - Maybe another dataset to consider: https://aclanthology.org/2024.findings-naacl.29.pdf
+
 - ensure we use mean projection metrics
     - compare to weighted metrics
+
 - We ran Repre with val, rerun with training split
+
 - The L1 penalty regression is still an interesting case which I would like to see somewhere
+
 - ensure that tables are pulling the correct numbers
+
 - fix repre scores
+
 - fix PCA None
+
 - can extend beemo to llama, but for now we do gpt4
+
 - norm scores?
+
 - We could to the CB if we have space
+
 - Add cool symbols top the table for reddit etc.
 
 
