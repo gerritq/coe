@@ -30,20 +30,20 @@ DATASET_GROUPS = {
         "tsm_sums",
         "tsm_tst",
     ],
-    "m4": [
-        "m4_bloomz",
-        "m4_cohere",
-        "m4_dolly",
-        "m4_gpt4",
+    "raid": [
+        "raid_cohere_chat",
+        "raid_gpt4",
+        "raid_llama_chat",
+        "raid_mistral_chat",
     ],
 }
 
-FAMILY_ORDER = ["drlDomain", "multisocial", "tsm", "m4"]
+FAMILY_ORDER = ["drlDomain", "multisocial", "tsm", "raid"]
 FAMILY_LABELS = {
     "drlDomain": "DetectRL",
     "multisocial": "Multisocial",
     "tsm": "TSM",
-    "m4": "M4GT",
+    "raid": "RAID",
 }
 
 METHOD_SPECS = {
@@ -76,8 +76,16 @@ def _short_label(dataset_name: str) -> str:
         return dataset_name.replace("multisocial_", "")
     if dataset_name.startswith("tsm_"):
         return dataset_name.replace("tsm_", "")
-    if dataset_name.startswith("m4_"):
-        return dataset_name.replace("m4_", "")
+    if dataset_name.startswith("raid_"):
+        if dataset_name == "raid_cohere_chat":
+            return "cohere"
+        if dataset_name == "raid_gpt4":
+            return "gpt4"
+        if dataset_name == "raid_llama_chat":
+            return "llama"
+        if dataset_name == "raid_mistral_chat":
+            return "mistral"
+        return dataset_name.replace("raid_", "")
     return dataset_name
 
 

@@ -1,6 +1,13 @@
 # To do
 
+- remove the attn idea
+- New file: Probing vector comparison per layer
+    - LxL matrix of cosine per dataset/subest
+- Can we do a full 16x16 where we aggreagate cosine per layer!!!
+
 - run raid on the hpc, to avoid gbs
+
+- check cross Benchmark: https://arxiv.org/pdf/2509.10625
 
 - in ood table: i think there are duplicates and they overwrite each other!!
 - Check: new run for default and meta-no-pca for m4 gpt4 and yelp

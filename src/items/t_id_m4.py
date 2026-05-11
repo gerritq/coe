@@ -26,11 +26,11 @@ DATASET_GROUPS = {
         "tsm_sums",
         "tsm_tst",
     ],
-    "raid": [
-        "raid_cohere_chat",
-        "raid_gpt4",
-        "raid_llama_chat",
-        "raid_mistral_chat",
+    "m4": [
+        "m4_bloomz",
+        "m4_cohere",
+        "m4_dolly",
+        "m4_gpt4",
     ],
 }
 
@@ -51,10 +51,10 @@ DATASET_LABELS = {
     "tsm_first": r"\textbf{First}",
     "tsm_sums": r"\textbf{Sums}",
     "tsm_tst": r"\textbf{TST}",
-    "raid_cohere_chat": r"\textbf{Cohere}",
-    "raid_gpt4": r"\textbf{GPT4}",
-    "raid_llama_chat": r"\textbf{Llama}",
-    "raid_mistral_chat": r"\textbf{Mistral}",
+    "m4_bloomz": r"\textbf{Bloomz}",
+    "m4_cohere": r"\textbf{Cohere}",
+    "m4_dolly": r"\textbf{Dolly}",
+    "m4_gpt4": r"\textbf{GPT4}",
 }
 
 MODEL_LABELS = {
@@ -73,7 +73,6 @@ MODEL_LABELS = {
     "text_fluoroscopy": "TextFluoroscopy",
     "editlens": "EditLens",
     "encoder": "RoBERTa",
-    "revise": "Revise",
 }
 
 ZERO_SHOT_MODELS = [
@@ -92,7 +91,6 @@ SUPERVISED_MODELS = [
     "radar",
     "editlens",
     "raidar",
-    "revise",
     "biscope",
     "text_fluoroscopy",
     "encoder",
@@ -130,7 +128,7 @@ def _probe_auroc(test_metrics: dict, mode: str | None) -> float | None:
 
 def _all_datasets() -> list[str]:
     datasets = []
-    for group in ["drlDomain", "multisocial", "tsm", "raid"]:
+    for group in ["drlDomain", "multisocial", "tsm", "m4"]:
         datasets.extend(DATASET_GROUPS[group])
     return datasets
 
@@ -201,7 +199,7 @@ def render_table(
     drldomain_n = len(DATASET_GROUPS["drlDomain"])
     multisocial_n = len(DATASET_GROUPS["multisocial"])
     tsm_n = len(DATASET_GROUPS["tsm"])
-    raid_n = len(DATASET_GROUPS["raid"])
+    m4_n = len(DATASET_GROUPS["m4"])
 
     start_drldomain = 2
     end_drldomain = start_drldomain + drldomain_n - 1
@@ -209,8 +207,8 @@ def render_table(
     end_multisocial = start_multisocial + multisocial_n - 1
     start_tsm = end_multisocial + 1
     end_tsm = start_tsm + tsm_n - 1
-    start_raid = end_tsm + 1
-    end_raid = start_raid + raid_n - 1
+    start_m4 = end_tsm + 1
+    end_m4 = start_m4 + m4_n - 1
 
     # Keep only selected probe rows.
     ordered_probe_rows = []
@@ -260,14 +258,14 @@ def render_table(
     lines = [
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
-        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM~\\citep{{quaremba2026tsm}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{RAID}}}} \\\\".format(
-            drldomain_n, multisocial_n, tsm_n, raid_n
+        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM~\\citep{{quaremba2026tsm}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{M4GT~\\cite{{wang2024m4gt}}}}}} \\\\".format(
+            drldomain_n, multisocial_n, tsm_n, m4_n
         ),
         "\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}".format(
             start_drldomain, end_drldomain,
             start_multisocial, end_multisocial,
             start_tsm, end_tsm,
-            start_raid, end_raid,
+            start_m4, end_m4,
         ),
         "\\textbf{Model} & " + " & ".join(DATASET_LABELS[d] for d in datasets) + " \\\\",
         "\\midrule",

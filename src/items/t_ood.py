@@ -27,20 +27,20 @@ DATASET_GROUPS = {
         "tsm_sums",
         "tsm_tst",
     ],
-    "m4": [
-        "m4_bloomz",
-        "m4_cohere",
-        "m4_dolly",
-        "m4_gpt4",
+    "raid": [
+        "raid_cohere_chat",
+        "raid_gpt4",
+        "raid_llama_chat",
+        "raid_mistral_chat",
     ],
 }
 
-FAMILY_ORDER = ["drlDomain", "multisocial", "tsm", "m4"]
+FAMILY_ORDER = ["drlDomain", "multisocial", "tsm", "raid"]
 FAMILY_TITLE = {
     "drlDomain": r"\textbf{DetectRL}",
     "multisocial": r"\textbf{Multisocial}",
     "tsm": r"\textbf{TSM}",
-    "m4": r"\textbf{M4GT}",
+    "raid": r"\textbf{RAID}",
 }
 SUBSET_LABELS = {
     "drlDomain_arxiv": r"\textbf{ArXiv}",
@@ -55,10 +55,10 @@ SUBSET_LABELS = {
     "tsm_extend": r"\textbf{Extend}",
     "tsm_sums": r"\textbf{Sums}",
     "tsm_tst": r"\textbf{TST}",
-    "m4_bloomz": r"\textbf{Bloomz}",
-    "m4_cohere": r"\textbf{Cohere}",
-    "m4_dolly": r"\textbf{Dolly}",
-    "m4_gpt4": r"\textbf{GPT4}",
+    "raid_cohere_chat": r"\textbf{Cohere}",
+    "raid_gpt4": r"\textbf{GPT4}",
+    "raid_llama_chat": r"\textbf{Llama}",
+    "raid_mistral_chat": r"\textbf{Mistral}",
 }
 
 # Same set as f_ood.py
@@ -218,7 +218,7 @@ def render_table(rows: dict[str, dict[str, float | None]]) -> str:
     drl_n = len(DATASET_GROUPS["drlDomain"])
     ms_n = len(DATASET_GROUPS["multisocial"])
     tsm_n = len(DATASET_GROUPS["tsm"])
-    m4_n = len(DATASET_GROUPS["m4"])
+    raid_n = len(DATASET_GROUPS["raid"])
 
     s1 = 2
     e1 = s1 + drl_n - 1
@@ -227,7 +227,7 @@ def render_table(rows: dict[str, dict[str, float | None]]) -> str:
     s3 = e2 + 1
     e3 = s3 + tsm_n - 1
     s4 = e3 + 1
-    e4 = s4 + m4_n - 1
+    e4 = s4 + raid_n - 1
 
     # Per-column styles across all models (tie-aware on displayed precision).
     style_map: dict[str, dict[str, str | None]] = {subset: {} for subset in all_subsets}
@@ -256,7 +256,7 @@ def render_table(rows: dict[str, dict[str, float | None]]) -> str:
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
         "& \\multicolumn{%d}{c}{%s} & \\multicolumn{%d}{c}{%s} & \\multicolumn{%d}{c}{%s} & \\multicolumn{%d}{c}{%s} \\\\"
-        % (drl_n, FAMILY_TITLE["drlDomain"], ms_n, FAMILY_TITLE["multisocial"], tsm_n, FAMILY_TITLE["tsm"], m4_n, FAMILY_TITLE["m4"]),
+        % (drl_n, FAMILY_TITLE["drlDomain"], ms_n, FAMILY_TITLE["multisocial"], tsm_n, FAMILY_TITLE["tsm"], raid_n, FAMILY_TITLE["raid"]),
         "\\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d}"
         % (s1, e1, s2, e2, s3, e3, s4, e4),
         "\\textbf{Model $\\downarrow$ / OOD $\\rightarrow$} & " + " & ".join(SUBSET_LABELS[s] for s in all_subsets) + " \\\\",

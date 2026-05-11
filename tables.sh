@@ -13,7 +13,7 @@ cd "${ROOT_DIR}"
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_samples
 
 # f_ood
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_ood
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_ood
 
 # t_ablations
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
