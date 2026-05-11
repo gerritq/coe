@@ -92,7 +92,6 @@ class Probing:
                               ) -> dict[str, Any]:
         
         all_hidden_states = []
-        all_attention_entropies = []
         labels = []
         meta = []
         
@@ -326,34 +325,43 @@ class Probing:
             test_metrics_by_layer.append(layer_metrics)
 
 
-        # A aggregate projection score, mean projection
+        # A aggregate projection score
         all_projections = np.stack(all_projections, axis=0)  # (n_layers, n_samples)
         
         # for small N; replace nan/and inf
         all_projections = np.nan_to_num(all_projections, nan=0.0, posinf=0.0, neginf=0.0)
-        
-        mean_projection = all_projections.mean(axis=0)  # (n_samples,)
+
+        if self.args.mode == "first_layer":
+            aggregate_projection = all_projections[0]
+        elif self.args.mode == "last_layer":
+            aggregate_projection = all_projections[-1]
+        else:
+            aggregate_projection = all_projections.mean(axis=0)  # (n_samples,)
+
         mean_projection_metrics = metrics(
             y_true=y_true,
-            y_predict=mean_projection,
+            y_predict=aggregate_projection,
             f1_threshold=0.5,
             acc_threshold=0.5,
         )
 
         # B Aggreagtion using auroc as weight
-        auroc_val_by_layer = np.array([m["auroc"] for m in train_out["val_metrics_by_layer"]], dtype=np.float64)
-        # sets a
-        auroc_val_by_layer = np.clip(auroc_val_by_layer - 0.5, a_min=0.0, a_max=None)
+        if self.args.mode in {"first_layer", "last_layer"}:
+            weighted_projection = aggregate_projection
+        else:
+            auroc_val_by_layer = np.array([m["auroc"] for m in train_out["val_metrics_by_layer"]], dtype=np.float64)
+            # sets a
+            auroc_val_by_layer = np.clip(auroc_val_by_layer - 0.5, a_min=0.0, a_max=None)
 
-        # softmax with temperature (lower temp -> more focus on top layers)
-        temp = 0.5
-        z = auroc_val_by_layer / max(temp, 1e-8)
-        z = z - z.max()  # stability
-        w = np.exp(z)
-        w = w / (w.sum() + 1e-12)  # shape (n_layers,)
+            # softmax with temperature (lower temp -> more focus on top layers)
+            temp = 0.5
+            z = auroc_val_by_layer / max(temp, 1e-8)
+            z = z - z.max()  # stability
+            w = np.exp(z)
+            w = w / (w.sum() + 1e-12)  # shape (n_layers,)
 
-        # weighted aggregate score per sample
-        weighted_projection = np.sum(all_projections * w[:, None], axis=0)  # (n_samples,)
+            # weighted aggregate score per sample
+            weighted_projection = np.sum(all_projections * w[:, None], axis=0)  # (n_samples,)
 
         weighted_projection_metrics = metrics(
             y_true=y_true,
@@ -367,7 +375,7 @@ class Probing:
             "mean_projection_metrics": mean_projection_metrics,
             "weighted_projection_metrics": weighted_projection_metrics,
             "scores": {
-                "mean_projection": mean_projection.tolist(),
+                "mean_projection": aggregate_projection.tolist(),
                 "weighted_projection": weighted_projection.tolist(),
             }
         }
@@ -408,7 +416,7 @@ class Probing:
 
         # TRAINING THE PROBE
         # layer wise probe
-        if self.args.mode in ["default", "pca", "mlp", "poly"]:
+        if self.args.mode in ["default", "pca", "mlp", "poly", "first_layer", "last_layer"]:
             train_out = self._train_linear_probe(x_train=train["hidden_x"], 
                                                 y_train=train["y"],
                                                 x_val=val["hidden_x"], 
@@ -434,7 +442,7 @@ class Probing:
                                                     training_size=args.training_size))['test']
             test = self._collect_model_states(target_data)
 
-            if self.args.mode in ["default", "pca", "mlp", "poly"]:
+            if self.args.mode in ["default", "pca", "mlp", "poly", "first_layer", "last_layer"]:
                 test_metrics = self._evaluate(train_out=train_out, test=test)
             else:
                 test_metrics = self._evaluate_meta_probe(train_out=train_out, test=test)
@@ -491,8 +499,8 @@ def main() -> None:
         raise ValueError("smoke_test must be 0 or 1")
     if args.ood not in (0, 1):
         raise ValueError("ood must be 0 or 1")
-    if args.mode not in {"default", "pca", "meta", "meta_attn", "meta_no_pca", "mlp", "poly"}:
-        raise ValueError("mode must be one of: default, pca, meta, meta_attn, meta_no_pca, mlp, poly")
+    if args.mode not in {"default", "pca", "meta", "meta_attn", "meta_no_pca", "mlp", "poly", "first_layer", "last_layer"}:
+        raise ValueError("mode must be one of: default, pca, meta, meta_attn, meta_no_pca, mlp, poly, first_layer, last_layer")
     if args.mode == "poly" and args.p not in {2, 3, 4, 5}:
         raise ValueError("for mode=poly, p must be one of: 2, 3, 4, 5")
 

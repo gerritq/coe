@@ -126,6 +126,8 @@
 
 
 99. Misc
+- ensure in all tables that we take the mean not weighted
+
 - Probing vector similarity plot
     - Could be a nice argument for universal, rather than relying on the numbers; to show this also visually
 
