@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_ood_biscope_raid
+#SBATCH --job-name=baseline_id_raidDomain
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=05:00:00
+#SBATCH --time=08:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -24,29 +24,29 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 # DATASETS=("drlDomain_xsum" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
-DATASETS=("raid_cohere_chat" "raid_gpt4" "raid_llama_chat" "raid_mistral_chat")
-
+# DATASETS=("raidModel_cohere_chat" "raidModel_gpt4" "raidModel_llama_chat" "raidModel_mistral_chat")
+DATASETS=("raidDomain_wiki" "raidDomain_reddit" "raidDomain_news" "raidDomain_abstracts")
 SMOKE_TEST=0
-OOD=1
+OOD=0
 
 # "raidar"
 MODELS=(
         # "raidar"
-        # "editlens"
-        # "revise"
-        # "gescore"
-        "biscope"
+        "editlens"
+        "revise"
+        "gescore"
+        # "biscope"
         # "text_fluoroscopy"
-        # "radar"
-        # "openai_roberta"
+        "radar"
+        "openai_roberta"
         # "repreguard"
         # "encoder" 
-        # "llr" 
-        # "fastdetectgpt" 
-        # "rank" 
-        # "entropy"
-        # "likelihood"
-        # "binoculars" 
+        "llr" 
+        "fastdetectgpt" 
+        "rank" 
+        "entropy"
+        "likelihood"
+        "binoculars" 
         )    
 
 # OOD
