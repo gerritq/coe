@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=probe_ablation_last_first_layer
+#SBATCH --job-name=probe_ablation_poly
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=02:00:00
@@ -23,9 +23,9 @@ DATASETS=("tsm_extend" "tsm_first" "tsm_sums" "tsm_tst")
 # DATASETS=("raidDomain_wiki" "multisocial_en")
 
 TOKEN_MODE="last_token"
-MODES=("first_layer" "last_layer") # default | pca | meta | meta_attn | poly
+MODES=("poly") # default | pca | meta | meta_attn | poly
 P_LIST=(0)
-COMPONENTS_LIST=(100)
+COMPONENTS_LIST=(20)
 TRAINING_SIZES=(-1)
 C_LIST=(1)
 
