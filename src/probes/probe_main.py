@@ -67,7 +67,6 @@ class LinearProbing:
     
     def _train_meta_probe(self, 
                           x_hidden_train: np.ndarray, 
-                          x_attn_train: np.ndarray, 
                           y_train: np.ndarray) -> dict[str, Any]:
         
         scalers_by_layer = []
@@ -179,7 +178,6 @@ class LinearProbing:
                              test: dict[str, Any]) -> dict[str, Any]:
         
         y_true = test["y"]
-        x_attn_test = test["attentions"]
 
         hidden_pca_features_concatenated = []
 
