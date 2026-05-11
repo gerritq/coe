@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_id_raid
+#SBATCH --job-name=baseline_ood_biscope_raid
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
 #SBATCH --time=05:00:00
 #SBATCH --partition=gpu,nmes_gpu
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=a100
+#SBATCH --constraint=h200
 #SBATCH --exclude=erc-hpc-vm053,erc-hpc-comp246
 
 # set -euo pipefail
@@ -27,26 +27,26 @@ export CUDA_LAUNCH_BLOCKING=1
 DATASETS=("raid_cohere_chat" "raid_gpt4" "raid_llama_chat" "raid_mistral_chat")
 
 SMOKE_TEST=0
-OOD=0
+OOD=1
 
 # "raidar"
 MODELS=(
         # "raidar"
-        "editlens"
-        "revise"
-        "gescore"
-        # "biscope"
+        # "editlens"
+        # "revise"
+        # "gescore"
+        "biscope"
         # "text_fluoroscopy"
-        "radar"
-        "openai_roberta"
+        # "radar"
+        # "openai_roberta"
         # "repreguard"
         # "encoder" 
-        "llr" 
-        "fastdetectgpt" 
-        "rank" 
-        "entropy"
-        "likelihood"
-        "binoculars" 
+        # "llr" 
+        # "fastdetectgpt" 
+        # "rank" 
+        # "entropy"
+        # "likelihood"
+        # "binoculars" 
         )    
 
 # OOD

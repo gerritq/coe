@@ -42,11 +42,13 @@ def load_dataset(args: Namespace):
     })
 
     if args.smoke_test:
-            # We wrap the dict comprehension in DatasetDict() to maintain the type
-            data = DatasetDict({
-                split: d.shuffle(seed=42).select(range(min(len(d), 30))) 
-                for split, d in data.items()
-            })
+        # We wrap the dict comprehension in DatasetDict() to maintain the type
+        data = DatasetDict({
+            split: d.shuffle(seed=42).select(range(min(len(d), 30))) 
+            for split, d in data.items()
+        })
+        print("Running smoke test.")
+        return data
 
     if args.training_size is not None:
         pos = [x for x in data["train"] if x["label"] == 1][:args.training_size//2]
@@ -61,6 +63,8 @@ def load_dataset(args: Namespace):
         print(f"New training size: {len(data['train'])}")
         print("="*60)
 
+        return data
+    
     return data
 
 

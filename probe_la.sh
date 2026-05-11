@@ -26,11 +26,10 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
 # DATASETS=("apt" "apt_m4_train")
 
-DATASETS=("raid_cohere_chat" "raid_gpt4" "raid_llama_chat" "raid_mistral_chat")
-DATASETS=("raid_cohere_chat")
+DATASETS=("raid_cohere_chat" "drlDomain_arxiv" "multisocial_en")
 
 TOKEN_MODE="last_token"
-SMOKE_TEST=1
+SMOKE_TEST=0
 FOLDER="layer_analysis"
 TRAINING_SIZE=-1
 

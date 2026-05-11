@@ -143,6 +143,7 @@ def main() -> None:
 
     args.mode= "default"
     args.C= 1.0
+    args.training_size= 1000
 
     return args
 
