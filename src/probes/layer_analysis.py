@@ -2,17 +2,15 @@ from argparse import Namespace
 import argparse
 from typing import Any
 import os
-import json
+import copy
+from itertools import combinations
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from src.inference import Inference
-from src.utils import load_dataset, optimal_thresholds, metrics, OOD, return_args
+from src.utils import load_dataset, OOD
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from datetime import datetime
-from datetime import datetime
 
 BASE_DIR = os.getenv("BASE_COE")
 
@@ -88,7 +86,8 @@ class LinearProbing:
         }
 
     def single_domain_heatmap(self,
-                              probing_vectors_by_layer: np.ndarray,):
+                              probing_vectors_by_layer: np.ndarray,
+                              dataset_name: str):
         # compute cosine similarity across layer probe vectors
         vectors = probing_vectors_by_layer.astype(np.float64)
         norms = np.linalg.norm(vectors, axis=1, keepdims=True)
@@ -111,27 +110,130 @@ class LinearProbing:
 
         out_dir = os.path.join(BASE_DIR, "output", "probe", self.args.folder)
         os.makedirs(out_dir, exist_ok=True)
+
+        if self.args.smoke_test:
+            suffix = "_smoke_test"
         out_path = os.path.join(
             out_dir,
-            f"heatmap_{self.args.dataset}_layers.png",
+            f"heatmap_{dataset_name}_layers{suffix}.png",
         )
         fig.savefig(out_path, dpi=220)
         plt.close(fig)
         print(f"Saved: {out_path}")
 
-    def run(self, args: Namespace) -> None:
-        source_data = load_dataset(args=args)
-        train = self._collect_model_states(source_data["train"])
 
-        train_out = self._train_linear_probe(x_train=train["hidden_x"], 
-                                            y_train=train["y"])
+    def cross_domain_similarity_plot(self, probing_vectors: dict[str, np.ndarray]):
+    
+        datasets = sorted(probing_vectors.keys())
+        if len(datasets) < 2:
+            raise ValueError("Need at least two datasets for cross-domain similarity.")
+
+        # Build pairwise layer-wise cosine similarities.
+        pair_labels = []
+        pair_sims = []
+        for ds_a, ds_b in combinations(datasets, 2):
+            vec_a = np.asarray(probing_vectors[ds_a], dtype=np.float64)  # (n_layers, d_model)
+            vec_b = np.asarray(probing_vectors[ds_b], dtype=np.float64)  # (n_layers, d_model)
+
+            if vec_a.shape != vec_b.shape:
+                raise ValueError(
+                    f"Shape mismatch for pair ({ds_a}, {ds_b}): "
+                    f"{vec_a.shape} vs {vec_b.shape}"
+                )
+
+            # Normalize layer vectors for cosine similarity.
+            norm_a = np.linalg.norm(vec_a, axis=1, keepdims=True)
+            norm_b = np.linalg.norm(vec_b, axis=1, keepdims=True)
+            vec_a = vec_a / np.clip(norm_a, 1e-12, None)
+            vec_b = vec_b / np.clip(norm_b, 1e-12, None)
+
+            # Layer-wise cosine: dot(v_a[layer], v_b[layer]).
+            sim = np.sum(vec_a * vec_b, axis=1)  # (n_layers,)
+            sim = np.clip(sim, -1.0, 1.0)
+
+            pair_labels.append(f"{ds_a} vs {ds_b}")
+            pair_sims.append(sim)
+
+        pair_sims_arr = np.stack(pair_sims, axis=0)  # (n_pairs, n_layers)
+        mean_sim = np.mean(pair_sims_arr, axis=0)  # (n_layers,)
+
+        n_layers = pair_sims_arr.shape[1]
+        x = np.arange(n_layers)
+
+        fig, ax = plt.subplots(figsize=(11, 6))
+        for label, sim in zip(pair_labels, pair_sims_arr):
+            ax.plot(x, sim, linewidth=1.4, alpha=0.75, label=label)
+
+        ax.plot(
+            x,
+            mean_sim,
+            color="black",
+            linewidth=2.8,
+            linestyle="--",
+            label="Mean across pairs",
+        )
+        ax.set_xlabel("Layer")
+        ax.set_ylabel("Cosine similarity")
+        ax.set_ylim(-1.0, 1.0)
+        ax.grid(True, axis="y", alpha=0.25)
+        ax.legend(
+            loc="upper center",
+            bbox_to_anchor=(0.5, -0.18),
+            ncol=3,
+            fontsize=8,
+            frameon=False,
+        )
+        fig.tight_layout(rect=[0, 0.08, 1, 1])
+
+        out_dir = os.path.join(BASE_DIR, "output", "probe", self.args.folder)
+        os.makedirs(out_dir, exist_ok=True)
+
+        if self.args.smoke_test:
+            suffix = "_smoke_test"
+        out_path = os.path.join(out_dir, f"cross_domain_similarity_{self.args.benchmark}{suffix}.png")
+        fig.savefig(out_path, dpi=220, bbox_inches="tight")
+        plt.close(fig)
+        print(f"Saved: {out_path}")
+
+    def run(self, args: Namespace) -> None:
+
+        datasets = OOD[args.benchmark]
+
+        if args.smoke_test:
+            datasets = datasets[:2]
+
+
+        # collect hidden states for all ds
+        data_probing_vectors = {}
+        for dataset in datasets:
+            ds_args = copy.copy(args)
+            ds_args.dataset = dataset
+            ds = load_dataset(args=ds_args)["train"]
+            ds_hidden_states = self._collect_model_states(items=ds)
+
+            train_out = self._train_linear_probe(x_train=ds_hidden_states["hidden_x"], 
+                                                y_train=ds_hidden_states["y"])
+            data_probing_vectors[dataset] = train_out["probing_vectors_by_layer"]
+
         
-        self.single_domain_heatmap(probing_vectors_by_layer=train_out["probing_vectors_by_layer"])
+        # Single domain heatmap
+        for dataset, probing_vectors in data_probing_vectors.items():
+            self.single_domain_heatmap(
+                probing_vectors_by_layer=probing_vectors,
+                dataset_name=dataset,
+            )
+
+            if self.args.smoke_test:
+                break
+
+        # Cross-domain similarity plot
+        self.cross_domain_similarity_plot(probing_vectors=data_probing_vectors)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, required=True)
-    parser.add_argument("--dataset", type=str, required=True)
+    parser.add_argument("--benchmark", type=str, required=True)
     parser.add_argument("--token_mode", type=str, default="last_token")
     parser.add_argument("--smoke_test", type=int, default=0)
     parser.add_argument("--folder", type=str, default="sandbox")
@@ -140,6 +242,8 @@ def main() -> None:
     if args.training_size == -1:
         args.training_size = None
 
+    if args.smoke_test:
+        args.model = "qwen_06b"
     args.mode= "default"
     args.C= 1.0
     args.training_size= 1000

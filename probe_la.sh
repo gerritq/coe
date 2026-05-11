@@ -16,7 +16,7 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-MODELS=("llama_8b") # "llama_8b" "qwen_06b"
+MODELS=("llama_8b")
 
 # DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
 # DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
@@ -26,23 +26,23 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
 # DATASETS=("apt" "apt_m4_train")
 
-DATASETS=("raid_cohere_chat" "drlDomain_arxiv" "multisocial_en")
+BENCHMARKS=("raid")
 
 TOKEN_MODE="last_token"
-SMOKE_TEST=0
+SMOKE_TEST=1
 FOLDER="layer_analysis"
 TRAINING_SIZE=-1
 
 for MODEL in "${MODELS[@]}"; do
-    for DATASET in "${DATASETS[@]}"; do
+    for BENCHMARK in "${BENCHMARKS[@]}"; do
             echo "------------------------------------------------"
-            echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE"
+            echo "Running Probe: Benchmark=$BENCHMARK, Model=$MODEL, TokenMode=$TOKEN_MODE"
             echo "SmokeTest=$SMOKE_TEST"
             echo "------------------------------------------------"
 
             PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.layer_analysis \
                 --model "$MODEL" \
-                --dataset "$DATASET" \
+                --benchmark "$BENCHMARK" \
                 --token_mode "$TOKEN_MODE" \
                 --smoke_test "$SMOKE_TEST" \
                 --folder "$FOLDER"
