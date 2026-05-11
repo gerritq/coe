@@ -94,6 +94,9 @@
         - Get SV and the plot
         - Or show the decision boundary bc orthogonal
 
+70. Writing
+ - For probing generalization and performance: https://arxiv.org/pdf/2511.17408
+
 99. Misc
 - ensure in all tables that we take the mean not weighted
 

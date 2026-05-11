@@ -34,7 +34,11 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 # --model "${MODEL}" \
 # --smoke_test "${SMOKE_TEST}"
 
-PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/lp.py \
+# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/lp.py \
+# --model "${MODEL}" \
+# --smoke_test "${SMOKE_TEST}"
+
+PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/ranks.py \
 --model "${MODEL}" \
 --smoke_test "${SMOKE_TEST}"
 
