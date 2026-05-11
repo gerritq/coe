@@ -83,7 +83,7 @@ def process_raid():
 
         ds = load_dataset("liamdugan/raid", "raid", split="train")
         ds.to_json(
-            os.path.join(RAID_RAW_DATA_DIR, f"{split}.jsonl"),
+            os.path.join(RAID_RAW_DATA_DIR, f"train.jsonl"),
             orient="records",
             lines=True,
             force_ascii=False,)
@@ -99,7 +99,7 @@ def process_raid():
     print(f"Models in RAID dataset: {models}")
     print(f"Domains in RAID dataset: {domains}")
 
-    human = [{"text": x["generation"], "domain": x["domain"], "attack": x["attack"], "label": 0} for x in data if x["model"] == "human" and x["text"].strip()]
+    human = [{"text": x["generation"], "domain": x["domain"], "attack": x["attack"], "label": 0} for x in data if x["model"] == "human" and x["generation"].strip()]
     random.shuffle(human)
 
     human_train = human[:train_per_label]

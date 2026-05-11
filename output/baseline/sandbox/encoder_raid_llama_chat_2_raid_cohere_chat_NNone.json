@@ -1,0 +1,24 @@
+{
+  "args": {
+    "dataset": "raid_llama_chat",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": true,
+    "training_size": null,
+    "folder": "sandbox",
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "raid_cohere_chat",
+    "datetime": "2026-05-10 23:24:37"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.918224,
+    "accuracy": 0.788,
+    "f1": 0.7309644670050761,
+    "tpr_at_fpr_0_05": 0.652,
+    "optimal_threshold_f1": 0.8048048048048048,
+    "optimal_threshold_acc": 0.8048048048048048,
+    "aupr": 0.9270926224622446
+  }
+}

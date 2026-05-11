@@ -1,0 +1,24 @@
+{
+  "args": {
+    "dataset": "raid_gpt4",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": true,
+    "training_size": null,
+    "folder": "sandbox",
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "raid_mistral_chat",
+    "datetime": "2026-05-10 23:24:14"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.94376,
+    "accuracy": 0.844,
+    "f1": 0.8186046511627907,
+    "tpr_at_fpr_0_05": 0.78,
+    "optimal_threshold_f1": 0.8928928928928929,
+    "optimal_threshold_acc": 0.8928928928928929,
+    "aupr": 0.9539647002707172
+  }
+}

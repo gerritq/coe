@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=probe_meta_no_pca_default_m4_gpt4_yelp
+#SBATCH --job-name=probe_meta_def_raid
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=04:00:00
@@ -26,7 +26,7 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
 # DATASETS=("apt" "apt_m4_train")
 
-DATASETS=("m4_gpt4" "drlDomain_yelp_review")
+DATASETS=("raid_cohere_chat" "raid_gpt4" "raid_llama_chat" "raid_mistral_chat")
 
 TOKEN_MODE="last_token"
 MODES=("meta_no_pca" "default") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 

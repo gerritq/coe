@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_raidar
+#SBATCH --job-name=baseline_id_raid
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=04:00:00
+#SBATCH --time=05:00:00
 #SBATCH --partition=gpu,nmes_gpu
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:2
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|b200
-#SBATCH --exclude=erc-hpc-vm053 
+#SBATCH --constraint=a100
+#SBATCH --exclude=erc-hpc-vm053,erc-hpc-comp246
 
 # set -euo pipefail
 
@@ -22,31 +22,35 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+# DATASETS=("drlDomain_xsum" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
-DATASETS=("drlDomain_xsum" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
+DATASETS=("raid_cohere_chat" "raid_gpt4" "raid_llama_chat" "raid_mistral_chat")
 
 SMOKE_TEST=0
 OOD=0
 
 # "raidar"
 MODELS=(
-        "raidar"
-        # "editlens"
-        # "revise"
-        # "gescore"
+        # "raidar"
+        "editlens"
+        "revise"
+        "gescore"
         # "biscope"
         # "text_fluoroscopy"
-        # "radar"
-        # "openai_roberta"
+        "radar"
+        "openai_roberta"
         # "repreguard"
         # "encoder" 
-        # "llr" 
-        # "fastdetectgpt" 
-        # "rank" 
-        # "entropy"
-        # "likelihood"
-        # "binoculars" 
-        )        
+        "llr" 
+        "fastdetectgpt" 
+        "rank" 
+        "entropy"
+        "likelihood"
+        "binoculars" 
+        )    
+
+# OOD
+# MODELS=("biscope" "text_fluoroscopy" "repreguard" "encoder")        
 
 
 # Nested loop to run every model on every dataset
