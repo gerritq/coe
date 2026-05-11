@@ -260,7 +260,7 @@ def render_table(
     lines = [
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
-        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM~\\citep{{quaremba2026tsm}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{RAID}}}} \\\\".format(
+        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM~\\citep{{quaremba2026tsm}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{RAID~\\cite{{dugan2024raid}}}}}} \\\\".format(
             drldomain_n, multisocial_n, tsm_n, raid_n
         ),
         "\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}".format(

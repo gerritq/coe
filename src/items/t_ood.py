@@ -37,10 +37,10 @@ DATASET_GROUPS = {
 
 FAMILY_ORDER = ["drlDomain", "multisocial", "tsm", "raid"]
 FAMILY_TITLE = {
-    "drlDomain": r"\textbf{DetectRL}",
-    "multisocial": r"\textbf{Multisocial}",
-    "tsm": r"\textbf{TSM}",
-    "raid": r"\textbf{RAID}",
+    "drlDomain": r"\textbf{DetectRL~\citep{wu2024detectrl}}",
+    "multisocial": r"\textbf{MultiSocial~\citep{macko2025multi}}",
+    "tsm": r"\textbf{TSM~\citep{quaremba2026tsm}}",
+    "raid": r"\textbf{RAID~\cite{dugan2024raid}}",
 }
 SUBSET_LABELS = {
     "drlDomain_arxiv": r"\textbf{ArXiv}",

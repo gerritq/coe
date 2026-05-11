@@ -1,5 +1,37 @@
 # To do
 
+1. Run with Raid domain
+2. Non-linearity
+3. Layer ablations
+
+- run missing ID
+- run Biscope raid Models 
+- sort Hanqi feedback
+
+- Why LP works so well OOD
+- Ablation: first vs last layer
+- Limited samples
+    - CI around
+
+- Introduction
+    - increase non-linearely then w see worse
+    - x axis is non-linearly of probes - and ya-axis performance drop => so non linear
+    - MLP with or various activations 
+- OOD more sensitive to linearity 
+    - Non linear is worse
+    - Select on one and apply to three others 
+    - Train non-linear with different degrees
+- Combine datasets, apply pca
+    - Get SV and the plot
+    - Or show the decision boundary bc orthogonal
+
+---
+---
+---
+
+- about heatmps: https://transformer-circuits.pub/2026/emotions/index.html
+
+- try raid domains?
 - remove the attn idea
 - New file: Probing vector comparison per layer
     - LxL matrix of cosine per dataset/subest
@@ -67,6 +99,30 @@
         - pca: Attention vs no attention
         - No attention: default vs pca values
 
+67. Hanqi Feedback
+    
+    1.  Can we understand why LP works so well OOD?
+    - Can we see increase non-linearity and seeh whether it is getting worse?
+    - x-axis is non-linearly of probes - and y-axis performance => so non linear
+    - MLP with or various activations or probe with higher exponents
+
+
+- Ablation: first vs last layer
+- Limited samples
+    - CI around
+
+- Introduction
+    - increase non-linearely then w see worse
+    - x axis is non-linearly of probes - and ya-axis performance drop => so non linear
+    - MLP with or various activations 
+- OOD more sensitive to linearity 
+    - Non linear is worse
+    - Select on one and apply to three others 
+    - Train non-linear with different degrees
+- Combine datasets, apply pca
+    - Get SV and the plot
+    - Or show the decision boundary bc orthogonal
+
 
 
 99. Misc
@@ -85,7 +141,6 @@
 - fix repre scores
 - fix PCA None
 - can extend beemo to llama, but for now we do gpt4
-- add new detector: https://github.com/ranhli/Learning2Rewrite
 - norm scores?
 - We could to the CB if we have space
 - Add cool symbols top the table for reddit etc.

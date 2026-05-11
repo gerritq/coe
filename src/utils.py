@@ -27,7 +27,9 @@ OOD = {
     "tsm": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^tsm_.+", x)]),
     "CB": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^CB_.+", x)]),
     "m4": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^m4_.+", x)]),
-    "raid": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^raid_.+", x)]),
+    "raidDomain": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^raidDomain_.+", x)]),
+    "raidModel": sorted([x for x in os.listdir(DATA_DIR) if re.match(r"^raidModel_.+", x)]),
+
 }
 
 """

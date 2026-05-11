@@ -71,7 +71,84 @@ def check_for_duplicates(data: dict[str, list[dict]]) -> None:
                 seen.add(text)
     print(f"Found {count} duplicates across splits")
 
-def process_raid():
+def process_raid_domains():
+
+    train_per_label = TRAINING_N // 2
+    val_per_label = VALIDATION_N // 2
+    test_per_label = TESTING_N // 2
+
+    train_jsonl = os.path.join(RAID_RAW_DATA_DIR, "train.jsonl")
+    if not os.path.exists(train_jsonl):
+        from datasets import load_dataset
+
+        ds = load_dataset("liamdugan/raid", "raid", split="train")
+        ds.to_json(
+            os.path.join(RAID_RAW_DATA_DIR, f"train.jsonl"),
+            orient="records",
+            lines=True,
+            force_ascii=False,)
+        
+    # load data from jsonl
+    with open(train_jsonl, "r", encoding="utf-8") as f:
+        data = [json.loads(line) for line in f]
+
+    models = set([x["model"] for x in data])
+    domains = set([x["domain"] for x in data])
+
+    print(f"Models in RAID dataset: {models}")
+    print(f"Domains in RAID dataset: {domains}")
+
+
+    selected_domains = ["wiki", "news", "reddit", "abstracts"]
+
+    for domain in selected_domains:
+        data_out = {"train": [], "val": [], "test": []}
+        print(f"Processing data for domain: {domain}")
+
+        subset = [x for x in data if x["domain"] == domain and x["generation"].strip()]
+        # shuffle to mix domains/attacks etc
+        random.shuffle(subset)
+
+        pos = [{"text": x["generation"], "domain": x["domain"], "model": x["model"], "attack": x["attack"], "label": 1} for x in subset if x["domain"] == domain and x["model"] != "human"]
+        neg = [{"text": x["generation"], "domain": x["domain"], "model": x["model"], "attack": x["attack"], "label": 0} for x in subset if x["domain"] == domain and x["model"] == "human"]
+
+        # add machine 
+        data_out["train"].extend(pos[:train_per_label])
+        data_out["val"].extend(pos[train_per_label:train_per_label + val_per_label])
+        data_out["test"].extend(pos[train_per_label + val_per_label:train_per_label + val_per_label + test_per_label])
+
+        # add human
+        data_out["train"].extend(neg[:train_per_label])
+        data_out["val"].extend(neg[train_per_label:train_per_label + val_per_label])
+        data_out["test"].extend(neg[train_per_label + val_per_label:train_per_label + val_per_label + test_per_label])
+
+        # shuffle splits
+        random.shuffle(data_out["train"])
+        random.shuffle(data_out["val"])
+        random.shuffle(data_out["test"])
+
+        output_dir = os.path.join(DATA_DIR, f"raidDomain_{domain}")
+        os.makedirs(output_dir, exist_ok=True)
+        for split in ["train", "val", "test"]:
+            with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
+                for item in data_out[split]:
+                    f.write(json.dumps(item) + "\n")
+
+        # domain and attack distribution check
+        for split in data_out:
+            model_dist = {}
+            attack_dist = {}
+            for item in data_out[split]:
+                model = item["model"]
+                attack = item["attack"]
+                model_dist[model] = model_dist.get(model, 0) + 1
+                attack_dist[attack] = attack_dist.get(attack, 0) + 1
+            print(f"{split} model distribution: {model_dist}")
+            print(f"{split} attack distribution: {attack_dist}")
+
+        check_for_duplicates(data_out)
+
+def process_raid_generators():
 
     train_per_label = TRAINING_N // 2
     val_per_label = VALIDATION_N // 2
@@ -132,7 +209,7 @@ def process_raid():
         random.shuffle(data_out["val"])
         random.shuffle(data_out["test"])
 
-        output_dir = os.path.join(DATA_DIR, f"raid_{model.replace('-', '_')}")
+        output_dir = os.path.join(DATA_DIR, f"raidModel_{model.replace('-', '_')}")
         os.makedirs(output_dir, exist_ok=True)
         for split in ["train", "val", "test"]:
             with open(os.path.join(output_dir, f"{split}.jsonl"), "w", encoding="utf-8") as f:
@@ -936,11 +1013,17 @@ def main() -> None:
     # print("Preparing editlens data...")
     # process_editlens()
 
-    # raid DATASETS
+    # raid - model sDATASETS
     print("="*60)
     print("="*60)
-    print("Preparing raid data...")
-    process_raid()
+    print("Preparing raid generator data...")
+    process_raid_generators()
+
+    # raid - domain sDATASETS
+    print("="*60)
+    print("="*60)
+    print("Preparing raid domain data...")
+    process_raid_domains()
 
 if __name__ == "__main__":
     main()

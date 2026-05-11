@@ -1,17 +1,17 @@
 \begin{tabular}{lcccccccccccccccc}
 \toprule
-& \multicolumn{4}{c}{\textbf{DetectRL~\citep{wu2024detectrl}}} & \multicolumn{4}{c}{\textbf{MultiSocial~\citep{macko2025multi}}} & \multicolumn{4}{c}{\textbf{TSM~\citep{quaremba2026tsm}}} & \multicolumn{4}{c}{\textbf{RAID}} \\
+& \multicolumn{4}{c}{\textbf{DetectRL~\citep{wu2024detectrl}}} & \multicolumn{4}{c}{\textbf{MultiSocial~\citep{macko2025multi}}} & \multicolumn{4}{c}{\textbf{TSM~\citep{quaremba2026tsm}}} & \multicolumn{4}{c}{\textbf{RAID~\cite{ugan2024raid}}} \\
 \cmidrule(lr){2-5}\cmidrule(lr){6-9}\cmidrule(lr){10-13}\cmidrule(lr){14-17}
 \textbf{Model} & \textbf{ArXiv} & \textbf{Reddit} & \textbf{Yelp} & \textbf{XSum} & \textbf{en} & \textbf{de} & \textbf{ru} & \textbf{zh} & \textbf{First} & \textbf{Extend} & \textbf{Sums} & \textbf{TST} & \textbf{Cohere} & \textbf{GPT4} & \textbf{Llama} & \textbf{Mistral} \\
 \midrule
 \multicolumn{17}{l}{\textbf{Zero-shot}} \\
 \midrule
-Entropy & 0.518 & 0.153 & 0.175 & 0.499 & 0.264 & 0.334 & 0.343 & 0.445 & 0.469 & 0.548 & 0.530 & 0.489 &  &  &  &  \\
-Likelihood & 0.653 & 0.862 & 0.885 & 0.579 & 0.790 & 0.694 & 0.672 & 0.585 & 0.521 & 0.434 & 0.505 & 0.510 &  &  &  &  \\
+Entropy & 0.518 & 0.153 & 0.175 & 0.499 & 0.264 & 0.334 & 0.343 & 0.445 & 0.469 & 0.548 & 0.530 & 0.489 & 0.385 & 0.341 & 0.253 & 0.305 \\
+Likelihood & 0.653 & 0.862 & 0.885 & 0.579 & 0.790 & 0.694 & 0.672 & 0.585 & 0.521 & 0.434 & 0.505 & 0.510 & 0.703 & 0.694 & 0.787 & 0.734 \\
 LLR & 0.732 & 0.823 & 0.866 & 0.597 & 0.776 & 0.713 & 0.633 & 0.650 & 0.503 & 0.413 & 0.515 & 0.511 & 0.758 & 0.721 & 0.841 & 0.809 \\
 Rank & 0.573 & 0.370 & 0.302 & 0.606 & 0.214 & 0.294 & 0.351 & 0.385 & 0.520 & 0.556 & 0.463 & 0.489 &  &  &  &  \\
-Binoculars & 0.231 & 0.385 & 0.293 & 0.282 & 0.280 & 0.263 & 0.311 & 0.460 & 0.441 & 0.490 & 0.373 & 0.490 &  &  &  &  \\
-FastDetectGPT & 0.856 & 0.697 & 0.830 & 0.684 & 0.785 & 0.719 & 0.650 & 0.625 & 0.506 & 0.435 & 0.608 & 0.496 & 0.892 &  &  &  \\
+Binoculars & 0.231 & 0.385 & 0.293 & 0.282 & 0.280 & 0.263 & 0.311 & 0.460 & 0.441 & 0.490 & 0.373 & 0.490 & 0.179 & 0.342 & 0.327 & 0.344 \\
+FastDetectGPT & 0.856 & 0.697 & 0.830 & 0.684 & 0.785 & 0.719 & 0.650 & 0.625 & 0.506 & 0.435 & 0.608 & 0.496 & 0.892 &  &  & 0.775 \\
 GEScore & 0.785 & 0.563 & 0.628 & 0.707 & 0.806 & 0.671 & 0.613 & 0.437 & 0.546 & 0.517 & 0.668 & 0.545 & 0.666 & 0.462 & 0.550 & 0.664 \\
 RepreGuard & 0.896 & 0.970 & 0.978 & 0.958 & 0.706 & 0.692 & 0.640 & 0.784 & 0.504 & 0.530 & 0.604 & 0.498 & 0.602 & 0.782 & 0.892 & 0.814 \\
 \midrule

@@ -13,6 +13,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--smoke_test", type=int, default=0)
     parser.add_argument("--components", type=int, default=50)
     parser.add_argument("--mode", type=str, required=True)
+    parser.add_argument("--p", type=int, default=2)
     parser.add_argument("--training_size", type=int, default=None)
     parser.add_argument("--folder", type=str, default="sandbox")
     parser.add_argument("--C", type=float, default=1.0)
@@ -28,8 +29,10 @@ def main() -> None:
         raise ValueError("smoke_test must be 0 or 1")
     if args.ood not in (0, 1):
         raise ValueError("ood must be 0 or 1")
-    if args.mode not in {"default", "pca", "meta", "meta_attn", "meta_no_pca", "mlp"}:
-        raise ValueError("mode must be one of: default, pca, meta, meta_attn, meta_no_pca, mlp")
+    if args.mode not in {"default", "pca", "meta", "meta_attn", "meta_no_pca", "mlp", "poly"}:
+        raise ValueError("mode must be one of: default, pca, meta, meta_attn, meta_no_pca, mlp, poly")
+    if args.mode == "poly" and args.p not in {2, 3, 4, 5}:
+        raise ValueError("for mode=poly, p must be one of: 2, 3, 4, 5")
 
     if args.training_size == -1:
         args.training_size = None
