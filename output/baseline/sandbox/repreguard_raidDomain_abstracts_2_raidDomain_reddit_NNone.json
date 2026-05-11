@@ -1,0 +1,80 @@
+{
+  "args": {
+    "dataset": "raidDomain_abstracts",
+    "model": "repreguard",
+    "smoke_test": false,
+    "ood": true,
+    "training_size": null,
+    "folder": "sandbox",
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "ntrain": 0,
+    "rep_token": 0.1,
+    "batch_size": 8,
+    "bootstrap_iter": -1,
+    "model_name_or_path": "meta-llama/Meta-Llama-3-8B",
+    "random_seed": 42,
+    "train_data_path": "skip",
+    "target_dataset": "raidDomain_reddit",
+    "datetime": "2026-05-11 22:22:12"
+  },
+  "train_results": {
+    "train_result": {
+      "roc_auc": 66.21,
+      "optimal_threshold": 5.3889212266415605,
+      "conf_matrix": [
+        [
+          683,
+          67
+        ],
+        [
+          456,
+          294
+        ]
+      ],
+      "precision": 81.44,
+      "recall": 39.2,
+      "f1": 52.93,
+      "accuracy": 65.13,
+      "tpr_at_fpr_0_01": 6.93
+    },
+    "test_result": {
+      "auroc": 50.0,
+      "optimal_threshold": 5.3889212266415605,
+      "conf_matrix": [
+        [
+          250,
+          0
+        ],
+        [
+          250,
+          0
+        ]
+      ],
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "accuracy": 50.0,
+      "tpr_at_fpr_0_01": 8.8
+    }
+  },
+  "metrics": {
+    "auroc": 50.0,
+    "optimal_threshold": 5.3889212266415605,
+    "conf_matrix": [
+      [
+        250,
+        0
+      ],
+      [
+        250,
+        0
+      ]
+    ],
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "accuracy": 50.0,
+    "tpr_at_fpr_0_01": 8.8
+  }
+}

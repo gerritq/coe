@@ -24,7 +24,7 @@ DATASETS=("tsm_extend" "tsm_first" "tsm_sums" "tsm_tst")
 
 TOKEN_MODE="last_token"
 MODES=("poly") # default | pca | meta | meta_attn | poly
-P_LIST=(0)
+P_LIST=(2 3 4 5)
 COMPONENTS_LIST=(20)
 TRAINING_SIZES=(-1)
 C_LIST=(1)

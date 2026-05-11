@@ -1,0 +1,24 @@
+{
+  "args": {
+    "dataset": "raidDomain_reddit",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": true,
+    "training_size": null,
+    "folder": "sandbox",
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "raidDomain_wiki",
+    "datetime": "2026-05-11 22:25:05"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.7776160000000001,
+    "accuracy": 0.616,
+    "f1": 0.6862745098039216,
+    "tpr_at_fpr_0_05": 0.592,
+    "optimal_threshold_f1": 0.8848848848848849,
+    "optimal_threshold_acc": 0.8848848848848849,
+    "aupr": 0.8458265745701838
+  }
+}

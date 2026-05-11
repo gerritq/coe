@@ -74,7 +74,7 @@ def plot_domain_curves(dataset_name: str, x: np.ndarray, y: np.ndarray, model_na
     var_ai, k90_ai = cumulative_variance_curve(x_ai)
     var_human, k90_human = cumulative_variance_curve(x_human)
 
-    n_plot = min(100, len(var_ai), len(var_human))
+    n_plot = min(500, len(var_ai), len(var_human))
     xs = np.arange(1, n_plot + 1)
 
     plt.figure(figsize=(8, 5))
@@ -106,7 +106,7 @@ def run(args: Namespace) -> None:
     smoke = bool(args.smoke_test)
     suffix = "_smoke" if smoke else ""
 
-    for dataset_name in ["raidDomain_wiki", "raidDomain_reddit"]:
+    for dataset_name in ["raidDomain_wiki", "raidDomain_reddit", "multisocial_de", "multisocial_en"]:
         items = load_train_items(dataset_name=dataset_name, smoke_test=smoke)
         x, y = collect_last_layer_embeddings(items=items, model_name=args.model)
         out_path = os.path.join(OUT_DIR, f"{dataset_name}_cumvar_{args.model}{suffix}.pdf")
