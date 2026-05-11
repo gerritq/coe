@@ -113,6 +113,8 @@ class LinearProbing:
 
         if self.args.smoke_test:
             suffix = "_smoke_test"
+        else:
+            suffix = ""
         out_path = os.path.join(
             out_dir,
             f"heatmap_{dataset_name}_layers{suffix}.png",
@@ -190,6 +192,8 @@ class LinearProbing:
 
         if self.args.smoke_test:
             suffix = "_smoke_test"
+        else:
+            suffix = ""
         out_path = os.path.join(out_dir, f"cross_domain_similarity_{self.args.benchmark}{suffix}.png")
         fig.savefig(out_path, dpi=220, bbox_inches="tight")
         plt.close(fig)

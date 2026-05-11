@@ -26,10 +26,9 @@ MODELS=("llama_8b")
 # DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
 # DATASETS=("apt" "apt_m4_train")
 
-BENCHMARKS=("raid")
-
+BENCHMARKS=("drlDomain" "tsm")
 TOKEN_MODE="last_token"
-SMOKE_TEST=1
+SMOKE_TEST=0
 FOLDER="layer_analysis"
 TRAINING_SIZE=-1
 
