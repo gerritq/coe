@@ -2,7 +2,7 @@
 #SBATCH --job-name=probe_meta_def_raid
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=04:00:00
+#SBATCH --time=05:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -29,9 +29,9 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=("raid_cohere_chat" "raid_gpt4" "raid_llama_chat" "raid_mistral_chat")
 
 TOKEN_MODE="last_token"
-MODES=("meta_no_pca" "default") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
+MODES=("pca" "default" "meta_no_pca" "meta") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
 OOD=1
-COMPONENTS=50
+COMPONENTS=100
 SMOKE_TEST=0
 FOLDER="sandbox"
 

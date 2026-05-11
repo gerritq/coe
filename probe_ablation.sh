@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_ablation_mpoly_poly
+#SBATCH --job-name=probe_ablation_last_first_layer
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -18,19 +18,20 @@ cd "${ROOT_DIR}"
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
 # DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
+DATASETS=("tsm_extend" "tsm_first" "tsm_sums" "tsm_tst")
 # Ablations
-DATASETS=("raidDomain_wiki")
+# DATASETS=("raidDomain_wiki" "multisocial_en")
 
 TOKEN_MODE="last_token"
-MODES=("poly") # default | pca | meta | meta_attn | poly
-P_LIST=(2 3 4 5)
+MODES=("first_layer" "last_layer") # default | pca | meta | meta_attn | poly
+P_LIST=(0)
 COMPONENTS_LIST=(100)
 TRAINING_SIZES=(-1)
 C_LIST=(1)
 
 FOLDER="ablation"
 SMOKE_TEST=0
-OOD=1
+OOD=0
 
 for MODEL in "${MODELS[@]}"; do
     for DATASET in "${DATASETS[@]}"; do
