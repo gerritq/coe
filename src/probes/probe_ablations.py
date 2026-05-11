@@ -193,7 +193,7 @@ class Probing:
             scaler = StandardScaler()
             x_layer_train_scaled = scaler.fit_transform(x_layer_train)
 
-            if self.args.mode == "pca":
+            if self.args.mode in ["pca", "poly"]:
                 pca = PCA(n_components=self.args.components, random_state=42)
                 x_layer_train_scaled = pca.fit_transform(x_layer_train_scaled)
 
@@ -213,14 +213,14 @@ class Probing:
             x_layer_val = x_val[layer]  # (n_samples, d_model)
             x_layer_val_scaled = scaler.transform(x_layer_val)
 
-            if self.args.mode == "pca":
+            if self.args.mode in ["pca", "poly"]:
                 x_layer_val_scaled = pca.transform(x_layer_val_scaled)
             y_val_score = clf_binary.predict_proba(x_layer_val_scaled)
             thresholds = optimal_thresholds(y_true=y_val, y_predict=y_val_score)
             
             # collect
             scalers_by_layer.append(scaler)
-            if self.args.mode == "pca":
+            if self.args.mode in ["pca", "poly"]:
                 pca_by_layer.append(pca)
             models_by_layer.append(clf_binary)
             optimal_thresholds_by_layer.append(thresholds)
@@ -296,7 +296,7 @@ class Probing:
             
             # Get scaler, pca, model, and thresholds per layer
             scaler = train_out["scalers_by_layer"][layer]
-            if self.args.mode == "pca":
+            if self.args.mode in ["pca", "poly"]:
                 pca = train_out["pca_by_layer"][layer]
             else:
                 pca=None
@@ -306,7 +306,7 @@ class Probing:
             # Get test data for this layer
             x_layer_test = test["hidden_x"][layer]  # (n_samples, d_model)
             x_layer_test_scaled = scaler.transform(x_layer_test)
-            if self.args.mode == "pca":
+            if self.args.mode in ["pca", "poly"]:
                 x_layer_test_scaled = pca.transform(x_layer_test_scaled)
 
             x_proj = model.predict_proba(x_layer_test_scaled)

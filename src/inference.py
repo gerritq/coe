@@ -28,12 +28,7 @@ class Inference:
             item: dict, 
             args: Namespace) -> dict[str, Any]:
         
-        if args.mode == "meta_attn":
-            attention = True
-        else:            
-            raw_attentions = None
-            attention = False
-        
+    
         text = item["text"]
         
         if not text.strip():
@@ -48,7 +43,7 @@ class Inference:
         with torch.no_grad():
             outputs = self.model(**inputs, 
                                  output_hidden_states=True, 
-                                 output_attentions=attention,
+                                 output_attentions=False,
                                  use_cache=False)
             
         # attentions/hidden states are tuples of len layer
@@ -63,19 +58,11 @@ class Inference:
                 layer.mean(dim=1).detach().cpu().squeeze(0) for layer in outputs.hidden_states
             )
 
-        # extract attention
-        # shape (1, num_heads, seq_len, seq_len)
-        if attention:
-            raw_attentions = tuple(
-                layer.detach().cpu().squeeze(0) for layer in outputs.attentions
-            )
-
 
         return {
             "model_id": self.model_id,
             "text": text,
             "label": item["label"],
             "hidden_states": hidden_states,
-            "raw_attentions": raw_attentions if attention else None
         }
 

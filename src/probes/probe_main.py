@@ -1,4 +1,4 @@
-from argparse import Namespace
+from argparse import ArgumentParser, Namespace
 from typing import Any
 import os
 import json
@@ -10,25 +10,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from datetime import datetime
-from datetime import datetime
 
 BASE_DIR = os.getenv("BASE_COE")
-
-import torch.nn as nn
-
-class MLPProbe(nn.Module):
-    def __init__(self, input_dim: int, hidden_dim: int):
-        super().__init__()
-
-        self.net = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(hidden_dim, 1)
-        )
-
-    def forward(self, x):
-        return self.net(x).squeeze(-1)
 
 class LinearProbing:
     def __init__(self, args: Namespace) -> None:
@@ -36,7 +19,7 @@ class LinearProbing:
         self.out_dir = os.path.join(BASE_DIR, "output", "probe", args.folder)
         os.makedirs(self.out_dir, exist_ok=True)
 
-        self.inference = Inference(self.args.model_name)
+        self.inference = Inference(self.args.model)
 
     def _collect_model_states(self, 
                               items: list[dict]
@@ -61,21 +44,6 @@ class LinearProbing:
             # append: layer x d_model
             all_hidden_states.append(np.stack(hs_per_layer, axis=0))
 
-
-            # B ATTENTIONS
-            if self.args.mode == "meta_attn":
-                # tuple of len layer
-                attentions = out["raw_attentions"]
-
-                attentions_per_layer = []
-                for a in attentions:
-                    # a: (num_heads, seq_len, seq_len)
-                    attentions_per_layer.append(a.detach().to(torch.float32).cpu().numpy())
-
-                # compute attention features
-                sample_attn_entropy = self.compute_attention_entropy(attentions_per_layer)
-                all_attention_entropies.append(sample_attn_entropy)
-
             # LABELS
             labels.append(int(out["label"]))
 
@@ -91,44 +59,12 @@ class LinearProbing:
         x = np.transpose(x, (1, 0, 2))  # (n_layers, n_samples, d_model)
         y = np.asarray(labels, dtype=np.int32)   # (n_samples,)
 
-        # STACK ATTENTIONS
-        if self.args.mode == "meta_attn":
-            # (n_samples, n_layers, num_heads) -> (n_layers, n_samples, num_heads)
-            a = np.stack(all_attention_entropies, axis=0)
-            a = np.transpose(a, (1, 0, 2))
-        else:
-            a = None
-
         return {
             "hidden_x": x,
-            "attentions": a,
             "y": y,
             "meta": meta,
         }
     
-
-    def compute_attention_entropy(self, attentions_per_layer: list[np.ndarray]) -> np.ndarray:
-        """
-        attentions: (n_layers, n_samples, num_heads, seq_len, seq_len)
-        
-        return attn_entropy where (n_layers, n_samples, num_heads,) 
-
-        """
-            
-        # compute entropy per head
-        attention_entropy_by_layer = []
-        for A in attentions_per_layer:
-            # A (n_heads, seq_len, seq_len) 
-        
-            log_A = np.log(A + 1e-12)
-            # sum over keys and mean over query
-            ent = -(A * log_A).sum(axis=-1).mean(axis=-1)
-        
-            attention_entropy_by_layer.append(ent)
-
-        return np.stack(attention_entropy_by_layer, axis=0)  # (n_layers, n_heads)
-    
-
     def _train_meta_probe(self, 
                           x_hidden_train: np.ndarray, 
                           x_attn_train: np.ndarray, 
@@ -136,7 +72,7 @@ class LinearProbing:
         
         scalers_by_layer = []
         pca_by_layer = []
-        hidden_pca_features_concatenated = []
+        hidden_features_concatenated = []
 
         for layer in range(x_hidden_train.shape[0]):
 
@@ -153,7 +89,7 @@ class LinearProbing:
             else:
                 layer_pca = None
 
-            hidden_pca_features_concatenated.append(x_hidden_layer_train_scaled)
+            hidden_features_concatenated.append(x_hidden_layer_train_scaled)
 
             # add items
             scalers_by_layer.append(scaler)
@@ -161,26 +97,14 @@ class LinearProbing:
 
         # Combine pca-ed hidden states and attention features
         # (n_samples, n_layers * pca_dim)
-        hidden_pca_features_concatenated = np.concatenate(hidden_pca_features_concatenated, axis=1) 
-
-        if self.args.mode == "meta_attn":
-            # (n_layers, n_samples, n_heads) -> (n_samples, n_layers * n_heads)
-            attn_features = np.transpose(x_attn_train, (1, 0, 2)).reshape(x_attn_train.shape[1], -1)
-            attn_scaler = StandardScaler()
-            attn_features_scaled = attn_scaler.fit_transform(attn_features)
-            features = np.concatenate([hidden_pca_features_concatenated, attn_features_scaled], axis=1)
-        else:
-            features = hidden_pca_features_concatenated
-            attn_scaler = None
-
+        hidden_features_concatenated = np.concatenate(hidden_features_concatenated, axis=1) 
 
         # Fit the meta probe
-        meta_probe = LogisticRegression(max_iter=2000, random_state=42, C=self.args.C)
-        meta_probe.fit(features, y_train)
+        meta_probe = LogisticRegression(max_iter=2000, random_state=42, C=1.0)
+        meta_probe.fit(hidden_features_concatenated, y_train)
 
         return {
             "scalers_by_layer": scalers_by_layer,
-            "attn_scaler": attn_scaler,
             "pca_by_layer": pca_by_layer,
             "meta_probe": meta_probe,
         }
@@ -213,16 +137,10 @@ class LinearProbing:
                 x_layer_train_scaled = pca.fit_transform(x_layer_train_scaled)
 
             # train probe
-            if self.args.mode == "mlp":
-                clf_binary = self._train_mlp_probe(
-                    x_train=x_layer_train_scaled,
-                    y_train=y_train,
-                )
-            else:
-                clf_binary = LogisticRegression(max_iter=2000, 
-                                                random_state=42,
-                                                C=self.args.C)
-                clf_binary.fit(x_layer_train_scaled, y_train)
+            clf_binary = LogisticRegression(max_iter=2000, 
+                                            random_state=42,
+                                            C=1.0)
+            clf_binary.fit(x_layer_train_scaled, y_train)
 
             # find optimal thresholds on val set
             x_layer_val = x_val[layer]  # (n_samples, d_model)
@@ -230,13 +148,8 @@ class LinearProbing:
 
             if self.args.mode == "pca":
                 x_layer_val_scaled = pca.transform(x_layer_val_scaled)
-            if self.args.mode == "mlp":
-                y_val_score = self._predict_mlp_prob(
-                    model=clf_binary,
-                    x=x_layer_val_scaled,
-                )
-            else:
-                y_val_score = clf_binary.predict_proba(x_layer_val_scaled)[:, 1]
+        
+            y_val_score = clf_binary.predict_proba(x_layer_val_scaled)[:, 1]
             thresholds = optimal_thresholds(y_true=y_val, y_predict=y_val_score)
             
             # collect
@@ -260,35 +173,6 @@ class LinearProbing:
             "optimal_thresholds_by_layer": optimal_thresholds_by_layer,
             "val_metrics_by_layer": val_metrics_by_layer,
         }
-
-    def _train_mlp_probe(self, x_train: np.ndarray, y_train: np.ndarray) -> MLPProbe:
-        input_dim = x_train.shape[1]
-        hidden_dim = max(32, min(256, input_dim // 2))
-        model = MLPProbe(input_dim=input_dim, hidden_dim=hidden_dim)
-
-        x_t = torch.tensor(x_train, dtype=torch.float32)
-        y_t = torch.tensor(y_train, dtype=torch.float32)
-
-        criterion = nn.BCEWithLogitsLoss()
-        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
-
-        model.train()
-        for _ in range(5):
-            optimizer.zero_grad()
-            logits = model(x_t)
-            loss = criterion(logits, y_t)
-            loss.backward()
-            optimizer.step()
-
-        model.eval()
-        return model
-
-    def _predict_mlp_prob(self, model: MLPProbe, x: np.ndarray) -> np.ndarray:
-        x_t = torch.tensor(x, dtype=torch.float32)
-        with torch.no_grad():
-            logits = model(x_t)
-            probs = torch.sigmoid(logits).cpu().numpy()
-        return probs
     
     def _evaluate_meta_probe(self,
                              train_out: dict[str, Any],
@@ -316,18 +200,9 @@ class LinearProbing:
         # Combine (pca-ed) hidden states and attention features
         hidden_pca_features_concatenated = np.concatenate(hidden_pca_features_concatenated, axis=1) 
 
-        # (n_layers, n_samples, n_heads) -> (n_samples, n_layers * n_heads)
-        if self.args.mode == "meta_attn":
-            attn_scaler = train_out["attn_scaler"]
-            attn_features = np.transpose(x_attn_test, (1, 0, 2)).reshape(x_attn_test.shape[1], -1)
-            attn_features_scaled = attn_scaler.transform(attn_features)
-            features = np.concatenate([hidden_pca_features_concatenated, attn_features_scaled], axis=1)
-        else:
-            features = hidden_pca_features_concatenated
-
         # run the meta probe
         meta_probe = train_out["meta_probe"]
-        meta_scores = meta_probe.predict_proba(features)[:, 1]
+        meta_scores = meta_probe.predict_proba(hidden_pca_features_concatenated)[:, 1]
 
 
         meta_metrics = metrics(
@@ -369,16 +244,13 @@ class LinearProbing:
             if self.args.mode == "pca":
                 x_layer_test_scaled = pca.transform(x_layer_test_scaled)
 
-            if self.args.mode == "mlp":
-                x_proj = self._predict_mlp_prob(model=model, x=x_layer_test_scaled)
-            else:
-                # A Probing vector
-                probe_vector = model.coef_[0]
-                probe_vector = probe_vector / np.linalg.norm(probe_vector)
+            # A Probing vector
+            probe_vector = model.coef_[0]
+            probe_vector = probe_vector / np.linalg.norm(probe_vector)
 
-                # project 
-                # n_samples x d_model/d_pca  x  d_model/d_pca -> n_samples
-                x_proj = np.dot(x_layer_test_scaled, probe_vector)
+            # project 
+            # n_samples x d_model/d_pca  x  d_model/d_pca -> n_samples
+            x_proj = np.dot(x_layer_test_scaled, probe_vector)
 
             # for small N; replace nan/and inf
             x_proj = np.nan_to_num(x_proj, nan=0.0, posinf=0.0, neginf=0.0)
@@ -477,7 +349,7 @@ class LinearProbing:
 
         # TRAINING THE PROBE
         # layer wise probe
-        if self.args.mode in ["default", "pca", "mlp"]:
+        if self.args.mode in ["default", "pca"]:
             train_out = self._train_linear_probe(x_train=train["hidden_x"], 
                                                 y_train=train["y"],
                                                 x_val=val["hidden_x"], 
@@ -485,7 +357,6 @@ class LinearProbing:
         # meta probe
         else:
             train_out = self._train_meta_probe(x_hidden_train=train["hidden_x"],
-                                    x_attn_train=train["attentions"],
                                     y_train=train["y"])
 
         # RUNNING EAL
@@ -503,7 +374,7 @@ class LinearProbing:
                                                     training_size=args.training_size))['test']
             test = self._collect_model_states(target_data)
 
-            if self.args.mode in ["default", "pca", "mlp"]:
+            if self.args.mode in ["default", "pca"]:
                 test_metrics = self._evaluate(train_out=train_out, test=test)
             else:
                 test_metrics = self._evaluate_meta_probe(train_out=train_out, test=test)
@@ -519,7 +390,7 @@ class LinearProbing:
             del test_metrics['scores']
 
             # SAVE OUTPUT
-            filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_C{args.C}_{args.dataset}_2_{target_dataset}.json"
+            filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_{args.dataset}_2_{target_dataset}.json"
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)
@@ -533,3 +404,44 @@ class LinearProbing:
             
             with open(os.path.join(self.out_dir, filename), "w") as f:
                 json.dump(out, f, indent=4)
+
+def parse_args() -> Namespace:
+    parser = ArgumentParser()
+    parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--dataset", type=str, required=True)
+    parser.add_argument("--token_mode", type=str, default="last_token")
+    parser.add_argument("--ood", type=int, default=0)
+    parser.add_argument("--smoke_test", type=int, default=0)
+    parser.add_argument("--components", type=int, default=50)
+    parser.add_argument("--mode", type=str, required=True)
+    parser.add_argument("--training_size", type=int, default=None)
+    parser.add_argument("--folder", type=str, default="sandbox")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    if args.token_mode not in {"last_token", "pooling"}:
+        raise ValueError("token_mode must be one of: last_token, pooling")
+    if args.smoke_test not in (0, 1):
+        raise ValueError("smoke_test must be 0 or 1")
+    if args.ood not in (0, 1):
+        raise ValueError("ood must be 0 or 1")
+    if args.mode not in {"default", "pca", "meta", "meta_no_pca"}:
+        raise ValueError("mode must be one of: default, pca, meta, meta_no_pca")
+
+
+    if args.training_size == -1:
+        args.training_size = None
+
+
+    args.smoke_test = bool(args.smoke_test)
+    args.ood = bool(args.ood)
+
+    analyzer = LinearProbing(args=args)
+    analyzer.run(args)
+
+
+if __name__ == "__main__":
+    main()

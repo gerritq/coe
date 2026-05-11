@@ -43,7 +43,7 @@ for MODEL in "${MODELS[@]}"; do
             echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, COMPONENTS=$COMPONENTS"
             echo "------------------------------------------------"
 
-            PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.run \
+            PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.probe_main \
                 --model "$MODEL" \
                 --dataset "$DATASET" \
                 --token_mode "$TOKEN_MODE" \

@@ -24,7 +24,7 @@ DATASETS=("raidDomain_wiki")
 TOKEN_MODE="last_token"
 MODES=("poly") # default | pca | meta | meta_attn | poly
 P_LIST=(2 3 4 5)
-COMPONENTS_LIST=(50)
+COMPONENTS_LIST=(100)
 TRAINING_SIZES=(-1)
 C_LIST=(1)
 
