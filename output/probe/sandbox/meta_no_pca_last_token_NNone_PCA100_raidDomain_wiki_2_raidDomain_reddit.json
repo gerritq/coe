@@ -1,0 +1,28 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "raidDomain_wiki",
+        "token_mode": "last_token",
+        "ood": true,
+        "smoke_test": false,
+        "components": 100,
+        "mode": "meta_no_pca",
+        "training_size": null,
+        "folder": "sandbox",
+        "target_dataset": "raidDomain_reddit",
+        "datetime": "2026-05-12 09:48:55"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.876768,
+            "accuracy": 0.572,
+            "f1": 0.6925287356321839,
+            "tpr_at_fpr_0_05": 0.652,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.9061951144768572
+        }
+    },
+    "sim_correlations": null
+}

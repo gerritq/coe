@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_meta_def_raid
+#SBATCH --job-name=probe_meta_def_raidDomain
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=05:00:00
+#SBATCH --time=03:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -26,10 +26,11 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("CB_drlDomain" "CB_multisocial" "CB_tsm" "CB_tsm")
 # DATASETS=("apt" "apt_m4_train")
 
-DATASETS=("raid_cohere_chat" "raid_gpt4" "raid_llama_chat" "raid_mistral_chat")
+# DATASETS=("raid_cohere_chat" "raid_gpt4" "raid_llama_chat" "raid_mistral_chat")
+DATASETS=("raidDomain_wiki" "raidDomain_reddit" "raidDomain_news" "raidDomain_abstracts")
 
 TOKEN_MODE="last_token"
-MODES=("pca" "default" "meta_no_pca" "meta") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
+MODES=("default" "meta_no_pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
 OOD=1
 COMPONENTS=100
 SMOKE_TEST=0

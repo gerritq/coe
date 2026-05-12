@@ -1,0 +1,28 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "raidDomain_news",
+        "token_mode": "last_token",
+        "ood": true,
+        "smoke_test": false,
+        "components": 100,
+        "mode": "meta_no_pca",
+        "training_size": null,
+        "folder": "sandbox",
+        "target_dataset": "raidDomain_abstracts",
+        "datetime": "2026-05-12 10:08:17"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.8092800000000001,
+            "accuracy": 0.528,
+            "f1": 0.6685393258426966,
+            "tpr_at_fpr_0_05": 0.6,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.8671840456955519
+        }
+    },
+    "sim_correlations": null
+}
