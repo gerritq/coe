@@ -277,7 +277,7 @@ class BiScope:
                                         acc_threshold=.5,
                                         f1_threshold=.5)
             
-            file_name = f"{args.model}_{args.dataset}_2_{ood_ds['name']}_N{args.training_size}.json"
+            file_name = f"{args.model}_{args.dataset}_2_{ood_ds['name']}_N{args.training_size}_S{args.seed}.json"
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)

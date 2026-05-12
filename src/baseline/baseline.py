@@ -53,7 +53,10 @@ def supervised_models(args):
         print(f"Loading target dataset: {target_dataset}")
         print("="*60)
 
-        target_data = load_dataset(args=Namespace(dataset=target_dataset, smoke_test=args.smoke_test, training_size=args.training_size))
+        target_data = load_dataset(args=Namespace(dataset=target_dataset, 
+                                                  smoke_test=args.smoke_test, 
+                                                  training_size=args.training_size,
+                                                  seed=args.seed))
         ood_data.append({"data": target_data, "name": target_dataset})
 
     scores = baseline.run(args=args, training_data=source_data, ood_data=ood_data)
@@ -136,7 +139,10 @@ def run(args):
             print("="*60)
 
             # bit reduant for the ID case but whatever
-            target_data = load_dataset(args=Namespace(dataset=target_dataset, smoke_test=args.smoke_test, training_size=args.training_size))
+            target_data = load_dataset(args=Namespace(dataset=target_dataset, 
+                                                      smoke_test=args.smoke_test, 
+                                                      training_size=args.training_size, 
+                                                      seed=args.seed))
             target_y = target_data['test']["label"]
             target_text = target_data['test']["text"]
             
@@ -149,7 +155,6 @@ def run(args):
                                 f1_threshold=optimal_thresholds_dict["threshold_f1"],
                                 acc_threshold=optimal_thresholds_dict["threshold_acc"])
 
-        
             file_name = f"{args.model}_{args.dataset}_2_{target_dataset}.json"
 
             args_copy = Namespace(**vars(args))  
@@ -174,6 +179,7 @@ def main():
     parser.add_argument("--ood", type=int, default=0)
     parser.add_argument("--training_size", type=int, default=None)
     parser.add_argument("--folder", type=str, default="sandbox")
+    parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
     if args.smoke_test not in (0, 1):
@@ -182,6 +188,7 @@ def main():
         raise ValueError("ood must be 0 or 1")
     args.smoke_test = bool(args.smoke_test)
     args.ood = bool(args.ood)
+    args.seed = int(args.seed)
 
     # select base models 
     if args.smoke_test:

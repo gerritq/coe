@@ -124,7 +124,7 @@ class RepreGuard:
                    "train_results": result,
                    "metrics": test_result}
             
-            file_name = f"{args.model}_{args.dataset}_2_{ood_name}_N{args.training_size}.json"
+            file_name = f"{args.model}_{args.dataset}_2_{ood_name}_N{args.training_size}_S{args.seed}.json"
             self.out_dir = os.path.join(BASE_DIR, "output", "baseline", args.folder)
             os.makedirs(self.out_dir, exist_ok=True)
             with open(os.path.join(self.out_dir, file_name), "w") as f:

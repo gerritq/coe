@@ -441,8 +441,9 @@ class Probing:
             print("="*60)
 
             target_data = load_dataset(args=Namespace(dataset=target_dataset, 
-                                                    smoke_test=args.smoke_test,
-                                                    training_size=args.training_size))['test']
+                                                      smoke_test=args.smoke_test,
+                                                      training_size=args.training_size,
+                                                      seed=args.seed))['test']
             test = self._collect_model_states(target_data)
 
             if self.args.mode in ["default", "pca", "mlp", "first_layer", "last_layer"]:
@@ -464,7 +465,7 @@ class Probing:
             if args.mode == "mlp":
                 filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_D{args.mlp_depth}_{args.dataset}_2_{target_dataset}.json"
             else:
-                filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_C{args.C}_{args.dataset}_2_{target_dataset}.json"
+                filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_C{args.C}_{args.dataset}_2_{target_dataset}_S{args.seed}.json"
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)
@@ -493,6 +494,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--folder", type=str, default="sandbox")
     parser.add_argument("--C", type=float, default=1.0)
     parser.add_argument("--mlp_depth", type=int, default=1)
+    parser.add_argument("--seed", type=int, default=42)
     return parser.parse_args()
 
 

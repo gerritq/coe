@@ -3,7 +3,8 @@
 Today:
     - DONE Bogdan: Add table and paragraph
     - DONE Add last and first layer to ablations
-    - Non-linearity with MLP
+    - RUNNING Non-linearity with MLP
+    - FIX: 33849201
     - Add the random sampling to the efficiency plot
 
 0. Running
@@ -54,6 +55,8 @@ Today:
 ---
 
 6. **Descriptives/The why**
+
+    - Representation quality metrics: LATENT THINKING OPTIMIZATION: YOUR LATENT REASONING LANGUAGE MODEL SECRETLY ENCODES REWARD SIGNALS IN ITS LATENT THOUGHTS
 
     - Heatmap of probing vectors: https://transformer-circuits.pub/2026/emotions/index.html
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=p_abl_mlp_depth_5_8
+#SBATCH --job-name=pa_training_size_seeds
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=04:00:00
@@ -17,17 +17,21 @@ cd "${ROOT_DIR}"
 
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
-# DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
-DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+# DS for training size
+DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "raidModel_gpt4")
+
+# DS for other ablations
+# DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 
+MODES=("default" "meta_no_pca") # default | pca | meta | meta_attn | poly
+COMPONENTS_LIST=(50)
+TRAINING_SIZES=(10 50 100 250 500) # -1 | 10 50 100 250 500
+C_LIST=(1)
+MLP_DEPTH_LIST=(1)
+SEEDS=(42 43 44 45 46)
 
 TOKEN_MODE="last_token"
-MODES=("mlp") # default | pca | meta | meta_attn | poly
-COMPONENTS_LIST=(50)
-TRAINING_SIZES=(-1)
-C_LIST=(1)
-MLP_DEPTH_LIST=(5 6 7 8)
 FOLDER="ablation"
 SMOKE_TEST=0
 OOD=0
@@ -39,23 +43,27 @@ for MODEL in "${MODELS[@]}"; do
                 for TRAINING_SIZE in "${TRAINING_SIZES[@]}"; do
                     for C in "${C_LIST[@]}"; do
                         for MLP_DEPTH in "${MLP_DEPTH_LIST[@]}"; do
-                            echo "------------------------------------------------"
-                            echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE, Mode=$MODE"
-                            echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, COMPONENTS=$COMPONENTS, TRAINING_SIZE=$TRAINING_SIZE, C=$C"
-                            echo "------------------------------------------------"
-                
-                        PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.probe_ablations \
-                            --model "$MODEL" \
-                            --dataset "$DATASET" \
-                            --token_mode "$TOKEN_MODE" \
-                            --smoke_test "$SMOKE_TEST" \
-                            --ood "$OOD" \
-                            --components "$COMPONENTS" \
-                            --training_size "$TRAINING_SIZE" \
-                            --mode "$MODE" \
-                            --C "$C" \
-                            --folder "$FOLDER" \
-                            --mlp_depth "$MLP_DEPTH"
+                            for SEED in "${SEEDS[@]}"; do
+                                echo "------------------------------------------------"
+                                echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE, Mode=$MODE"
+                                echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, COMPONENTS=$COMPONENTS, TRAINING_SIZE=$TRAINING_SIZE, C=$C"
+                                echo "MLP_DEPTH=$MLP_DEPTH, SEED=$SEED"
+                                echo "------------------------------------------------"
+                    
+                            PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.probe_ablations \
+                                --model "$MODEL" \
+                                --dataset "$DATASET" \
+                                --token_mode "$TOKEN_MODE" \
+                                --smoke_test "$SMOKE_TEST" \
+                                --ood "$OOD" \
+                                --components "$COMPONENTS" \
+                                --training_size "$TRAINING_SIZE" \
+                                --mode "$MODE" \
+                                --C "$C" \
+                                --folder "$FOLDER" \
+                                --mlp_depth "$MLP_DEPTH" \
+                                --seed "$SEED"
+                            done
                         done    
                     done
                 done
