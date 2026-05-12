@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_ablation_poly
+#SBATCH --job-name=probe_ablation_poly_c50
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=02:00:00
+#SBATCH --time=10:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -18,14 +18,14 @@ cd "${ROOT_DIR}"
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
 # DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "m4_gpt4")
-DATASETS=("tsm_extend" "tsm_first" "tsm_sums" "tsm_tst")
+DATASETS=("tsm_extend" "tsm_first" "tsm_sums" "tsm_tst" "raidDomain_wiki")
 # Ablations
 # DATASETS=("raidDomain_wiki" "multisocial_en")
 
 TOKEN_MODE="last_token"
 MODES=("poly") # default | pca | meta | meta_attn | poly
 P_LIST=(2 3 4 5)
-COMPONENTS_LIST=(20)
+COMPONENTS_LIST=(50)
 TRAINING_SIZES=(-1)
 C_LIST=(1)
 
