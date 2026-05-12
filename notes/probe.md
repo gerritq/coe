@@ -4,6 +4,7 @@ Today:
     - DONE Bogdan: Add table and paragraph
     - DONE Add last and first layer to ablations
     - RUNNING Non-linearity with MLP
+    - RUNNING training sizez for baseline and probes
     - FIX: 33849201
     - Add the random sampling to the efficiency plot
 

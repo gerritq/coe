@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pa_training_size_seeds
+#SBATCH --job-name=pa_mlp_ood_1_4
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=04:00:00
@@ -18,23 +18,23 @@ cd "${ROOT_DIR}"
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
 # DS for training size
-DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "raidModel_gpt4")
+DATASETS=("drlDomain_arxiv" )
 
 # DS for other ablations
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 
-MODES=("default" "meta_no_pca") # default | pca | meta | meta_attn | poly
+MODES=("mlp") # default | pca | meta | meta_attn | poly
 COMPONENTS_LIST=(50)
-TRAINING_SIZES=(10 50 100 250 500) # -1 | 10 50 100 250 500
+TRAINING_SIZES=(-1) # -1 | 10 50 100 250 500
 C_LIST=(1)
-MLP_DEPTH_LIST=(1)
-SEEDS=(42 43 44 45 46)
+MLP_DEPTH_LIST=(1 2 3 4)
+SEEDS=(42)
 
 TOKEN_MODE="last_token"
 FOLDER="ablation"
 SMOKE_TEST=0
-OOD=0
+OOD=1
 
 for MODEL in "${MODELS[@]}"; do
     for DATASET in "${DATASETS[@]}"; do
