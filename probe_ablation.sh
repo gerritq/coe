@@ -23,12 +23,11 @@ DATASETS=("tsm_extend" "tsm_first" "tsm_sums" "tsm_tst" "raidDomain_wiki")
 # DATASETS=("raidDomain_wiki" "multisocial_en")
 
 TOKEN_MODE="last_token"
-MODES=("poly") # default | pca | meta | meta_attn | poly
-P_LIST=(2 3 4 5)
+MODES=("mlp") # default | pca | meta | meta_attn | poly
 COMPONENTS_LIST=(50)
 TRAINING_SIZES=(-1)
 C_LIST=(1)
-
+MLP_DEPTH_LIST=(1 2 3 4 5)
 FOLDER="ablation"
 SMOKE_TEST=0
 OOD=0
@@ -39,25 +38,25 @@ for MODEL in "${MODELS[@]}"; do
             for COMPONENTS in "${COMPONENTS_LIST[@]}"; do
                 for TRAINING_SIZE in "${TRAINING_SIZES[@]}"; do
                     for C in "${C_LIST[@]}"; do
-                        for P in "${P_LIST[@]}"; do
+                        for MLP_DEPTH in "${MLP_DEPTH_LIST[@]}"; do
                             echo "------------------------------------------------"
-                            echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE, Mode=$MODE, P=$P"
+                            echo "Running Probe: Dataset=$DATASET, Model=$MODEL, TokenMode=$TOKEN_MODE, Mode=$MODE"
                             echo "SmokeTest=$SMOKE_TEST, OOD=$OOD, COMPONENTS=$COMPONENTS, TRAINING_SIZE=$TRAINING_SIZE, C=$C"
                             echo "------------------------------------------------"
-                    
-                            PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.probe_ablations \
-                                --model "$MODEL" \
-                                --dataset "$DATASET" \
-                                --token_mode "$TOKEN_MODE" \
-                                --smoke_test "$SMOKE_TEST" \
-                                --ood "$OOD" \
-                                --components "$COMPONENTS" \
-                                --training_size "$TRAINING_SIZE" \
-                                --mode "$MODE" \
-                                --p "$P" \
-                                --C "$C" \
-                                --folder "$FOLDER"
-                        done
+                
+                        PYTHONPATH="${ROOT_DIR}" uv run -m src.probes.probe_ablations \
+                            --model "$MODEL" \
+                            --dataset "$DATASET" \
+                            --token_mode "$TOKEN_MODE" \
+                            --smoke_test "$SMOKE_TEST" \
+                            --ood "$OOD" \
+                            --components "$COMPONENTS" \
+                            --training_size "$TRAINING_SIZE" \
+                            --mode "$MODE" \
+                            --C "$C" \
+                            --folder "$FOLDER" \
+                            --mlp_depth "$MLP_DEPTH"
+                        done    
                     done
                 done
             done

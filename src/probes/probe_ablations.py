@@ -10,41 +10,53 @@ from src.utils import load_dataset, optimal_thresholds, metrics, OOD, return_arg
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import PolynomialFeatures
 from datetime import datetime
 from argparse import ArgumentParser
 
 BASE_DIR = os.getenv("BASE_COE")
 
 class MLPProbe(nn.Module):
-    def __init__(self, input_dim: int, hidden_dim: int):
+    def __init__(self, 
+                 input_dim: int, 
+                 hidden_dim: int, 
+                 depth: int, 
+                 dropout: float = 0.1):
         super().__init__()
+        layers = []
 
-        self.net = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(hidden_dim, 1)
-        )
+        in_dim = input_dim
+        for _ in range(depth):
+            layers.append(nn.Linear(in_dim, hidden_dim))
+            layers.append(nn.ReLU())
+            if dropout > 0:
+                layers.append(nn.Dropout(dropout))
+            in_dim = hidden_dim
+
+        layers.append(nn.Linear(in_dim, 1))
+        self.net = nn.Sequential(*layers)
 
     def forward(self, x):
         return self.net(x).squeeze(-1)
 
 
+
 class Probe:
-    def __init__(self, kind: str, c: float, p: int = 2):
+    def __init__(self, 
+                 kind: str, 
+                 c: float, 
+                 depth: int = None) -> None:
         self.kind = kind
         self.c = c
-        self.p = p
         self.model = None
-        self.poly = None
-        self.post_poly_scaler = None
+        self.depth = depth
 
     def fit(self, x: np.ndarray, y: np.ndarray) -> None:
         if self.kind == "mlp":
             input_dim = x.shape[1]
             hidden_dim = max(32, min(256, input_dim // 2))
-            model = MLPProbe(input_dim=input_dim, hidden_dim=hidden_dim)
+            model = MLPProbe(input_dim=input_dim, 
+                             hidden_dim=hidden_dim,
+                             depth=self.depth)
             x_t = torch.tensor(x, dtype=torch.float32)
             y_t = torch.tensor(y, dtype=torch.float32)
             criterion = nn.BCEWithLogitsLoss()
@@ -60,13 +72,6 @@ class Probe:
             self.model = model
             return
 
-        if self.kind == "poly":
-            self.poly = PolynomialFeatures(degree=self.p, include_bias=False)
-            x = self.poly.fit_transform(x)
-            # Additional scaling after polynomial expansion improves conditioning.
-            self.post_poly_scaler = StandardScaler()
-            x = self.post_poly_scaler.fit_transform(x)
-
         model = LogisticRegression(max_iter=2000, random_state=42, C=self.c)
         model.fit(x, y)
         self.model = model
@@ -79,9 +84,6 @@ class Probe:
                 probs = torch.sigmoid(logits).cpu().numpy()
             return probs
 
-        if self.kind == "poly":
-            x = self.poly.transform(x)
-            x = self.post_poly_scaler.transform(x)
         return self.model.predict_proba(x)[:, 1]
 
 class Probing:
@@ -148,7 +150,7 @@ class Probing:
             scaler = StandardScaler()
             x_hidden_layer_train_scaled = scaler.fit_transform(x_hidden_layer_train)
             
-            if self.args.mode in ["meta"]:
+            if self.args.mode in ["pca"]:
                 layer_pca = PCA(n_components=self.args.components, random_state=42)
                 x_hidden_layer_train_scaled = layer_pca.fit_transform(x_hidden_layer_train_scaled)
             else:
@@ -197,19 +199,17 @@ class Probing:
             scaler = StandardScaler()
             x_layer_train_scaled = scaler.fit_transform(x_layer_train)
 
-            if self.args.mode in ["pca", "poly"]:
+            if self.args.mode in ["pca"]:
                 pca = PCA(n_components=self.args.components, random_state=42)
                 x_layer_train_scaled = pca.fit_transform(x_layer_train_scaled)
 
             probe_kind = "linear"
             if self.args.mode == "mlp":
                 probe_kind = "mlp"
-            elif self.args.mode == "poly":
-                probe_kind = "poly"
             clf_binary = Probe(
                 kind=probe_kind,
                 c=self.args.C,
-                p=getattr(self.args, "p", 2),
+                depth=self.args.mlp_depth,
             )
             clf_binary.fit(x_layer_train_scaled, y_train)
 
@@ -217,14 +217,14 @@ class Probing:
             x_layer_val = x_val[layer]  # (n_samples, d_model)
             x_layer_val_scaled = scaler.transform(x_layer_val)
 
-            if self.args.mode in ["pca", "poly"]:
+            if self.args.mode in ["pca"]:
                 x_layer_val_scaled = pca.transform(x_layer_val_scaled)
             y_val_score = clf_binary.predict_proba(x_layer_val_scaled)
             thresholds = optimal_thresholds(y_true=y_val, y_predict=y_val_score)
             
             # collect
             scalers_by_layer.append(scaler)
-            if self.args.mode in ["pca", "poly"]:
+            if self.args.mode in ["pca"]:
                 pca_by_layer.append(pca)
             models_by_layer.append(clf_binary)
             optimal_thresholds_by_layer.append(thresholds)
@@ -249,8 +249,6 @@ class Probing:
                              test: dict[str, Any]) -> dict[str, Any]:
         
         y_true = test["y"]
-        x_attn_test = test["attentions"]
-
         hidden_pca_features_concatenated = []
 
         for layer in range(len(train_out["scalers_by_layer"])):
@@ -300,7 +298,7 @@ class Probing:
             
             # Get scaler, pca, model, and thresholds per layer
             scaler = train_out["scalers_by_layer"][layer]
-            if self.args.mode in ["pca", "poly"]:
+            if self.args.mode in ["pca"]:
                 pca = train_out["pca_by_layer"][layer]
             else:
                 pca=None
@@ -310,7 +308,7 @@ class Probing:
             # Get test data for this layer
             x_layer_test = test["hidden_x"][layer]  # (n_samples, d_model)
             x_layer_test_scaled = scaler.transform(x_layer_test)
-            if self.args.mode in ["pca", "poly"]:
+            if self.args.mode in ["pca"]:
                 x_layer_test_scaled = pca.transform(x_layer_test_scaled)
 
             x_proj = model.predict_proba(x_layer_test_scaled)
@@ -421,7 +419,7 @@ class Probing:
 
         # TRAINING THE PROBE
         # layer wise probe
-        if self.args.mode in ["default", "pca", "mlp", "poly", "first_layer", "last_layer"]:
+        if self.args.mode in ["default", "pca", "mlp", "first_layer", "last_layer"]:
             train_out = self._train_linear_probe(x_train=train["hidden_x"], 
                                                 y_train=train["y"],
                                                 x_val=val["hidden_x"], 
@@ -447,7 +445,7 @@ class Probing:
                                                     training_size=args.training_size))['test']
             test = self._collect_model_states(target_data)
 
-            if self.args.mode in ["default", "pca", "mlp", "poly", "first_layer", "last_layer"]:
+            if self.args.mode in ["default", "pca", "mlp", "first_layer", "last_layer"]:
                 test_metrics = self._evaluate(train_out=train_out, test=test)
             else:
                 test_metrics = self._evaluate_meta_probe(train_out=train_out, test=test)
@@ -463,7 +461,10 @@ class Probing:
             del test_metrics['scores']
 
             # SAVE OUTPUT
-            filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_P{getattr(args, 'p', 2)}_C{args.C}_{args.dataset}_2_{target_dataset}.json"
+            if args.mode == "mlp":
+                filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_D{args.mlp_depth}_{args.dataset}_2_{target_dataset}.json"
+            else:
+                filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_C{args.C}_{args.dataset}_2_{target_dataset}.json"
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)
@@ -488,10 +489,10 @@ def parse_args() -> Namespace:
     parser.add_argument("--smoke_test", type=int, default=0)
     parser.add_argument("--components", type=int, default=50)
     parser.add_argument("--mode", type=str, required=True)
-    parser.add_argument("--p", type=int, default=2)
     parser.add_argument("--training_size", type=int, default=None)
     parser.add_argument("--folder", type=str, default="sandbox")
     parser.add_argument("--C", type=float, default=1.0)
+    parser.add_argument("--mlp_depth", type=int, default=1)
     return parser.parse_args()
 
 
@@ -504,10 +505,8 @@ def main() -> None:
         raise ValueError("smoke_test must be 0 or 1")
     if args.ood not in (0, 1):
         raise ValueError("ood must be 0 or 1")
-    if args.mode not in {"default", "pca", "meta", "meta_attn", "meta_no_pca", "mlp", "poly", "first_layer", "last_layer"}:
-        raise ValueError("mode must be one of: default, pca, meta, meta_attn, meta_no_pca, mlp, poly, first_layer, last_layer")
-    if args.mode == "poly" and args.p not in {2, 3, 4, 5}:
-        raise ValueError("for mode=poly, p must be one of: 2, 3, 4, 5")
+    if args.mode not in {"default", "pca", "meta", "meta_attn", "meta_no_pca", "mlp", "first_layer", "last_layer"}:
+        raise ValueError("mode must be one of: default, pca, meta, meta_attn, meta_no_pca, mlp, first_layer, last_layer")
 
     if args.training_size == -1:
         args.training_size = None
