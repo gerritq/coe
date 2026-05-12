@@ -18,7 +18,10 @@ class Rank:
             if text == "":
                 return None
             else:
-                tokenized = self.tokenizer(text, return_tensors="pt").to(self.device)
+                tokenized = self.tokenizer(text, 
+                                           return_tensors="pt",
+                                           max_length=1024,
+                                           truncation=True).to(self.device)
                 logits = self.model(**tokenized).logits[:, :-1]
                 labels = tokenized.input_ids[:, 1:]
 

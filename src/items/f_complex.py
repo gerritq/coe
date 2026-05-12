@@ -10,6 +10,15 @@ BASE_DIR = os.getenv("BASE_COE", ".")
 ABLATION_DIR = os.path.join(BASE_DIR, "output", "probe", "ablation")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 OUT_PATH = os.path.join(OUT_DIR, "f_complex.pdf")
+OUT_PATH_OOD = os.path.join(OUT_DIR, "f_complex_ood.pdf")
+OOD_SOURCE = "drlDomain_arxiv"
+OOD_TARGETS = ["drlDomain_writing_prompt", "drlDomain_xsum", "drlDomain_yelp_review"]
+OOD_LABELS = {
+    "drlDomain_writing_prompt": "writing_prompts",
+    "drlDomain_xsum": "xsum",
+    "drlDomain_yelp_review": "yelp_review",
+}
+MAX_DEPTH = 5
 
 
 def _extract_auroc(obj: dict) -> float | None:
@@ -28,11 +37,10 @@ def _extract_auroc(obj: dict) -> float | None:
     return None
 
 
-def collect_points() -> dict[str, dict[int, list[float]]]:
-    # dataset -> depth -> list[auroc]
-    points: dict[str, dict[int, list[float]]] = defaultdict(lambda: defaultdict(list))
+def _collect_mlp_points() -> list[dict]:
+    rows: list[dict] = []
     if not os.path.isdir(ABLATION_DIR):
-        return points
+        return rows
 
     for filename in sorted(os.listdir(ABLATION_DIR)):
         if not filename.endswith(".json"):
@@ -55,28 +63,58 @@ def collect_points() -> dict[str, dict[int, list[float]]]:
             depth = int(args["mlp_depth"])
         except (TypeError, ValueError):
             continue
-        if depth < 1 or depth > 8:
+        if depth < 1 or depth > MAX_DEPTH:
             continue
 
         dataset = args.get("dataset")
         target_dataset = args.get("target_dataset")
         if not isinstance(dataset, str):
             continue
-        if not dataset.startswith("tsm_"):
-            continue
-        # Keep ID results so each dataset has one depth curve.
-        if target_dataset != dataset:
-            continue
 
         auroc = _extract_auroc(obj)
         if auroc is None:
             continue
-        points[dataset][depth].append(float(auroc))
+        rows.append(
+            {
+                "dataset": dataset,
+                "target_dataset": target_dataset,
+                "mlp_depth": depth,
+                "auroc": float(auroc),
+            }
+        )
 
+    return rows
+
+
+def collect_points_id_tsm() -> dict[str, dict[int, list[float]]]:
+    # dataset -> depth -> list[auroc]
+    points: dict[str, dict[int, list[float]]] = defaultdict(lambda: defaultdict(list))
+    for row in _collect_mlp_points():
+        dataset = row["dataset"]
+        target_dataset = row["target_dataset"]
+        if not dataset.startswith("tsm_"):
+            continue
+        if target_dataset != dataset:
+            continue
+        points[dataset][row["mlp_depth"]].append(row["auroc"])
     return points
 
 
-def plot(points: dict[str, dict[int, list[float]]]) -> None:
+def collect_points_ood_drl() -> dict[str, dict[int, list[float]]]:
+    # target_dataset -> depth -> list[auroc]
+    points: dict[str, dict[int, list[float]]] = defaultdict(lambda: defaultdict(list))
+    for row in _collect_mlp_points():
+        dataset = row["dataset"]
+        target_dataset = row["target_dataset"]
+        if dataset != OOD_SOURCE:
+            continue
+        if target_dataset not in OOD_TARGETS:
+            continue
+        points[target_dataset][row["mlp_depth"]].append(row["auroc"])
+    return points
+
+
+def plot(points: dict[str, dict[int, list[float]]], out_path: str, label_map: dict[str, str] | None = None) -> None:
     if not points:
         raise RuntimeError("No matching mlp ablation points found in output/probe/ablation.")
 
@@ -99,7 +137,29 @@ def plot(points: dict[str, dict[int, list[float]]]) -> None:
 
         offsets = (i - (n_ds - 1) / 2.0) * bar_width
         x_bar = x + offsets
-        plt.bar(x_bar, y, width=bar_width * 0.92, alpha=1.0, label=dataset)
+        label = label_map.get(dataset, dataset) if label_map is not None else dataset
+        plt.bar(x_bar, y, width=bar_width * 0.92, alpha=1.0, label=label)
+
+        # Annotate: AUROC at depth 1, deltas vs depth 1 for depth > 1.
+        base = None
+        if 1 in depth_to_vals:
+            base = float(np.mean(depth_to_vals[1]))
+        for xb, d, yy in zip(x_bar.tolist(), depths, y.tolist()):
+            if base is None or d == 1:
+                txt = f"{yy:.2f}"
+            else:
+                delta = yy - base
+                sign = "+" if delta >= 0 else "-"
+                txt = f"{sign}{abs(delta) * 100:.2f}%"
+            plt.text(
+                xb,
+                yy + 0.003,
+                txt,
+                ha="center",
+                va="bottom",
+                fontsize=8,
+                rotation=0,
+            )
 
     plt.xlabel("MLP depth")
     plt.ylabel("AUROC")
@@ -122,14 +182,18 @@ def plot(points: dict[str, dict[int, list[float]]]) -> None:
     plt.tight_layout()
 
     os.makedirs(OUT_DIR, exist_ok=True)
-    plt.savefig(OUT_PATH, dpi=240)
+    plt.savefig(out_path, dpi=240)
     plt.close()
 
 
 def main() -> None:
-    points = collect_points()
-    plot(points)
+    points = collect_points_id_tsm()
+    plot(points, OUT_PATH)
     print(f"Saved: {OUT_PATH}")
+
+    points_ood = collect_points_ood_drl()
+    plot(points_ood, OUT_PATH_OOD, label_map=OOD_LABELS)
+    print(f"Saved: {OUT_PATH_OOD}")
 
 
 if __name__ == "__main__":

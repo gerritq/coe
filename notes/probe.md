@@ -1,16 +1,13 @@
 # To do
 
 Today:
-    - DONE Bogdan: Add table and paragraph
-    - DONE Add last and first layer to ablations
-    - RUNNING Non-linearity with MLP
-    - RUNNING training sizez for baseline and probes
-    - FIX: 33849201
+    - RUNNING + FIGURE: training sizez for baseline and probes
+    - RUNNIG: rank models (fixed int max)
+    - RUNNIG: BiScope OOD models
+    - RUNNING: seeds for sample efficiency for probes (latest runs) and baselines 33847757 (fixed timeout)
+    - Check: what is missing for ID and OOD
     - Add the random sampling to the efficiency plot
-
-0. Running
-    - Fix biscope then run missing
-    - Run missing Repreguard Biscope OOD RAID Models
+    - Update the layer plots with raid models
 
 ---
 
@@ -56,6 +53,16 @@ Today:
 ---
 
 6. **Descriptives/The why**
+
+    - check: LANGUAGE MODELS REPRESENT SPACE AND TIME
+
+    - HOT: Can we use feature activations as in: When Truthful Representations Flip Under Deceptive Instructions?
+
+        - Llama scope: Llama Scope
+
+    - We can make the same linearity claim as in: https://arxiv.org/pdf/2509.10625?
+
+    - Universal claim: https://aclanthology.org/2025.findings-acl.38.pdf
 
     - Representation quality metrics: LATENT THINKING OPTIMIZATION: YOUR LATENT REASONING LANGUAGE MODEL SECRETLY ENCODES REWARD SIGNALS IN ITS LATENT THOUGHTS
 

@@ -17,3 +17,6 @@ PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id
 
 # t_ablations
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
+
+# f_complex
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_complex

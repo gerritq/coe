@@ -99,6 +99,12 @@ SUPERVISED_MODELS = [
 ]
 
 PROBE_MODE_ORDER = ["default", "meta_no_pca"]
+DATASET_ALIASES = {
+    "raidModel_cohere_chat": "raid_cohere_chat",
+    "raidModel_gpt4": "raid_gpt4",
+    "raidModel_llama_chat": "raid_llama_chat",
+    "raidModel_mistral_chat": "raid_mistral_chat",
+}
 
 
 def _tex_escape(text: str) -> str:
@@ -135,6 +141,12 @@ def _all_datasets() -> list[str]:
     return datasets
 
 
+def _canonical_dataset_name(ds: str | None) -> str | None:
+    if ds is None:
+        return None
+    return DATASET_ALIASES.get(ds, ds)
+
+
 def collect_baselines() -> dict[str, dict[str, float]]:
     table: dict[str, dict[str, float]] = {}
     datasets = set(_all_datasets())
@@ -145,8 +157,8 @@ def collect_baselines() -> dict[str, dict[str, float]]:
         with open(path, "r") as f:
             obj = json.load(f)
         args = obj.get("args", {})
-        ds = args.get("dataset")
-        target_ds = args.get("target_dataset")
+        ds = _canonical_dataset_name(args.get("dataset"))
+        target_ds = _canonical_dataset_name(args.get("target_dataset"))
         model = args.get("model")
         if ds != target_ds:
             continue
@@ -173,8 +185,8 @@ def collect_probes() -> dict[str, dict[str, float]]:
         with open(path, "r") as f:
             obj = json.load(f)
         args = obj.get("args", {})
-        ds = args.get("dataset")
-        target_ds = args.get("target_dataset")
+        ds = _canonical_dataset_name(args.get("dataset"))
+        target_ds = _canonical_dataset_name(args.get("target_dataset"))
         mode = args.get("mode")
         # ID condition: train/source dataset must equal test/target dataset.
         if ds != target_ds:
