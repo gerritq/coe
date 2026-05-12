@@ -17,13 +17,18 @@ OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 SEED = 42
 
 
-def load_train_items(dataset_name: str) -> list[dict[str, Any]]:
-    path = os.path.join(DATA_DIR, dataset_name, "train.jsonl")
+def load_d_m4_wikipedia_items() -> list[dict[str, Any]]:
+    path = os.path.join(DATA_DIR, "d_m4_domains", "data.jsonl")
     if not os.path.exists(path):
         raise FileNotFoundError(f"Missing dataset file: {path}")
 
     with open(path, "r", encoding="utf-8") as f:
-        items = [json.loads(line) for line in f if line.strip()]
+        all_items = [json.loads(line) for line in f if line.strip()]
+
+    # Keep only the wikipedia subset from d_m4_domains.
+    items = [x for x in all_items if str(x.get("source", "")).lower() == "wikipedia"]
+    if not items:
+        raise RuntimeError("No wikipedia items found in d_m4_domains/data.jsonl")
     return items
 
 
@@ -101,13 +106,14 @@ def compute_layer_entropies(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, n
     return h_ent, m_ent
 
 
-def plot_entropies(h_ent: np.ndarray, m_ent: np.ndarray, out_path: str) -> None:
+def plot_entropies(h_ent: np.ndarray, m_ent: np.ndarray, out_path: str, title: str) -> None:
     layers = np.arange(len(h_ent))
     plt.figure(figsize=(10, 6))
     plt.plot(layers, h_ent, marker="o", linewidth=2.0, label="Human")
     plt.plot(layers, m_ent, marker="o", linewidth=2.0, label="Machine")
     plt.xlabel("Layer")
     plt.ylabel("Von Neumann Entropy")
+    plt.title(title)
     plt.grid(alpha=0.25)
     plt.legend(frameon=True)
     plt.tight_layout()
@@ -118,25 +124,29 @@ def plot_entropies(h_ent: np.ndarray, m_ent: np.ndarray, out_path: str) -> None:
 def parse_args() -> Namespace:
     parser = ArgumentParser()
     parser.add_argument("--model", type=str, default="qwen_06b")
-    parser.add_argument("--dataset", type=str, default="raidDomain_wiki")
-    parser.add_argument("--n_per_label", type=int, default=250)
+    parser.add_argument("--n_per_label", type=int, default=500)
     parser.add_argument("--smoke_test", type=int, default=0)
     return parser.parse_args()
 
 
 def run(args: Namespace) -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
-    items = load_train_items(dataset_name=args.dataset)
+    items = load_d_m4_wikipedia_items()
 
     n_per_label = 25 if bool(args.smoke_test) else int(args.n_per_label)
     sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=SEED)
-    print(f"Sampled {n_per_label} human + {n_per_label} machine from {args.dataset}.")
+    print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:wikipedia.")
 
     x, y = collect_hidden_states(items=sampled, model_name=args.model)
     h_ent, m_ent = compute_layer_entropies(x=x, y=y)
 
     out_path = os.path.join(OUT_DIR, "qual.pdf")
-    plot_entropies(h_ent=h_ent, m_ent=m_ent, out_path=out_path)
+    plot_entropies(
+        h_ent=h_ent,
+        m_ent=m_ent,
+        out_path=out_path,
+        title="Von Neumann Entropy by Layer | d_m4_domains:wikipedia",
+    )
     print(f"Saved figure: {out_path}")
 
 
