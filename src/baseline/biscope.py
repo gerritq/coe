@@ -149,6 +149,11 @@ class BiScope:
                 np.mean(bce_loss[split:]), np.max(bce_loss[split:]), 
                 np.min(bce_loss[split:]), np.std(bce_loss[split:])
             ])
+
+        # guard against nan and inf
+        clip = 1e6
+        features = np.asarray(features, dtype=np.float64)
+        features = np.nan_to_num(features, nan=0.0, posinf=clip, neginf=-clip)
         return features
 
 

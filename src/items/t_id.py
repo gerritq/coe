@@ -8,11 +8,11 @@ PROBE_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 
 DATASET_GROUPS = {
-    "drlDomain": [
-        "drlDomain_arxiv",
-        "drlDomain_writing_prompt",
-        "drlDomain_yelp_review",
-        "drlDomain_xsum",
+    "raidDomain": [
+        "raidDomain_wiki",
+        "raidDomain_news",
+        "raidDomain_reddit",
+        "raidDomain_abstracts",
     ],
     "multisocial": [
         "multisocial_en",
@@ -35,10 +35,10 @@ DATASET_GROUPS = {
 }
 
 DATASET_LABELS = {
-    "drlDomain_arxiv": r"\textbf{ArXiv}",
-    "drlDomain_writing_prompt": r"\textbf{Reddit}",
-    "drlDomain_yelp_review": r"\textbf{Yelp}",
-    "drlDomain_xsum": r"\textbf{XSum}",
+    "raidDomain_wiki": r"\textbf{Wiki}",
+    "raidDomain_news": r"\textbf{News}",
+    "raidDomain_reddit": r"\textbf{Reddit}",
+    "raidDomain_abstracts": r"\textbf{Abstracts}",
     "drlAttack_multi_llm_mixing": r"\textbf{Mixing}",
     "drlAttack_paraphrase_attacks_llm": r"\textbf{Paraphrase}",
     "drlAttack_perturbation_attacks_llm": r"\textbf{Perturbation}",
@@ -130,7 +130,7 @@ def _probe_auroc(test_metrics: dict, mode: str | None) -> float | None:
 
 def _all_datasets() -> list[str]:
     datasets = []
-    for group in ["drlDomain", "multisocial", "tsm", "raid"]:
+    for group in ["raidDomain", "multisocial", "tsm", "raid"]:
         datasets.extend(DATASET_GROUPS[group])
     return datasets
 
@@ -198,7 +198,7 @@ def render_table(
     cols = "l" + "c" * len(datasets)
     n_data_cols = len(datasets)
 
-    drldomain_n = len(DATASET_GROUPS["drlDomain"])
+    drldomain_n = len(DATASET_GROUPS["raidDomain"])
     multisocial_n = len(DATASET_GROUPS["multisocial"])
     tsm_n = len(DATASET_GROUPS["tsm"])
     raid_n = len(DATASET_GROUPS["raid"])
@@ -260,7 +260,7 @@ def render_table(
     lines = [
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
-        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM~\\citep{{quaremba2026tsm}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{RAID~\\cite{{dugan2024raid}}}}}} \\\\".format(
+        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{RAID~\\citep{{dugan2024raid}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM~\\citep{{quaremba2026tsm}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{RAID~\\cite{{dugan2024raid}}}}}} \\\\".format(
             drldomain_n, multisocial_n, tsm_n, raid_n
         ),
         "\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}".format(

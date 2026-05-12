@@ -9,11 +9,11 @@ BASELINE_DIR = os.path.join(BASE_DIR, "output", "baseline", "sandbox")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 
 DATASET_GROUPS = {
-    "drlDomain": [
-        "drlDomain_arxiv",
-        "drlDomain_writing_prompt",
-        "drlDomain_yelp_review",
-        "drlDomain_xsum",
+    "raidDomain": [
+        "raidDomain_wiki",
+        "raidDomain_news",
+        "raidDomain_reddit",
+        "raidDomain_abstracts",
     ],
     "multisocial": [
         "multisocial_en",
@@ -35,18 +35,18 @@ DATASET_GROUPS = {
     ],
 }
 
-FAMILY_ORDER = ["drlDomain", "multisocial", "tsm", "raid"]
+FAMILY_ORDER = ["raidDomain", "multisocial", "tsm", "raid"]
 FAMILY_TITLE = {
-    "drlDomain": r"\textbf{DetectRL~\citep{wu2024detectrl}}",
+    "raidDomain": r"\textbf{DetectRL~\citep{wu2024detectrl}}",
     "multisocial": r"\textbf{MultiSocial~\citep{macko2025multi}}",
     "tsm": r"\textbf{TSM~\citep{quaremba2026tsm}}",
     "raid": r"\textbf{RAID~\cite{dugan2024raid}}",
 }
 SUBSET_LABELS = {
-    "drlDomain_arxiv": r"\textbf{ArXiv}",
-    "drlDomain_writing_prompt": r"\textbf{Reddit}",
-    "drlDomain_yelp_review": r"\textbf{yelp}",
-    "drlDomain_xsum": r"\textbf{XSum}",
+    "raidDomain_wiki": r"\textbf{Wiki}",
+    "raidDomain_news": r"\textbf{News}",
+    "raidDomain_reddit": r"\textbf{Reddit}",
+    "raidDomain_abstracts": r"\textbf{Abstracts}",
     "multisocial_en": r"\textbf{en}",
     "multisocial_de": r"\textbf{de}",
     "multisocial_ru": r"\textbf{ru}",
@@ -215,7 +215,7 @@ def render_table(rows: dict[str, dict[str, float | None]]) -> str:
     cols = "l" + "c" * len(all_subsets)
     n_data_cols = len(all_subsets)
 
-    drl_n = len(DATASET_GROUPS["drlDomain"])
+    drl_n = len(DATASET_GROUPS["raidDomain"])
     ms_n = len(DATASET_GROUPS["multisocial"])
     tsm_n = len(DATASET_GROUPS["tsm"])
     raid_n = len(DATASET_GROUPS["raid"])
@@ -256,7 +256,7 @@ def render_table(rows: dict[str, dict[str, float | None]]) -> str:
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
         "& \\multicolumn{%d}{c}{%s} & \\multicolumn{%d}{c}{%s} & \\multicolumn{%d}{c}{%s} & \\multicolumn{%d}{c}{%s} \\\\"
-        % (drl_n, FAMILY_TITLE["drlDomain"], ms_n, FAMILY_TITLE["multisocial"], tsm_n, FAMILY_TITLE["tsm"], raid_n, FAMILY_TITLE["raid"]),
+        % (drl_n, FAMILY_TITLE["raidDomain"], ms_n, FAMILY_TITLE["multisocial"], tsm_n, FAMILY_TITLE["tsm"], raid_n, FAMILY_TITLE["raid"]),
         "\\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d}"
         % (s1, e1, s2, e2, s3, e3, s4, e4),
         "\\textbf{Model $\\downarrow$ / OOD $\\rightarrow$} & " + " & ".join(SUBSET_LABELS[s] for s in all_subsets) + " \\\\",

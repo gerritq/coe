@@ -1,5 +1,15 @@
 # To do
 
+- Bogdan: Add table and paragraph
+- fix biscope issue
+- run remaining models
+- run mlp with different depth
+- check the p paper 
+- see latest gemini projection ideas
+    - Project hidden states on the probe and this shoul give two clusters
+- rank test on clean m4 data for example
+- within group variuance across layers
+
 1. Running
     - Biscope OOD RAID Models
     - All baselines ID and OOD Raid domains
