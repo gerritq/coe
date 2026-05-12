@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pa_mlp_ood_1_4
+#SBATCH --job-name=pa_mlp_ood_5_8
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=04:00:00
@@ -18,7 +18,7 @@ cd "${ROOT_DIR}"
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
 # DS for training size
-DATASETS=("drlDomain_arxiv" )
+DATASETS=("drlDomain_arxiv")
 
 # DS for other ablations
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
@@ -28,7 +28,7 @@ MODES=("mlp") # default | pca | meta | meta_attn | poly
 COMPONENTS_LIST=(50)
 TRAINING_SIZES=(-1) # -1 | 10 50 100 250 500
 C_LIST=(1)
-MLP_DEPTH_LIST=(1 2 3 4)
+MLP_DEPTH_LIST=(5 6 7 8)
 SEEDS=(42)
 
 TOKEN_MODE="last_token"
