@@ -1,45 +1,24 @@
 # To do
 
-- Bogdan: Add table and paragraph
-- fix biscope issue
-- run remaining models
-- run mlp with different depth
-- check the p paper 
-- see latest gemini projection ideas
-    - Project hidden states on the probe and this shoul give two clusters
-- rank test on clean m4 data for example
-- within group variuance across layers
+Today:
+    - DONE Bogdan: Add table and paragraph
+    - DONE Add last and first layer to ablations
+    - Non-linearity with MLP
+    - Add the random sampling to the efficiency plot
 
-1. Running
-    - Biscope OOD RAID Models
-    - All baselines ID and OOD Raid domains
-2. Non-linearity
-    - __CHECK__ poly for TSM
-3. Layer ablations
-    - Running first and last layer
+0. Running
+    - Fix biscope then run missing
+    - Run missing Repreguard Biscope OOD RAID Models
 
-- about heatmps: https://transformer-circuits.pub/2026/emotions/index.html
-
-- try raid domains?
-- remove the attn idea
-- New file: Probing vector comparison per layer
-    - LxL matrix of cosine per dataset/subest
-- Can we do a full 16x16 where we aggreagate cosine per layer!!!
-
-- run raid on the hpc, to avoid gbs
-
-- check cross Benchmark: https://arxiv.org/pdf/2509.10625
-
-- in ood table: i think there are duplicates and they overwrite each other!!
-- Check: new run for default and meta-no-pca for m4 gpt4 and yelp
+---
 
 1. **ID**
 - TO DO:  
     - Run missing models
-    - Add learn2rewrite, maybe DNA-GPT; maybe learn 2 distance
-    - Keep only our models
     - Other tables comments
     - Writing 
+
+---
 
 2. **Edit distance**
 - TO DO:  
@@ -47,30 +26,61 @@
 - POTENTIAL TO DO:  
     - Reason why it not works with Beemo is that there is not variability
     - We could try their other prompts and/or Llama
+    - Could add a baseline
+
+---
 
 3. **Layer-analysis**
 - TO DO:  
-    - Check that the aggregation is correct
+    - Update to new datasets and check that the aggregation is correct
     - Writing 
+
+---
 
 4. **Efficiency**
 - TO DO
+    - Hanqi: add confidence intervals! (run with 5 different seeds)
     - Check the figure file
     - Writing
 
+---
+
 5. **OOD**
-- Check new defualt/meta-no-pca runs
-- Figure out why BiScope is so good
+- TO DO
+    - Add Biscope 
+    - Writing
+    - Check new defualt/meta-no-pca runs
 
-6. **Descriptives**
-- L1 plot is interesting as it confirms the low-dim space
-- HOT!
-- Some good plots: https://transformer-circuits.pub/2026/emotions/index.html
-    - Maybe we can also do PCA on multiple probes?
-    - Or can we do PCA on all layer probes?
-        - We can plot the probes in to 2D space?s
+---
 
+6. **Descriptives/The why**
 
+    - Heatmap of probing vectors: https://transformer-circuits.pub/2026/emotions/index.html
+
+    - L1 plot is interesting as it confirms the low-dim space
+
+    - HOT!
+        - Some good plots: https://transformer-circuits.pub/2026/emotions/index.html
+            - Maybe we can also do PCA on multiple probes?
+            - Or can we do PCA on all layer probes?
+                - We can plot the probes in to 2D space?s
+
+    - Hanqi idea: increase linearity
+        - Check the results for the polynomial
+        - Check the polynomial paper and how they dealt with high dims
+        - Run mlp with different depth
+
+    - Hanqi: 
+        - Run the rank test on clean m4 data
+
+    - Idea of rank of weight matrix:
+        -https://aclanthology.org/2020.emnlp-main.254.pdf see section 2.3
+        - https://aclanthology.org/N19-1419.pdf
+        - or how many weights are used for human vs machine text
+
+    - Polynomials do not seem to work: check the polynomial paper to see what they do in high-dimensions
+
+    - There is this within variance idea, somewhere I have read it.
 
 
 2. **Ablations**
@@ -107,38 +117,42 @@
 70. Writing
  - For probing generalization and performance: https://arxiv.org/pdf/2511.17408
 
+--- 
+
 99. Misc
-- ensure in all tables that we take the mean not weighted
+    - For cross benchmark https://arxiv.org/pdf/2509.10625
 
-- Probing vector similarity plot
-    - Could be a nice argument for universal, rather than relying on the numbers; to show this also visually
+    - ensure in all tables that we take the mean not weighted
 
-- rerun encoder, biscope, and repreguard on the four sample efficency data sets
+    - Probing vector similarity plot
+        - Could be a nice argument for universal, rather than relying on the numbers; to show this also visually
 
-- M4 generators: are we mixing the data? Should check if we wanna use it
+    - rerun encoder, biscope, and repreguard on the four sample efficency data sets
 
-- Maybe another dataset to consider: https://aclanthology.org/2024.findings-naacl.29.pdf
+    - M4 generators: are we mixing the data? Should check if we wanna use it
 
-- ensure we use mean projection metrics
-    - compare to weighted metrics
+    - Maybe another dataset to consider: https://aclanthology.org/2024.findings-naacl.29.pdf
 
-- We ran Repre with val, rerun with training split
+    - ensure we use mean projection metrics
+        - compare to weighted metrics
 
-- The L1 penalty regression is still an interesting case which I would like to see somewhere
+    - We ran Repre with val, rerun with training split
 
-- ensure that tables are pulling the correct numbers
+    - The L1 penalty regression is still an interesting case which I would like to see somewhere
 
-- fix repre scores
+    - ensure that tables are pulling the correct numbers
 
-- fix PCA None
+    - fix repre scores
 
-- can extend beemo to llama, but for now we do gpt4
+    - fix PCA None
 
-- norm scores?
+    - can extend beemo to llama, but for now we do gpt4
 
-- We could to the CB if we have space
+    - norm scores?
 
-- Add cool symbols top the table for reddit etc.
+    - We could to the CB if we have space
+
+    - Add cool symbols top the table for reddit etc.
 
 
 ## Has to be done

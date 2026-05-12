@@ -151,6 +151,37 @@ def _render(rows: list[dict[str, Any]]) -> str:
     lines.append(r"\hspace*{1em}MLP" + " & " + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(mlp_vals, DATASETS)) + r" \\")
 
     lines.append(r"\addlinespace")
+    lines.append(r"\multicolumn{5}{l}{\textbf{Layer Selection}} \\")
+    first_layer_vals = [
+        _best_match(
+            rows,
+            d,
+            {"mode": "first_layer", "token_mode": "last_token", "C": 1.0, "training_size_is_none": True},
+        )
+        for d in DATASETS
+    ]
+    lines.append(
+        r"\hspace*{1em}First layer"
+        + " & "
+        + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(first_layer_vals, DATASETS))
+        + r" \\"
+    )
+    last_layer_vals = [
+        _best_match(
+            rows,
+            d,
+            {"mode": "last_layer", "token_mode": "last_token", "C": 1.0, "training_size_is_none": True},
+        )
+        for d in DATASETS
+    ]
+    lines.append(
+        r"\hspace*{1em}Last layer"
+        + " & "
+        + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(last_layer_vals, DATASETS))
+        + r" \\"
+    )
+
+    lines.append(r"\addlinespace")
     lines.append(r"\multicolumn{5}{l}{\textbf{Regularization Penalty}} \\")
     for c in c_values:
         if float(c) == 1.0:
