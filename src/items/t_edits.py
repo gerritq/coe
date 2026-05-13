@@ -10,7 +10,7 @@ DATASETS = [
     ("apt", "APT-Eval~\\cite{saha2025apt}"),
     ("editlens", "EditLens~\\cite{thai2026editlens}"),
 ]
-MODE_ORDER = ["default", "pca", "meta", "meta_no_pca", "meta_attn"]
+MODE_ORDER = ["default", "meta_no_pca"]
 
 
 def _fmt(x: float | None) -> str:
@@ -18,8 +18,10 @@ def _fmt(x: float | None) -> str:
 
 
 def _mode_label(mode: str) -> str:
-    if mode in {"default", "pca"}:
-        return f"LP$_{{\\mathrm{{{mode}}}}}$"
+    if mode == "default":
+        return "LLP"
+    if mode == "meta_no_pca":
+        return "CLP"
     mode_latex = mode.replace("_", "\\_")
     return f"LP$_{{\\mathrm{{{mode_latex}}}}}$"
 
@@ -59,6 +61,8 @@ def collect_rows() -> dict[str, dict[str, dict[str, float]]]:
         if dataset != target_dataset:
             continue
         if not mode:
+            continue
+        if mode not in {"default", "meta_no_pca"}:
             continue
 
         corr = _extract_corr_row(obj)

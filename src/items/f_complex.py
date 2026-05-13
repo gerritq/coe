@@ -14,11 +14,17 @@ OUT_PATH_OOD = os.path.join(OUT_DIR, "f_complex_ood.pdf")
 OOD_SOURCE = "drlDomain_arxiv"
 OOD_TARGETS = ["drlDomain_writing_prompt", "drlDomain_xsum", "drlDomain_yelp_review"]
 OOD_LABELS = {
-    "drlDomain_writing_prompt": "writing_prompts",
-    "drlDomain_xsum": "xsum",
-    "drlDomain_yelp_review": "yelp_review",
+    "drlDomain_writing_prompt": "Reddit",
+    "drlDomain_xsum": "News",
+    "drlDomain_yelp_review": "Yelp",
 }
 MAX_DEPTH = 5
+FONT = {
+    "title": 20,
+    "axis": 18,
+    "ticks": 15,
+    "legend": 14,
+}
 
 
 def _extract_auroc(obj: dict) -> float | None:
@@ -118,7 +124,7 @@ def plot(points: dict[str, dict[int, list[float]]], out_path: str, label_map: di
     if not points:
         raise RuntimeError("No matching mlp ablation points found in output/probe/ablation.")
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(11, 7))
 
     datasets = sorted(points.keys())
     all_depths = sorted({d for ds in datasets for d in points[ds].keys()})
@@ -129,7 +135,8 @@ def plot(points: dict[str, dict[int, list[float]]], out_path: str, label_map: di
     bar_group_width = 0.8
     bar_width = bar_group_width / max(1, n_depths)
     x_base = np.arange(n_ds, dtype=np.float64)
-    depth_colors = plt.cm.tab10(np.linspace(0, 1, max(1, n_depths)))
+    # Blue-only palette: darker shade for larger depth.
+    depth_colors = plt.cm.Blues(np.linspace(0.35, 0.9, max(1, n_depths)))
 
     for depth_idx, depth in enumerate(all_depths):
         y_vals = []
@@ -151,19 +158,48 @@ def plot(points: dict[str, dict[int, list[float]]], out_path: str, label_map: di
             label=f"Depth {depth}",
             zorder=2,
         )
-        plt.plot(
-            x_base[finite_mask],
-            y[finite_mask],
-            color=depth_colors[depth_idx],
-            linewidth=1.6,
-            alpha=0.9,
-            zorder=3,
-        )
+    # Draw lines per dataset group (not across groups).
+    for ds_idx, dataset in enumerate(datasets):
+        x_group = []
+        y_group = []
+        for depth_idx, depth in enumerate(all_depths):
+            vals = points[dataset].get(depth, [])
+            if not vals:
+                continue
+            y_val = float(np.mean(vals))
+            x_val = x_base[ds_idx] + (depth_idx - (n_depths - 1) / 2.0) * bar_width
+            x_group.append(x_val)
+            y_group.append(y_val)
+        if len(x_group) >= 2:
+            plt.plot(
+                x_group,
+                y_group,
+                color="#1f4e79",
+                linewidth=1.2,
+                alpha=0.8,
+                marker="o",
+                markersize=3.5,
+                markerfacecolor="#1f4e79",
+                markeredgecolor="#1f4e79",
+                zorder=3,
+            )
 
-    x_labels = [label_map.get(d, d) if label_map is not None else d for d in datasets]
-    plt.xlabel("Dataset")
+    default_label_map = {
+        "tsm_first": "TSM First",
+        "drlDomain_arxiv": "DetectRL ArXiv",
+        "multisocial_en": "MultiSocial EN",
+        "raidModel_gpt4": "RAID Model GPT4",
+        "drlDomain_writing_prompt": "Writing Prompts",
+        "drlDomain_xsum": "XSum",
+        "drlDomain_yelp_review": "Yelp Review",
+    }
+    x_labels = [
+        label_map.get(d, default_label_map.get(d, d)) if label_map is not None else default_label_map.get(d, d)
+        for d in datasets
+    ]
+    plt.xlabel("")
     plt.ylabel("AUROC")
-    plt.xticks(x_base, x_labels, rotation=20, ha="right")
+    plt.xticks(x_base, x_labels, rotation=0, ha="center")
     if all_y:
         y_min = min(all_y)
         y_max = max(all_y)
@@ -178,7 +214,11 @@ def plot(points: dict[str, dict[int, list[float]]], out_path: str, label_map: di
     else:
         plt.ylim(0.0, 1.0)
     plt.grid(alpha=0.25)
-    plt.legend(frameon=True, fontsize=10)
+    plt.tick_params(axis="both", labelsize=FONT["ticks"])
+    plt.gca().xaxis.label.set_size(FONT["axis"])
+    plt.gca().yaxis.label.set_size(FONT["axis"])
+    plt.gca().title.set_fontsize(FONT["title"])
+    plt.legend(frameon=True, fontsize=FONT["legend"])
     plt.tight_layout()
 
     os.makedirs(OUT_DIR, exist_ok=True)

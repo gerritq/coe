@@ -1,27 +1,22 @@
 # To do
 
-
-Today:
-    - RUNNING + FIGURE: training sizez for baseline and probes
-        - Add plot + new naming
+- ef rank missings
+- meta sizes attention issue
 
 
-    - Update the layer plot (raid; rm numbers but keep them as check) + new naming
-    - Update the AI edit plot + new naming
+- Write rel work + experimental setup + ID results with GPT
+- Read and get intuition for metrics 
+    - e-rank: 
 
+RUNNING
+    - Training size
+        - Repre fix
+        - BiScope 33879988
+        - Beautify: renaming; no bench; Raid
 
-    - Add other qual metrics
-        - Other paper: https://aclanthology.org/2025.findings-acl.1330.pdf
-        - Other paper: https://aclanthology.org/2024.findings-eacl.58.pdf
-        - IsoScore: https://aclanthology.org/2022.findings-acl.262.pdf
-    - Writing
-
-    Later today:
-    - more paper bidding
-    - RUNNING: biscope and repre for sample seeds
-    - RUNNING: qual metrics
-    - RUNNIG: Raidar ID models
-
+    - Qual metrics:
+        - Effective Rank 33878730
+        - Create a plot with CI
 
 
 ---
@@ -386,3 +381,35 @@ Probing: https://www.anthropic.com/research/probes-catch-sleeper-agents
 
 To better understand the representations of MGT and HWT, we perform PCA decomposition
 
+# Qualitative metrics
+
+## Isotropy
+
+- Definition: the property of being uniform in all directions
+
+- LLMs: geometric state where the data points/embeddings are uniformly distributed in all directions within the space
+
+- When isotropic, the variance of an embedding is spread across all dimensions
+
+- Cosine similarity of unrelated tokens is close to zero
+
+
+## Anisotropy
+
+- Most LLMs "suffer" from anisotropy
+
+- Instead of utilizing the full vector space, embeddings occupy a narrow, cone-shaped region
+
+    - Why cone-shaped: embeddings scatter along one-dominant region (in 2D, instead of a circle as in isotropic spaces, the anisotropic space is an ellipse and a cone in higher d)
+
+- Cosine similarity of unrelated tokens is larger than zero
+
+## Effective Rank
+
+Idea: rank-based metric
+
+Intuition: 
+    - Metric focused on the representations, different from the loss. Hidden states capture semantic and syntactic information of sentences
+    - How efficiently they eliminate redundant information during training
+    - Diff-rank = differences between effective ranks
+    - Information-theoretic measure: provides a measure for quantifying noise reduction in LLMs

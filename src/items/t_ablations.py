@@ -130,6 +130,8 @@ def _render(rows: list[dict[str, Any]]) -> str:
     lines = [
         r"\begin{tabular}{lcccc}",
         r"\toprule",
+        r" & \multicolumn{4}{c}{\textbf{TSM~\citep{quaremba2026tsm}}} \\",
+        r"\cmidrule(lr){2-5}",
         r"\textbf{Setting} & "
         + " & ".join(DATASET_LABELS[d] for d in DATASETS)
         + r" \\",
@@ -144,11 +146,6 @@ def _render(rows: list[dict[str, Any]]) -> str:
     lines.append(r"\multicolumn{5}{l}{\textbf{Token Aggregation}} \\")
     pooling_vals = [_best_match(rows, d, {"mode": "default", "token_mode": "pooling", "C": 1.0, "training_size_is_none": True}) for d in DATASETS]
     lines.append(r"\hspace*{1em}Pooling" + " & " + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(pooling_vals, DATASETS)) + r" \\")
-
-    lines.append(r"\addlinespace")
-    lines.append(r"\multicolumn{5}{l}{\textbf{Probe}} \\")
-    mlp_vals = [_best_match(rows, d, {"mode": "mlp", "training_size_is_none": True}) for d in DATASETS]
-    lines.append(r"\hspace*{1em}MLP" + " & " + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(mlp_vals, DATASETS)) + r" \\")
 
     lines.append(r"\addlinespace")
     lines.append(r"\multicolumn{5}{l}{\textbf{Layer Selection}} \\")

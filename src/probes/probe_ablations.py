@@ -134,7 +134,6 @@ class Probing:
 
     def _train_meta_probe(self, 
                           x_hidden_train: np.ndarray, 
-                          x_attn_train: np.ndarray, 
                           y_train: np.ndarray) -> dict[str, Any]:
         
         scalers_by_layer = []
@@ -426,9 +425,8 @@ class Probing:
                                                 y_val=val["y"])
         # meta probe
         else:
-            train_out = self._train_meta_probe(x_hidden_train=train["hidden_x"],
-                                    x_attn_train=train["attentions"],
-                                    y_train=train["y"])
+            train_out = self._train_meta_probe(x_hidden_train=train["hidden_x"], 
+                                               y_train=train["y"])
 
         # RUNNING EAL
         for target_dataset in target_datasets:

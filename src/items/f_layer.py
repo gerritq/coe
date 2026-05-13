@@ -11,24 +11,24 @@ PROBE_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 
 MODE = "default"
-FAMILIES = ["drlDomain", "multisocial", "tsm", "m4"]
+FAMILIES = ["drlDomain", "multisocial", "tsm", "raidModel"]
 FAMILY_LABELS = {
-    "drlDomain": "DetectRL",
-    "multisocial": "Multisocial",
-    "tsm": "TSM-Bench",
-    "m4": "M4",
+    "drlDomain": "DetectRL (Domains)",
+    "multisocial": "Multisocial (Languages)",
+    "tsm": "TSM (Tasks)",
+    "raidModel": "RAID (Generators)",
 }
 COLORS = {
     "drlDomain": "#1f77b4",
     "multisocial": "#d62728",
     "tsm": "#2ca02c",
-    "m4": "#ff7f0e",
+    "raidModel": "#ff7f0e",
 }
 MARKERS = {
     "drlDomain": "o",
     "multisocial": "s",
     "tsm": "^",
-    "m4": "D",
+    "raidModel": "D",
 }
 FONT_SIZES = {
     "axis": 16,
@@ -44,8 +44,10 @@ def _family(dataset_name: str) -> str | None:
         return "multisocial"
     if dataset_name.startswith("tsm_"):
         return "tsm"
-    if dataset_name.startswith("m4_"):
-        return "m4"
+    if dataset_name.startswith("raid_"):
+        return "raidModel"
+    if dataset_name.startswith("raidModel_"):
+        return "raidModel"
     return None
 
 
@@ -70,9 +72,12 @@ def _read_layer_aurocs(path: str) -> tuple[dict, np.ndarray] | None:
     return args, np.asarray(vals, dtype=np.float64)
 
 
-def collect_layer_curves(id_only: bool) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray], dict[str, int]]:
+def collect_layer_curves(
+    id_only: bool,
+) -> tuple[dict[str, np.ndarray], dict[str, np.ndarray], dict[str, int], dict[str, list[str]]]:
     # family -> list of per-dimension AUROC vectors
     curves_by_family: dict[str, list[np.ndarray]] = defaultdict(list)
+    files_by_family: dict[str, list[str]] = defaultdict(list)
 
     for filename in sorted(os.listdir(PROBE_DIR)):
         if not filename.endswith(".json"):
@@ -103,6 +108,7 @@ def collect_layer_curves(id_only: bool) -> tuple[dict[str, np.ndarray], dict[str
             continue
 
         curves_by_family[fam].append(layer_aurocs)
+        files_by_family[fam].append(filename)
 
     means: dict[str, np.ndarray] = {}
     cis: dict[str, np.ndarray] = {}
@@ -128,7 +134,7 @@ def collect_layer_curves(id_only: bool) -> tuple[dict[str, np.ndarray], dict[str
         else:
             cis[fam] = np.zeros_like(means[fam])
 
-    return means, cis, counts
+    return means, cis, counts, files_by_family
 
 
 def _plot(
@@ -163,7 +169,7 @@ def _plot(
         plt.plot(
             x,
             y,
-            label=f"{FAMILY_LABELS.get(fam, fam)} (n={counts[fam]})",
+            label=f"{FAMILY_LABELS.get(fam, fam)}",
             color=COLORS[fam],
             marker=MARKERS[fam],
             linewidth=2.0,
@@ -201,15 +207,23 @@ def _plot(
 def main() -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
     for split_name, id_only in [("id", True), ("ood", False)]:
-        means, cis, counts = collect_layer_curves(id_only=id_only)
-        out_main = os.path.join(OUT_DIR, f"{split_name}_probe_layer_auroc_default.pdf")
+        means, cis, counts, files_by_family = collect_layer_curves(id_only=id_only)
+        out_main = os.path.join(OUT_DIR, f"f_layer_{split_name}_default.pdf")
         vline_layer = 5 if split_name == "id" else 10
         _plot(means, cis, counts, out_main, zoom=True, vline_layer=vline_layer)
 
         print(f"Saved figure: {out_main}")
         print(f"{split_name.upper()} families plotted: {', '.join(sorted(means.keys()))}")
+        max_expected = 4 if id_only else 12
         for fam in sorted(counts.keys()):
             print(f"{fam}: n_{split_name}_pairs={counts[fam]}")
+            if counts[fam] > max_expected:
+                print(
+                    f"[Warning] {split_name.upper()} has more than expected files for family={fam}: "
+                    f"{counts[fam]} > {max_expected}"
+                )
+                for name in files_by_family.get(fam, []):
+                    print(f"  - {name}")
 
 
 if __name__ == "__main__":
