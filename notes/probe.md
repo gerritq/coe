@@ -1,5 +1,8 @@
 # To do
 
+- with different random splits (like 10?)
+- beuatify plots/
+
 Today:
     - ID and OOD: new naming
     - RUNNING + FIGURE: training sizez for baseline and probes
@@ -7,8 +10,6 @@ Today:
     - Update the layer plot (raid; rm numbers but keep them as check) + new naming
     - Update the AI edit plot + new naming
 
-    - Two NN crahes internally
-    - 
 
     - Add other qual metrics
         - Other paper: https://aclanthology.org/2025.findings-acl.1330.pdf
