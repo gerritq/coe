@@ -218,7 +218,7 @@ def save_metric_json(
     m_vals: np.ndarray,
     out_dir: str,
 ) -> str:
-    out_path = os.path.join(out_dir, f"qual_{dataset_name}_{metric}_seed{seed}.json")
+    out_path = os.path.join(out_dir, f"qual_{dataset_name}_{metric}_s{seed}.json")
     payload = {
         "dataset": dataset_name,
         "date": datetime.now().isoformat(),

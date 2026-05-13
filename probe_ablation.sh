@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=pa_training_size_seeds_default_gpt4
+#SBATCH --job-name=pa_size_seeds_meta_no_pca_all
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=03:00:00
+#SBATCH --time=05:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|a100
+#SBATCH --constraint=a100
 
 # set -euo pipefail
 
@@ -18,13 +18,13 @@ cd "${ROOT_DIR}"
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
 # DS for training size
-DATASETS=("raidModel_gpt4")
+DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "raidModel_gpt4")
 
 # DS for other ablations
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 
-MODES=("default") # default | pca | meta | meta_attn | poly
+MODES=("meta_no_pca") # default | pca | meta | meta_attn | poly
 COMPONENTS_LIST=(50)
 TRAINING_SIZES=(10 50 100 250 500) # -1 | 10 50 100 250 500
 C_LIST=(1)

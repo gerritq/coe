@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=desc_qual
+#SBATCH --job-name=desc_all_er
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:30:00
-#SBATCH --partition=gpu,nmes_gpu,interruptible_gpu
+#SBATCH --time=04:00:00
+#SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
 #SBATCH --exclude=erc-hpc-comp054
@@ -45,7 +45,8 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 # --smoke_test "${SMOKE_TEST}"
 
 # QUAL METRICS
-METRICS=("von_neumann_entropy" "effective_rank" "anisotropy" "intrinsic_dimensionality")
+# "von_neumann_entropy" "anisotropy" "intrinsic_dimensionality"
+METRICS=("effective_rank")
 SEEDS=(42 43 44 45 46)
 for METRIC in "${METRICS[@]}"; do
   for SEED in "${SEEDS[@]}"; do
