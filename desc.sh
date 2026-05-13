@@ -8,7 +8,7 @@
 #SBATCH --mem=20GB
 #SBATCH --exclude=erc-hpc-comp054
 
-nvidia-smi
+# nvidia-smi
 
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"

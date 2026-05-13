@@ -226,7 +226,8 @@ def parse_args() -> Namespace:
 def run(args: Namespace) -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
     n_per_label = 25 if bool(args.smoke_test) else int(args.n_per_label)
-    metrics = ["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality"]
+    #"effective_rank", "intrinsic_dimensionality"
+    metrics = ["von_neumann_entropy",  "anisotropy"]
 
     # d_m4_domains: run one balanced plot per source domain.
     d_m4_domains = ["wikipedia", "arxiv", "reddit", "peerread"]
