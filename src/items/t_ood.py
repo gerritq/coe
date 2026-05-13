@@ -61,6 +61,13 @@ SUBSET_LABELS = {
     "raid_mistral_chat": r"\textbf{Mistral}",
 }
 
+DATASET_ALIASES = {
+    "raidModel_cohere_chat": "raid_cohere_chat",
+    "raidModel_gpt4": "raid_gpt4",
+    "raidModel_llama_chat": "raid_llama_chat",
+    "raidModel_mistral_chat": "raid_mistral_chat",
+}
+
 # Same set as f_ood.py
 METHOD_SPECS = [
     ("TextFluoroscopy", {"kind": "baseline", "model": "text_fluoroscopy"}),
@@ -78,6 +85,12 @@ def _dataset_to_family() -> dict[str, str]:
         for ds in ds_list:
             out[ds] = fam
     return out
+
+
+def _canonical_dataset_name(ds: str | None) -> str | None:
+    if ds is None:
+        return None
+    return DATASET_ALIASES.get(ds, ds)
 
 
 def _probe_auroc(test_metrics: dict) -> float | None:
@@ -106,8 +119,8 @@ def _collect_method_entries(spec: dict) -> dict[str, dict[str, dict[str, float]]
             if args.get("mode") != spec["mode"]:
                 continue
 
-            train_ds = args.get("dataset")
-            test_ds = args.get("target_dataset")
+            train_ds = _canonical_dataset_name(args.get("dataset"))
+            test_ds = _canonical_dataset_name(args.get("target_dataset"))
             if train_ds is None or test_ds is None:
                 continue
 
@@ -132,8 +145,8 @@ def _collect_method_entries(spec: dict) -> dict[str, dict[str, dict[str, float]]
             if args.get("model") != spec["model"]:
                 continue
 
-            train_ds = args.get("dataset")
-            test_ds = args.get("target_dataset")
+            train_ds = _canonical_dataset_name(args.get("dataset"))
+            test_ds = _canonical_dataset_name(args.get("target_dataset"))
             if train_ds is None or test_ds is None:
                 continue
 

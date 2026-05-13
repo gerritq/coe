@@ -1,15 +1,21 @@
 # To do
 
 Today:
-    - Entropy for other data
-        - Other entropy formual
+    - ID and OOD: new naming
     - RUNNING + FIGURE: training sizez for baseline and probes
+        - Add plot + new naming
+    - Update the layer plot (raid; rm numbers but keep them as check) + new naming
+    - Update the AI edit plot + new naming
+
+    - Add other qual metrics
+        - Other paper: https://aclanthology.org/2025.findings-acl.1330.pdf
+        - IsoScore: https://aclanthology.org/2022.findings-acl.262.pdf
+    - Writing
+
+    Later today
     - RUNNIG: rank models (fixed int max)
-    - RUNNIG: BiScope OOD models
-    - RUNNING: seeds for sample efficiency for probes (latest runs) and baselines 33847757 (fixed timeout)
-    - Check: what is missing for ID and OOD
-    - Add the random sampling to the efficiency plot
-    - Update the layer plots with raid models
+    - RUNNIG: Raidar ID models
+
 
 
 ---

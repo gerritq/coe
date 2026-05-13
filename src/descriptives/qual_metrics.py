@@ -7,14 +7,93 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-
+import math
 from src.inference import Inference
-
+import skdim
 
 BASE_DIR = os.getenv("BASE_COE", ".")
 DATA_DIR = os.path.join(BASE_DIR, "data", "sets")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 SEED = 42
+
+# ============================================================================================
+# METRICS
+# ============================================================================================
+def intrinsic_dimensionality(h: torch.Tensor, eps: float = 1e-12) -> float:
+    X = h.detach().float().cpu().numpy()
+    X = X - X.mean(axis=0, keepdims=True)
+
+    estimator = skdim.id.TwoNN()
+    id_score = estimator.fit_transform(X)
+
+    return float(id_score)
+
+def anisotropy(h: torch.Tensor, eps: float = 1e-12) -> float:
+
+    X = h.float()
+    # center
+    X = X - X.mean(dim=0, keepdim=True)
+
+    # Singular values: shape (k,), where k = min(n_samples, emb_dim)
+    singular_values = torch.linalg.svdvals(X)
+    squared = singular_values ** 2
+    return squared[0] / (squared.sum() + eps)
+
+def effective_rank(h: torch.Tensor, eps: float = 1e-12) -> float:
+    def normalize(R):
+        with torch.no_grad():
+            mean = R.mean(dim=0)
+            R = R - mean
+            norms = torch.norm(R, p=2, dim=1, keepdim=True)
+            R = R/norms
+        return R
+
+    def cal_cov(R):
+        with torch.no_grad():
+            Z = torch.nn.functional.normalize(R, dim=1)
+            A = torch.matmul(Z.T, Z)/Z.shape[0]
+        return A
+
+    def cal_erank(A):
+        with torch.no_grad():
+            eig_val = torch.svd(A / torch.trace(A))[1] 
+            entropy = - (eig_val * torch.log(eig_val)).nansum().item()
+            erank = math.exp(entropy)
+        return erank
+
+    
+    return cal_erank(cal_cov(normalize(h)))
+    
+
+      
+def von_neumann_entropy_1(h: torch.Tensor, eps: float = 1e-12) -> float:
+    # h shape: (n_samples, hidden_dim)
+    k = h @ h.T
+    tr = torch.trace(k)
+    if float(tr) <= 0.0:
+        return float("nan")
+    k = k / tr
+
+    eigvals = torch.linalg.eigvalsh(k)
+    eigvals = torch.clamp(eigvals, min=eps)
+    entropy = -(eigvals * torch.log(eigvals)).sum()
+    return float(entropy.item())
+
+def von_neumann_entropy_2(h: torch.Tensor):
+
+    K = h @ h.T
+    n = K.shape[0]
+    ek, _ = torch.linalg.eigh(K)
+    mk = torch.gt(ek, 0.0)
+    mek = ek[mk]
+
+    mek = mek/mek.sum()
+    H = -1*torch.sum(mek*torch.log(mek))
+    return H
+
+# ============================================================================================
+# OTHERS
+# ============================================================================================
 
 def load_d_m4_domain_items(domain: str) -> list[dict[str, Any]]:
     path = os.path.join(DATA_DIR, "d_m4_domains", "data.jsonl")
@@ -71,33 +150,7 @@ def collect_hidden_states(items: list[dict[str, Any]], model_name: str) -> tuple
     y = np.asarray(labels, dtype=np.int32)  # (n_samples,)
     return x, y
 
-
-def von_neumann_entropy_1(h: torch.Tensor, eps: float = 1e-12) -> float:
-    # h shape: (n_samples, hidden_dim)
-    k = h @ h.T
-    tr = torch.trace(k)
-    if float(tr) <= 0.0:
-        return float("nan")
-    k = k / tr
-
-    eigvals = torch.linalg.eigvalsh(k)
-    eigvals = torch.clamp(eigvals, min=eps)
-    entropy = -(eigvals * torch.log(eigvals)).sum()
-    return float(entropy.item())
-
-def von_neumann_entropy_2(h: torch.Tensor):
-
-    K = h @ h.T
-    n = K.shape[0]
-    ek, _ = torch.linalg.eigh(K)
-    mk = torch.gt(ek, 0.0)
-    mek = ek[mk]
-
-    mek = mek/mek.sum()
-    H = -1*torch.sum(mek*torch.log(mek))
-    return H
-
-def compute_layer_entropies(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def compute_layer_metric(x: np.ndarray, y: np.ndarray, metric: str) -> tuple[np.ndarray, np.ndarray]:
     # x: (n_samples, n_layers, d_model), y: (n_samples,)
     human_mask = y == 0
     machine_mask = y == 1
@@ -105,25 +158,43 @@ def compute_layer_entropies(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, n
         raise ValueError("Expected both human(label=0) and machine(label=1) samples.")
 
     n_layers = x.shape[1]
-    h_ent = np.zeros(n_layers, dtype=np.float64)
-    m_ent = np.zeros(n_layers, dtype=np.float64)
+    h_vals = np.zeros(n_layers, dtype=np.float64)
+    m_vals = np.zeros(n_layers, dtype=np.float64)
 
     for layer in range(n_layers):
         h_layer = torch.tensor(x[human_mask, layer, :], dtype=torch.float32)
         m_layer = torch.tensor(x[machine_mask, layer, :], dtype=torch.float32)
-        h_ent[layer] = von_neumann_entropy_2(h_layer)
-        m_ent[layer] = von_neumann_entropy_2(m_layer)
+        if metric == "von_neumann_entropy":
+            h_vals[layer] = float(von_neumann_entropy_2(h_layer))
+            m_vals[layer] = float(von_neumann_entropy_2(m_layer))
+        elif metric == "effective_rank":
+            h_vals[layer] = effective_rank(h_layer)
+            m_vals[layer] = effective_rank(m_layer)
+        elif metric == "anisotropy":
+            h_vals[layer] = anisotropy(h_layer)
+            m_vals[layer] = anisotropy(m_layer)
+        elif metric == "intrinsic_dimensionality":
+            h_vals[layer] = intrinsic_dimensionality(h_layer)
+            m_vals[layer] = intrinsic_dimensionality(m_layer)
+        else:
+            raise ValueError(f"Unknown metric: {metric}")
 
-    return h_ent, m_ent
+    return h_vals, m_vals
 
 
-def plot_entropies(h_ent: np.ndarray, m_ent: np.ndarray, out_path: str, title: str) -> None:
-    layers = np.arange(len(h_ent))
+def plot_metric(
+    h_vals: np.ndarray,
+    m_vals: np.ndarray,
+    out_path: str,
+    title: str,
+    y_label: str,
+) -> None:
+    layers = np.arange(len(h_vals))
     plt.figure(figsize=(10, 6))
-    plt.plot(layers, h_ent, marker="o", linewidth=2.0, label="Human")
-    plt.plot(layers, m_ent, marker="o", linewidth=2.0, label="Machine")
+    plt.plot(layers, h_vals, marker="o", linewidth=2.0, label="Human")
+    plt.plot(layers, m_vals, marker="o", linewidth=2.0, label="Machine")
     plt.xlabel("Layer")
-    plt.ylabel("Von Neumann Entropy")
+    plt.ylabel(y_label)
     plt.title(title)
     plt.grid(alpha=0.25)
     plt.legend(frameon=True)
@@ -143,6 +214,7 @@ def parse_args() -> Namespace:
 def run(args: Namespace) -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
     n_per_label = 25 if bool(args.smoke_test) else int(args.n_per_label)
+    metrics = ["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality"]
 
     # d_m4_domains: run one balanced plot per source domain.
     d_m4_domains = ["wikipedia", "arxiv", "reddit", "peerread"]
@@ -152,17 +224,18 @@ def run(args: Namespace) -> None:
         print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:{domain}.")
 
         x, y = collect_hidden_states(items=sampled, model_name=args.model)
-        h_ent, m_ent = compute_layer_entropies(x=x, y=y)
-
         dataset_name = f"entropy_m4_{domain}"
-        out_path = os.path.join(OUT_DIR, f"qual_{dataset_name}.pdf")
-        plot_entropies(
-            h_ent=h_ent,
-            m_ent=m_ent,
-            out_path=out_path,
-            title=f"Von Neumann Entropy by Layer | {dataset_name}",
-        )
-        print(f"Saved figure: {out_path}")
+        for metric in metrics:
+            h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
+            out_path = os.path.join(OUT_DIR, f"qual_{metric}_{dataset_name}.pdf")
+            plot_metric(
+                h_vals=h_vals,
+                m_vals=m_vals,
+                out_path=out_path,
+                title=f"{metric} by Layer | {dataset_name}",
+                y_label=metric,
+            )
+            print(f"Saved figure: {out_path}")
 
     # drlDomain_* datasets: use test split only, no rebalancing.
     drl_datasets = ["drlDomain_arxiv", "drlDomain_xsum"]
@@ -171,16 +244,17 @@ def run(args: Namespace) -> None:
         print(f"Loaded {len(items)} test items from {dataset_name} (no rebalancing).")
 
         x, y = collect_hidden_states(items=items, model_name=args.model)
-        h_ent, m_ent = compute_layer_entropies(x=x, y=y)
-
-        out_path = os.path.join(OUT_DIR, f"qual_{dataset_name}.pdf")
-        plot_entropies(
-            h_ent=h_ent,
-            m_ent=m_ent,
-            out_path=out_path,
-            title=f"Von Neumann Entropy by Layer | {dataset_name}",
-        )
-        print(f"Saved figure: {out_path}")
+        for metric in metrics:
+            h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
+            out_path = os.path.join(OUT_DIR, f"qual_{metric}_{dataset_name}.pdf")
+            plot_metric(
+                h_vals=h_vals,
+                m_vals=m_vals,
+                out_path=out_path,
+                title=f"{metric} by Layer | {dataset_name}",
+                y_label=metric,
+            )
+            print(f"Saved figure: {out_path}")
 
 
 if __name__ == "__main__":
