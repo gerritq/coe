@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_rank_models
+#SBATCH --job-name=baseline_raidar_models
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=10:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -32,7 +32,7 @@ OOD=0
 
 # "raidar"
 MODELS=(
-        # "raidar"
+        "raidar"
         # "editlens"
         # "revise"
         # "gescore"

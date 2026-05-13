@@ -72,8 +72,8 @@ class RAIDAR:
 
         decoded_output = self.tokenizer.decode(output[0], skip_special_tokens=True)
 
-        print('length', len(self.tokenize_and_normalize(prompts)), len(prompts))
-        print(decoded_output)
+        # print('length', len(self.tokenize_and_normalize(prompts)), len(prompts))
+        # print(decoded_output)
 
         return decoded_output
 

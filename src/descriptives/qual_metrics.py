@@ -173,7 +173,7 @@ def run(args: Namespace) -> None:
         x, y = collect_hidden_states(items=items, model_name=args.model)
         h_ent, m_ent = compute_layer_entropies(x=x, y=y)
 
-        out_path = os.path.join(OUT_DIR, f"entropy_{dataset_name}.pdf")
+        out_path = os.path.join(OUT_DIR, f"qual_{dataset_name}.pdf")
         plot_entropies(
             h_ent=h_ent,
             m_ent=m_ent,

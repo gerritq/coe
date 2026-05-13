@@ -20,7 +20,7 @@ class Rank:
             else:
                 tokenized = self.tokenizer(text, 
                                            return_tensors="pt",
-                                           max_length=1024,
+                                           max_length=512,
                                            truncation=True).to(self.device)
                 logits = self.model(**tokenized).logits[:, :-1]
                 labels = tokenized.input_ids[:, 1:]
