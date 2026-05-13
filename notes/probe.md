@@ -1,6 +1,8 @@
 # To do
 
 Today:
+    - Entropy for other data
+        - Other entropy formual
     - RUNNING + FIGURE: training sizez for baseline and probes
     - RUNNIG: rank models (fixed int max)
     - RUNNIG: BiScope OOD models
@@ -8,6 +10,7 @@ Today:
     - Check: what is missing for ID and OOD
     - Add the random sampling to the efficiency plot
     - Update the layer plots with raid models
+
 
 ---
 

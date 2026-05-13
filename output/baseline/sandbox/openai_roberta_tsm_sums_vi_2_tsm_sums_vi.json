@@ -1,0 +1,21 @@
+{
+  "args": {
+    "dataset": "tsm_sums_vi",
+    "model": "openai_roberta",
+    "smoke_test": false,
+    "ood": false,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "ood_dataset": "tsm_sums_vi"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.47596799999999995,
+    "accuracy": 0.504,
+    "f1": 0.6657681940700808,
+    "tpr_at_fpr_0_05": 0.016,
+    "optimal_threshold_f1": 0.002002002002002002,
+    "optimal_threshold_acc": 0.002002002002002002,
+    "aupr": 0.47686238997164515
+  }
+}

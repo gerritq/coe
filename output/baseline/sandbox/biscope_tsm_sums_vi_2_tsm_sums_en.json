@@ -1,0 +1,25 @@
+{
+  "args": {
+    "dataset": "tsm_sums_vi",
+    "model": "biscope",
+    "smoke_test": false,
+    "ood": true,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "summary_model": "meta-llama/Meta-Llama-3-8B-instruct",
+    "detect_model": "meta-llama/Meta-Llama-3-8B-instruct",
+    "sample_clip": 2000,
+    "seed": 42,
+    "ood_dataset": "tsm_sums_en"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.5126240000000001,
+    "accuracy": 0.504,
+    "f1": 0.4337899543378995,
+    "tpr_at_fpr_0_05": 0.032,
+    "optimal_threshold_f1": 0.5,
+    "optimal_threshold_acc": 0.5,
+    "aupr": 0.5023912488593838
+  }
+}

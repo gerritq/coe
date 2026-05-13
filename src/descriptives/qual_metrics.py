@@ -16,21 +16,21 @@ DATA_DIR = os.path.join(BASE_DIR, "data", "sets")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 SEED = 42
 
-
-def load_d_m4_wikipedia_items() -> list[dict[str, Any]]:
+def load_d_m4_domain_items(domain: str) -> list[dict[str, Any]]:
     path = os.path.join(DATA_DIR, "d_m4_domains", "data.jsonl")
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Missing dataset file: {path}")
-
     with open(path, "r", encoding="utf-8") as f:
         all_items = [json.loads(line) for line in f if line.strip()]
 
-    # Keep only the wikipedia subset from d_m4_domains.
-    items = [x for x in all_items if str(x.get("source", "")).lower() == "wikipedia"]
-    if not items:
-        raise RuntimeError("No wikipedia items found in d_m4_domains/data.jsonl")
+    target = domain.lower()
+    items = [x for x in all_items if str(x.get("source", "")).lower() == target]
     return items
 
+
+def load_main_data_items(dataset_name: str) -> list[dict[str, Any]]:
+    path = os.path.join(DATA_DIR, dataset_name, "test.jsonl")
+    with open(path, "r", encoding="utf-8") as f:
+        items = [json.loads(line) for line in f if line.strip()]
+    return items
 
 def sample_balanced(items: list[dict[str, Any]], n_per_label: int, seed: int) -> list[dict[str, Any]]:
     by_label: dict[int, list[dict[str, Any]]] = {0: [], 1: []}
@@ -72,7 +72,7 @@ def collect_hidden_states(items: list[dict[str, Any]], model_name: str) -> tuple
     return x, y
 
 
-def von_neumann_entropy(h: torch.Tensor, eps: float = 1e-12) -> float:
+def von_neumann_entropy_1(h: torch.Tensor, eps: float = 1e-12) -> float:
     # h shape: (n_samples, hidden_dim)
     k = h @ h.T
     tr = torch.trace(k)
@@ -85,6 +85,17 @@ def von_neumann_entropy(h: torch.Tensor, eps: float = 1e-12) -> float:
     entropy = -(eigvals * torch.log(eigvals)).sum()
     return float(entropy.item())
 
+def von_neumann_entropy_2(h: torch.Tensor):
+
+    K = h @ h.T
+    n = K.shape[0]
+    ek, _ = torch.linalg.eigh(K)
+    mk = torch.gt(ek, 0.0)
+    mek = ek[mk]
+
+    mek = mek/mek.sum()
+    H = -1*torch.sum(mek*torch.log(mek))
+    return H
 
 def compute_layer_entropies(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     # x: (n_samples, n_layers, d_model), y: (n_samples,)
@@ -100,8 +111,8 @@ def compute_layer_entropies(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, n
     for layer in range(n_layers):
         h_layer = torch.tensor(x[human_mask, layer, :], dtype=torch.float32)
         m_layer = torch.tensor(x[machine_mask, layer, :], dtype=torch.float32)
-        h_ent[layer] = von_neumann_entropy(h_layer)
-        m_ent[layer] = von_neumann_entropy(m_layer)
+        h_ent[layer] = von_neumann_entropy_2(h_layer)
+        m_ent[layer] = von_neumann_entropy_2(m_layer)
 
     return h_ent, m_ent
 
@@ -131,23 +142,45 @@ def parse_args() -> Namespace:
 
 def run(args: Namespace) -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
-    items = load_d_m4_wikipedia_items()
-
     n_per_label = 25 if bool(args.smoke_test) else int(args.n_per_label)
-    sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=SEED)
-    print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:wikipedia.")
 
-    x, y = collect_hidden_states(items=sampled, model_name=args.model)
-    h_ent, m_ent = compute_layer_entropies(x=x, y=y)
+    # d_m4_domains: run one balanced plot per source domain.
+    d_m4_domains = ["wikipedia", "arxiv", "reddit", "peerread"]
+    for domain in d_m4_domains:
+        items = load_d_m4_domain_items(domain=domain)
+        sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=SEED)
+        print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:{domain}.")
 
-    out_path = os.path.join(OUT_DIR, "qual.pdf")
-    plot_entropies(
-        h_ent=h_ent,
-        m_ent=m_ent,
-        out_path=out_path,
-        title="Von Neumann Entropy by Layer | d_m4_domains:wikipedia",
-    )
-    print(f"Saved figure: {out_path}")
+        x, y = collect_hidden_states(items=sampled, model_name=args.model)
+        h_ent, m_ent = compute_layer_entropies(x=x, y=y)
+
+        dataset_name = f"entropy_m4_{domain}"
+        out_path = os.path.join(OUT_DIR, f"qual_{dataset_name}.pdf")
+        plot_entropies(
+            h_ent=h_ent,
+            m_ent=m_ent,
+            out_path=out_path,
+            title=f"Von Neumann Entropy by Layer | {dataset_name}",
+        )
+        print(f"Saved figure: {out_path}")
+
+    # drlDomain_* datasets: use test split only, no rebalancing.
+    drl_datasets = ["drlDomain_arxiv", "drlDomain_xsum"]
+    for dataset_name in drl_datasets:
+        items = load_main_data_items(dataset_name=dataset_name)
+        print(f"Loaded {len(items)} test items from {dataset_name} (no rebalancing).")
+
+        x, y = collect_hidden_states(items=items, model_name=args.model)
+        h_ent, m_ent = compute_layer_entropies(x=x, y=y)
+
+        out_path = os.path.join(OUT_DIR, f"entropy_{dataset_name}.pdf")
+        plot_entropies(
+            h_ent=h_ent,
+            m_ent=m_ent,
+            out_path=out_path,
+            title=f"Von Neumann Entropy by Layer | {dataset_name}",
+        )
+        print(f"Saved figure: {out_path}")
 
 
 if __name__ == "__main__":

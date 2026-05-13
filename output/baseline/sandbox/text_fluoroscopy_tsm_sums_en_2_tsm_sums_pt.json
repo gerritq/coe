@@ -1,0 +1,15 @@
+{
+  "args": {
+    "dataset": "tsm_sums_en",
+    "model": "text_fluoroscopy",
+    "smoke_test": false,
+    "ood": true,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "ood_dataset": "tsm_sums_pt"
+  },
+  "metrics": {
+    "auroc": 0.36572800000000005,
+    "tpr_at_fpr_0_05": 0.02
+  }
+}
