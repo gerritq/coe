@@ -41,11 +41,25 @@ def anisotropy(h: torch.Tensor, eps: float = 1e-12) -> float:
 
 def effective_rank(h: torch.Tensor) -> float:
     def normalize(R):
+        # GQ check non finite values in A
+        total = R.numel()
+        finite = torch.isfinite(R).sum().item()
+        non_finite = total - finite
+        share_non_finite = non_finite / total if total > 0 else 0.0
+        print(f"[effective_rank - h] non_finite={non_finite}/{total} ({share_non_finite:.6%})")
+        
         with torch.no_grad():
             mean = R.mean(dim=0)
             R = R - mean
             norms = torch.norm(R, p=2, dim=1, keepdim=True)
             R = R/norms
+
+            # GQ check non finite values in A
+            total = R.numel()
+            finite = torch.isfinite(R).sum().item()
+            non_finite = total - finite
+            share_non_finite = non_finite / total if total > 0 else 0.0
+            print(f"[effective_rank - R] non_finite={non_finite}/{total} ({share_non_finite:.6%})")
         return R
 
     def cal_cov(R):
@@ -62,7 +76,7 @@ def effective_rank(h: torch.Tensor) -> float:
             finite = torch.isfinite(A).sum().item()
             non_finite = total - finite
             share_non_finite = non_finite / total if total > 0 else 0.0
-            print(f"[effective_rank] non_finite={non_finite}/{total} ({share_non_finite:.6%})")
+            print(f"[effective_rank - A] non_finite={non_finite}/{total} ({share_non_finite:.6%})")
 
             # fix 
             A = torch.nan_to_num(A, nan=0.0, posinf=0.0, neginf=0.0)
@@ -153,7 +167,7 @@ def collect_hidden_states(items: list[dict[str, Any]], model_name: str) -> tuple
     for item in items:
         out = inference.run(item=item, args=infer_args)
         hs = out["hidden_states"]
-        sample_layers = [h.detach().to(torch.float32).cpu().numpy() for h in hs]
+        sample_layers = [h.detach().to(torch.float32).cpu().numpy() for h in hs[1:]] # drop embedding layer
         all_hidden.append(np.stack(sample_layers, axis=0))  # (n_layers, d_model)
         labels.append(int(out["label"]))
 
@@ -173,6 +187,7 @@ def compute_layer_metric(x: np.ndarray, y: np.ndarray, metric: str) -> tuple[np.
     m_vals = np.zeros(n_layers, dtype=np.float64)
 
     for layer in range(n_layers):
+        print(f"Computing {metric} for layer {layer}...")
         h_layer = torch.tensor(x[human_mask, layer, :], dtype=torch.float32)
         m_layer = torch.tensor(x[machine_mask, layer, :], dtype=torch.float32)
 
@@ -180,7 +195,9 @@ def compute_layer_metric(x: np.ndarray, y: np.ndarray, metric: str) -> tuple[np.
             h_vals[layer] = float(von_neumann_entropy_2(h_layer))
             m_vals[layer] = float(von_neumann_entropy_2(m_layer))
         elif metric == "effective_rank":
+            print(f"Human samples ")
             h_vals[layer] = effective_rank(h_layer)
+            print(f"Machine samples ")
             m_vals[layer] = effective_rank(m_layer)
         elif metric == "anisotropy":
             h_vals[layer] = anisotropy(h_layer)
@@ -226,9 +243,8 @@ def parse_args() -> Namespace:
 def run(args: Namespace) -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
     n_per_label = 25 if bool(args.smoke_test) else int(args.n_per_label)
-    #"effective_rank", "intrinsic_dimensionality"
-    # "von_neumann_entropy",  "anisotropy"
-    metrics = ["effective_rank"]
+    #  "anisotropy", "intrinsic_dimensionality"
+    metrics = ["intrinsic_dimensionality"]
 
     # d_m4_domains: run one balanced plot per source domain.
     d_m4_domains = ["wikipedia", "arxiv", "reddit", "peerread"]
