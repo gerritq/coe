@@ -6,7 +6,7 @@
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|b200
+#SBATCH --constraint=h200
 #SBATCH --exclude=erc-hpc-vm053,erc-hpc-comp246
 
 # set -euo pipefail
