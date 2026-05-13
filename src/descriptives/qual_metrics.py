@@ -39,15 +39,13 @@ def anisotropy(h: torch.Tensor, eps: float = 1e-12) -> float:
     squared = singular_values ** 2
     return squared[0] / (squared.sum() + eps)
 
-def effective_rank(h: torch.Tensor, eps: float = 1e-12) -> float:
+def effective_rank(h: torch.Tensor) -> float:
     def normalize(R):
         with torch.no_grad():
             mean = R.mean(dim=0)
             R = R - mean
-            norms = torch.norm(R, p=2, dim=1, keepdim=True).clamp_min(eps)
+            norms = torch.norm(R, p=2, dim=1, keepdim=True)
             R = R/norms
-            # GQ added this
-            R = torch.nan_to_num(R, nan=0.0, posinf=0.0, neginf=0.0)
         return R
 
     def cal_cov(R):
@@ -58,6 +56,17 @@ def effective_rank(h: torch.Tensor, eps: float = 1e-12) -> float:
 
     def cal_erank(A):
         with torch.no_grad():
+
+            # GQ check non finite values in A
+            total = A.numel()
+            finite = torch.isfinite(A).sum().item()
+            non_finite = total - finite
+            share_non_finite = non_finite / total if total > 0 else 0.0
+            print(f"[effective_rank] non_finite={non_finite}/{total} ({share_non_finite:.6%})")
+
+            # fix 
+            A = torch.nan_to_num(A, nan=0.0, posinf=0.0, neginf=0.0)
+
             eig_val = torch.svd(A / torch.trace(A))[1] 
             entropy = - (eig_val * torch.log(eig_val)).nansum().item()
             erank = math.exp(entropy)
@@ -166,10 +175,6 @@ def compute_layer_metric(x: np.ndarray, y: np.ndarray, metric: str) -> tuple[np.
     for layer in range(n_layers):
         h_layer = torch.tensor(x[human_mask, layer, :], dtype=torch.float32)
         m_layer = torch.tensor(x[machine_mask, layer, :], dtype=torch.float32)
-
-        print(f"Layer {layer}:")
-        print("Human:", torch.isfinite(h_layer).all(), h_layer.min().item(), h_layer.max().item())
-        print("Machine:", torch.isfinite(m_layer).all(), m_layer.min().item(), m_layer.max().item())
 
         if metric == "von_neumann_entropy":
             h_vals[layer] = float(von_neumann_entropy_2(h_layer))
