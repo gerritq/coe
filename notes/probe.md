@@ -9,10 +9,12 @@ Today:
 
     - Add other qual metrics
         - Other paper: https://aclanthology.org/2025.findings-acl.1330.pdf
+        - Other paper: https://aclanthology.org/2024.findings-eacl.58.pdf
         - IsoScore: https://aclanthology.org/2022.findings-acl.262.pdf
     - Writing
 
-    Later today
+    Later today:
+    - more paper bidding
     - RUNNIG: rank models (fixed int max)
     - RUNNIG: Raidar ID models
 

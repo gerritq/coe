@@ -166,6 +166,11 @@ def compute_layer_metric(x: np.ndarray, y: np.ndarray, metric: str) -> tuple[np.
     for layer in range(n_layers):
         h_layer = torch.tensor(x[human_mask, layer, :], dtype=torch.float32)
         m_layer = torch.tensor(x[machine_mask, layer, :], dtype=torch.float32)
+
+        print(f"Layer {layer}:")
+        print("Human:", torch.isfinite(h_layer).all(), h_layer.min().item(), h_layer.max().item())
+        print("Machine:", torch.isfinite(m_layer).all(), m_layer.min().item(), m_layer.max().item())
+
         if metric == "von_neumann_entropy":
             h_vals[layer] = float(von_neumann_entropy_2(h_layer))
             m_vals[layer] = float(von_neumann_entropy_2(m_layer))
