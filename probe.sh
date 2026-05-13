@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_meta_def_raidDomain
+#SBATCH --job-name=probe_meta_no_pca_yelp_ood
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=03:00:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -27,12 +27,12 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("apt" "apt_m4_train")
 
 # DATASETS=("raidModel_cohere_chat" "raidModel_gpt4" "raidModel_llama_chat" "raidModel_mistral_chat")
-DATASETS=("raidDomain_wiki" "raidDomain_reddit" "raidDomain_news" "raidDomain_abstracts")
+DATASETS=("drlDomain_yelp_review")
 
 TOKEN_MODE="last_token"
-MODES=("default" "meta_no_pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
+MODES=("meta_no_pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
 OOD=1
-COMPONENTS=100
+COMPONENTS=50
 SMOKE_TEST=0
 FOLDER="sandbox"
 
