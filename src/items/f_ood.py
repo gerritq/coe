@@ -55,6 +55,13 @@ METHOD_SPECS = {
     "repreguard": {"kind": "baseline", "model": "repreguard"},
 }
 
+DATASET_ALIASES = {
+    "raidModel_cohere_chat": "raid_cohere_chat",
+    "raidModel_gpt4": "raid_gpt4",
+    "raidModel_llama_chat": "raid_llama_chat",
+    "raidModel_mistral_chat": "raid_mistral_chat",
+}
+
 
 def _dataset_to_family() -> dict[str, str]:
     out = {}
@@ -62,6 +69,12 @@ def _dataset_to_family() -> dict[str, str]:
         for ds in ds_list:
             out[ds] = fam
     return out
+
+
+def _canonical_dataset_name(ds: str | None) -> str | None:
+    if ds is None:
+        return None
+    return DATASET_ALIASES.get(ds, ds)
 
 
 def _short_label(dataset_name: str) -> str:
@@ -121,8 +134,8 @@ def _collect_method_entries(method_key: str) -> dict[str, dict[str, float]]:
             if args.get("mode") != spec["mode"]:
                 continue
 
-            train_ds = args.get("dataset")
-            test_ds = args.get("target_dataset")
+            train_ds = _canonical_dataset_name(args.get("dataset"))
+            test_ds = _canonical_dataset_name(args.get("target_dataset"))
             if train_ds is None or test_ds is None:
                 continue
 
@@ -148,8 +161,8 @@ def _collect_method_entries(method_key: str) -> dict[str, dict[str, float]]:
             if args.get("model") != spec["model"]:
                 continue
 
-            train_ds = args.get("dataset")
-            test_ds = args.get("target_dataset")
+            train_ds = _canonical_dataset_name(args.get("dataset"))
+            test_ds = _canonical_dataset_name(args.get("target_dataset"))
             if train_ds is None or test_ds is None:
                 continue
 
@@ -236,8 +249,8 @@ def main() -> None:
         ("BiScope", _collect_method_entries("biscope")),
         ("RepreGuard", _collect_method_entries("repreguard")),
         ("RoBERTa", _collect_method_entries("encoder")),
-        ("LP (default)", _collect_method_entries("probe_default")),
-        ("LP (meta_no_pca)", _collect_method_entries("probe_meta_no_pca")),
+        ("LLP", _collect_method_entries("probe_default")),
+        ("CLP", _collect_method_entries("probe_meta_no_pca")),
     ]
 
     # Relative color scale from observed AUROC values only.

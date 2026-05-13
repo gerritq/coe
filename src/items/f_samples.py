@@ -26,12 +26,12 @@ MODE_COLORS = {
     "biscope": "#9467bd",
     "repreguard": "#ff7f0e",
 }
-DATASET_ORDER = ["drlDomain_arxiv", "multisocial_en", "tsm_first", "m4_gpt4"]
+DATASET_ORDER = ["drlDomain_arxiv", "multisocial_en", "tsm_first", "raidModel_gpt4"]
 DATASET_TITLES = {
     "drlDomain_arxiv": "DetectRL (ArXiv)",
     "multisocial_en": "MultiSocial (en)",
     "tsm_first": "TSM-Bench (First)",
-    "m4_gpt4": "M4 (GPT4)",
+    "raidModel_gpt4": "RAID Model (GPT4)",
 }
 FONT = {
     "title": 16,
@@ -51,9 +51,13 @@ def _extract_auroc(obj: dict, mode: str) -> float | None:
     return None
 
 
-def collect_points() -> tuple[dict[tuple[str, str], list[tuple[int, float]]], list[str]]:
-    # (dataset, mode) -> [(N, auroc), ...]
-    points: dict[tuple[str, str], list[tuple[int, float]]] = defaultdict(list)
+def collect_points() -> tuple[dict[tuple[str, str], list[tuple[int, float, float]]], list[str]]:
+    # (dataset, mode) -> [(N, mean_auroc, ci95), ...]
+    points: dict[tuple[str, str], list[tuple[int, float, float]]] = defaultdict(list)
+    # (dataset, mode, N) -> seed -> auroc
+    grouped: dict[tuple[str, str, int], dict[int, float]] = defaultdict(dict)
+    # (dataset, mode, N, seed) -> filenames seen
+    grouped_files: dict[tuple[str, str, int, int], list[str]] = defaultdict(list)
     datasets = set()
 
     for filename in sorted(os.listdir(ABLATION_DIR)):
@@ -69,15 +73,19 @@ def collect_points() -> tuple[dict[tuple[str, str], list[tuple[int, float]]], li
         dataset = args.get("dataset")
         target = args.get("target_dataset")
         n = args.get("training_size")
+        seed = args.get("seed")
 
         if mode not in MODES:
             continue
         if not isinstance(dataset, str) or dataset != target:
             continue
+        if seed is None:
+            continue
         if n is None:
             continue
         try:
             n = int(n)
+            seed = int(seed)
         except (TypeError, ValueError):
             continue
         if n < 10:
@@ -90,7 +98,17 @@ def collect_points() -> tuple[dict[tuple[str, str], list[tuple[int, float]]], li
             continue
 
         datasets.add(dataset)
-        points[(dataset, mode)].append((n, float(auroc)))
+        key = (dataset, mode, n)
+        file_key = (dataset, mode, n, seed)
+        grouped_files[file_key].append(filename)
+        if seed in grouped[key]:
+            print(
+                f"[Warning] Duplicate seed file for method={mode}, dataset={dataset}, "
+                f"training_size={n}, seed={seed}. Keeping last by sorted filename order."
+            )
+            for dup_name in grouped_files[file_key]:
+                print(f"  - {dup_name}")
+        grouped[key][seed] = float(auroc)
 
     # baseline ablations: encoder, biscope, repreguard
     if os.path.isdir(BASELINE_ABLATION_DIR):
@@ -107,15 +125,19 @@ def collect_points() -> tuple[dict[tuple[str, str], list[tuple[int, float]]], li
             dataset = args.get("dataset")
             target = args.get("target_dataset")
             n = args.get("training_size")
+            seed = args.get("seed")
 
             if model not in {"encoder", "biscope", "repreguard"}:
                 continue
             if not isinstance(dataset, str) or dataset != target:
                 continue
+            if seed is None:
+                continue
             if n is None:
                 continue
             try:
                 n = int(n)
+                seed = int(seed)
             except (TypeError, ValueError):
                 continue
             if n < 10:
@@ -131,7 +153,33 @@ def collect_points() -> tuple[dict[tuple[str, str], list[tuple[int, float]]], li
                 auroc = auroc / 100.0
 
             datasets.add(dataset)
-            points[(dataset, model)].append((n, auroc))
+            key = (dataset, model, n)
+            file_key = (dataset, model, n, seed)
+            grouped_files[file_key].append(filename)
+            if seed in grouped[key]:
+                print(
+                    f"[Warning] Duplicate seed file for method={model}, dataset={dataset}, "
+                    f"training_size={n}, seed={seed}. Keeping last by sorted filename order."
+                )
+                for dup_name in grouped_files[file_key]:
+                    print(f"  - {dup_name}")
+            grouped[key][seed] = float(auroc)
+
+    expected_seeds = {42, 43, 44, 45, 46}
+    for (dataset, mode, n), seed_map in sorted(grouped.items()):
+        present = sorted(seed_map.keys())
+        if set(present) != expected_seeds:
+            print(
+                f"[Warning] Missing seeds for method={mode}, dataset={dataset}, training_size={n}. "
+                f"Found seeds={present}, expected=[42, 43, 44, 45, 46]"
+            )
+        vals = np.asarray([seed_map[s] for s in present], dtype=np.float64)
+        mean = float(np.mean(vals))
+        if len(vals) > 1:
+            ci95 = float(1.96 * np.std(vals, ddof=1) / np.sqrt(len(vals)))
+        else:
+            ci95 = 0.0
+        points[(dataset, mode)].append((n, mean, ci95))
 
     for key in points:
         points[key] = sorted(points[key], key=lambda x: x[0])
@@ -139,7 +187,7 @@ def collect_points() -> tuple[dict[tuple[str, str], list[tuple[int, float]]], li
     return points, sorted(datasets)
 
 
-def plot_points(points: dict[tuple[str, str], list[tuple[int, float]]], datasets: list[str]) -> None:
+def plot_points(points: dict[tuple[str, str], list[tuple[int, float, float]]], datasets: list[str]) -> None:
     if not points:
         raise RuntimeError("No matching ablation points found for selected modes.")
 
@@ -158,7 +206,7 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float]]], datasets
 
         for mode in MODES:
             series = points.get((dataset, mode), [])
-            for n, auroc in series:
+            for n, auroc, _ci95 in series:
                 if n not in x_to_ymax or auroc > x_to_ymax[n]:
                     x_to_ymax[n] = auroc
 
@@ -168,8 +216,11 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float]]], datasets
                 continue
             x = np.array([p[0] for p in series], dtype=np.int64)
             y = np.array([p[1] for p in series], dtype=np.float64)
+            ci = np.array([p[2] for p in series], dtype=np.float64)
             x_values_for_ticks.update(int(v) for v in x.tolist())
             y_values_for_ylim.extend(float(v) for v in y.tolist())
+            y_values_for_ylim.extend(float(v) for v in (y - ci).tolist())
+            y_values_for_ylim.extend(float(v) for v in (y + ci).tolist())
 
             # vertical guide lines for each data point
             y_min_local = float(y.min())
@@ -192,6 +243,16 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float]]], datasets
                 markersize=6,
                 alpha=0.95,
                 label=mode,
+            )
+            y_lo = np.clip(y - ci, 0.0, 1.0)
+            y_hi = np.clip(y + ci, 0.0, 1.0)
+            ax.fill_between(
+                x,
+                y_lo,
+                y_hi,
+                color=MODE_COLORS[mode],
+                alpha=0.18,
+                linewidth=0.0,
             )
             legend_handles[mode] = line
 

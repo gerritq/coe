@@ -49,7 +49,6 @@ class BiScope:
         self.device = return_device()
         args.sample_clip = 2000
         self.sample_clip = 2000
-        args.seed = 42
 
     def generate(self, model, tokenizer, input_ids, trigger_length, target_length):
         """
@@ -242,10 +241,9 @@ class BiScope:
             training_data: Dataset,
             ood_data: list[Dataset]) -> None:
         
-        set_seed(42)
-
-        # Set args for their code
-
+        set_seed(args.seed)
+        
+        # Set args for their cod
         args.summary_model = args.base_model_2
         args.detect_model = args.base_model_2
 

@@ -74,8 +74,8 @@ METHOD_SPECS = [
     ("BiScope", {"kind": "baseline", "model": "biscope"}),
     ("RepreGuard", {"kind": "baseline", "model": "repreguard"}),
     ("RoBERTa", {"kind": "baseline", "model": "encoder"}),
-    ("LP$_{\\mathrm{default}}$", {"kind": "probe", "mode": "default"}),
-    ("LP$_{\\mathrm{meta\\_no\\_pca}}$", {"kind": "probe", "mode": "meta_no_pca"}),
+    ("LLP", {"kind": "probe", "mode": "default"}),
+    ("CLP", {"kind": "probe", "mode": "meta_no_pca"}),
 ]
 
 
@@ -277,7 +277,7 @@ def render_table(rows: dict[str, dict[str, float | None]]) -> str:
     ]
 
     baseline_models = ["TextFluoroscopy", "BiScope", "RepreGuard", "RoBERTa"]
-    probe_models = ["LP$_{\\mathrm{default}}$", "LP$_{\\mathrm{meta\\_no\\_pca}}$"]
+    probe_models = ["LLP", "CLP"]
 
     def _delta_str(v: float | None, b: float | None) -> str:
         if v is None or b is None:
@@ -313,7 +313,7 @@ def render_table(rows: dict[str, dict[str, float | None]]) -> str:
             _delta_str(rows.get(model_name, {}).get(subset), best_baseline.get(subset))
             for subset in all_subsets
         ]
-        lines.append(r"$\Delta$ vs BL & " + " & ".join(delta_vals) + r" \\")
+        lines.append(r"\hspace*{1em}$\Delta$ vs BL & " + " & ".join(delta_vals) + r" \\")
 
     lines.extend(["\\bottomrule", "\\end{tabular}"])
     return "\n".join(lines) + "\n"

@@ -13,7 +13,7 @@ from datetime import datetime
 
 BASE_DIR = os.getenv("BASE_COE", ".")
 DATA_DIR = os.path.join(BASE_DIR, "data", "sets")
-OUT_DIR = os.path.join(BASE_DIR, "output", "item")
+OUT_DIR = os.path.join(BASE_DIR, "output", "qual_metrics")
 
 # ============================================================================================
 # METRICS

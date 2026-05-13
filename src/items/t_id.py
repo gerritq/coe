@@ -126,6 +126,14 @@ def _fmt_probe(score: float | None, style: str | None) -> str:
         return f"\\cellcolor{{orange!25}}\\underline{{{base}}}"
     return base
 
+def _delta_str(v: float | None, b: float | None) -> str:
+    if v is None or b is None:
+        return ""
+    d = (v - b) * 100.0
+    if d >= 0:
+        return f"\\textcolor{{green!60!black}}{{+{abs(d):.2f}}}"
+    return f"\\textcolor{{orange!85!black}}{{-{abs(d):.2f}}}"
+
 
 def _probe_auroc(test_metrics: dict, mode: str | None) -> float | None:
     if mode in {"default", "pca"}:
@@ -149,6 +157,7 @@ def _canonical_dataset_name(ds: str | None) -> str | None:
 
 def collect_baselines() -> dict[str, dict[str, float]]:
     table: dict[str, dict[str, float]] = {}
+    seen_files: dict[tuple[str, str], list[str]] = {}
     datasets = set(_all_datasets())
     for filename in sorted(os.listdir(BASELINE_DIR)):
         if not filename.endswith(".json"):
@@ -171,12 +180,24 @@ def collect_baselines() -> dict[str, dict[str, float]]:
         # RepreGuard outputs are stored on a 0-100 scale in some files.
         if model == "repreguard" and auroc > 1.0:
             auroc = auroc / 100.0
+        key = (model, ds)
+        seen_files.setdefault(key, []).append(filename)
         table.setdefault(model, {})[ds] = auroc
+
+    for (model, ds), files in sorted(seen_files.items()):
+        if len(files) > 1:
+            print(
+                f"[Warning] Multiple baseline json files for model={model}, dataset={ds}: "
+                f"{len(files)} files. Using last value by sorted filename order."
+            )
+            for name in files:
+                print(f"  - {name}")
     return table
 
 
 def collect_probes() -> dict[str, dict[str, float]]:
     table: dict[str, dict[str, float]] = {}
+    seen_files: dict[tuple[str, str], list[str]] = {}
     datasets = set(_all_datasets())
     for filename in sorted(os.listdir(PROBE_DIR)):
         if not filename.endswith(".json"):
@@ -193,12 +214,27 @@ def collect_probes() -> dict[str, dict[str, float]]:
             continue
         if ds not in datasets or mode is None:
             continue
-        mode_latex = mode.replace("_", r"\_")
-        row = f"LP$_{{\\mathrm{{{mode_latex}}}}}$"
+        if mode == "default":
+            row = "LLP"
+        elif mode == "meta_no_pca":
+            row = "CLP"
+        else:
+            continue
         auroc = _probe_auroc(obj.get("test_metrics", {}), mode)
         if auroc is None:
             continue
+        key = (row, ds)
+        seen_files.setdefault(key, []).append(filename)
         table.setdefault(row, {})[ds] = auroc
+
+    for (row, ds), files in sorted(seen_files.items()):
+        if len(files) > 1:
+            print(
+                f"[Warning] Multiple probe json files for row={row}, dataset={ds}: "
+                f"{len(files)} files. Using last value by sorted filename order."
+            )
+            for name in files:
+                print(f"  - {name}")
     return table
 
 
@@ -227,8 +263,12 @@ def render_table(
     # Keep only selected probe rows.
     ordered_probe_rows = []
     for mode in PROBE_MODE_ORDER:
-        mode_latex = mode.replace("_", r"\_")
-        key = f"LP$_{{\\mathrm{{{mode_latex}}}}}$"
+        if mode == "default":
+            key = "LLP"
+        elif mode == "meta_no_pca":
+            key = "CLP"
+        else:
+            continue
         if key in probe_rows:
             ordered_probe_rows.append(key)
 
@@ -313,12 +353,25 @@ def render_table(
     lines.append("\\midrule")
     lines.append("\\multicolumn{%d}{l}{\\textbf{Linear Probes}} \\\\" % (n_data_cols + 1))
     lines.append("\\midrule")
+
+    baseline_models = [m for m in (ZERO_SHOT_MODELS + SUPERVISED_MODELS) if m in baseline_rows]
+    best_baseline: dict[str, float | None] = {}
+    for d in datasets:
+        vals = [baseline_rows[m].get(d) for m in baseline_models]
+        vals = [float(v) for v in vals if v is not None]
+        best_baseline[d] = max(vals) if vals else None
+
     for model in ordered_probe_rows:
         vals = [
             _fmt_probe(probe_rows[model].get(d), style_map[d].get(model))
             for d in datasets
         ]
         lines.append(f"{model} & " + " & ".join(vals) + " \\\\")
+        delta_vals = [
+            _delta_str(probe_rows[model].get(d), best_baseline.get(d))
+            for d in datasets
+        ]
+        lines.append(r"\hspace*{1em}$\Delta$ vs BL & " + " & ".join(delta_vals) + r" \\")
 
     lines.extend(["\\bottomrule", "\\end{tabular}"])
     return "\n".join(lines) + "\n"

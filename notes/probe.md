@@ -1,12 +1,11 @@
 # To do
 
-- with different random splits (like 10?)
-- beuatify plots/
 
 Today:
-    - ID and OOD: new naming
     - RUNNING + FIGURE: training sizez for baseline and probes
         - Add plot + new naming
+
+
     - Update the layer plot (raid; rm numbers but keep them as check) + new naming
     - Update the AI edit plot + new naming
 
@@ -19,7 +18,8 @@ Today:
 
     Later today:
     - more paper bidding
-    - RUNNIG: rank models (fixed int max)
+    - RUNNING: biscope and repre for sample seeds
+    - RUNNING: qual metrics
     - RUNNIG: Raidar ID models
 
 
@@ -141,11 +141,13 @@ Today:
         - Or show the decision boundary bc orthogonal
 
 70. Writing
+- CHECK TABLE AGGREGATIONS AND DUPLICATES
  - For probing generalization and performance: https://arxiv.org/pdf/2511.17408
 
 --- 
 
 99. Misc
+
     - For cross benchmark https://arxiv.org/pdf/2509.10625
 
     - ensure in all tables that we take the mean not weighted

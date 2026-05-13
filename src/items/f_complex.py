@@ -125,45 +125,45 @@ def plot(points: dict[str, dict[int, list[float]]], out_path: str, label_map: di
     all_y: list[float] = []
 
     n_ds = len(datasets)
+    n_depths = len(all_depths)
     bar_group_width = 0.8
-    bar_width = bar_group_width / max(1, n_ds)
+    bar_width = bar_group_width / max(1, n_depths)
+    x_base = np.arange(n_ds, dtype=np.float64)
+    depth_colors = plt.cm.tab10(np.linspace(0, 1, max(1, n_depths)))
 
-    for i, dataset in enumerate(datasets):
-        depth_to_vals = points[dataset]
-        depths = sorted(depth_to_vals.keys())
-        x = np.asarray(depths, dtype=np.int64)
-        y = np.asarray([np.mean(depth_to_vals[d]) for d in depths], dtype=np.float64)
-        all_y.extend(float(v) for v in y.tolist())
+    for depth_idx, depth in enumerate(all_depths):
+        y_vals = []
+        for dataset in datasets:
+            vals = points[dataset].get(depth, [])
+            y_vals.append(float(np.mean(vals)) if vals else np.nan)
+        y = np.asarray(y_vals, dtype=np.float64)
+        finite_mask = np.isfinite(y)
+        all_y.extend(float(v) for v in y[finite_mask].tolist())
 
-        offsets = (i - (n_ds - 1) / 2.0) * bar_width
-        x_bar = x + offsets
-        label = label_map.get(dataset, dataset) if label_map is not None else dataset
-        plt.bar(x_bar, y, width=bar_width * 0.92, alpha=1.0, label=label)
+        offsets = (depth_idx - (n_depths - 1) / 2.0) * bar_width
+        x_bar = x_base + offsets
+        plt.bar(
+            x_bar[finite_mask],
+            y[finite_mask],
+            width=bar_width * 0.92,
+            alpha=0.9,
+            color=depth_colors[depth_idx],
+            label=f"Depth {depth}",
+            zorder=2,
+        )
+        plt.plot(
+            x_base[finite_mask],
+            y[finite_mask],
+            color=depth_colors[depth_idx],
+            linewidth=1.6,
+            alpha=0.9,
+            zorder=3,
+        )
 
-        # Annotate: AUROC at depth 1, deltas vs depth 1 for depth > 1.
-        base = None
-        if 1 in depth_to_vals:
-            base = float(np.mean(depth_to_vals[1]))
-        for xb, d, yy in zip(x_bar.tolist(), depths, y.tolist()):
-            if base is None or d == 1:
-                txt = f"{yy:.2f}"
-            else:
-                delta = yy - base
-                sign = "+" if delta >= 0 else "-"
-                txt = f"{sign}{abs(delta) * 100:.2f}%"
-            plt.text(
-                xb,
-                yy + 0.003,
-                txt,
-                ha="center",
-                va="bottom",
-                fontsize=8,
-                rotation=0,
-            )
-
-    plt.xlabel("MLP depth")
+    x_labels = [label_map.get(d, d) if label_map is not None else d for d in datasets]
+    plt.xlabel("Dataset")
     plt.ylabel("AUROC")
-    plt.xticks(np.asarray(all_depths, dtype=np.int64))
+    plt.xticks(x_base, x_labels, rotation=20, ha="right")
     if all_y:
         y_min = min(all_y)
         y_max = max(all_y)
