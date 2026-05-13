@@ -44,7 +44,16 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 # --model "${MODEL}" \
 # --smoke_test "${SMOKE_TEST}"
 
-PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
---model "${MODEL}" \
---smoke_test "${SMOKE_TEST}"
-
+# QUAL METRICS
+METRICS=("von_neumann_entropy" "effective_rank" "anisotropy" "intrinsic_dimensionality")
+SEEDS=(42 43 44 45 46)
+for METRIC in "${METRICS[@]}"; do
+  for SEED in "${SEEDS[@]}"; do
+    echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
+    PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
+      --model "${MODEL}" \
+      --smoke_test "${SMOKE_TEST}" \
+      --metric "${METRIC}" \
+      --seed "${SEED}"
+  done
+done

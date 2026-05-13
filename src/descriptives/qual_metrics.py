@@ -4,17 +4,16 @@ import random
 from argparse import ArgumentParser, Namespace
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import math
 from src.inference import Inference
 import skdim
+from datetime import datetime
 
 BASE_DIR = os.getenv("BASE_COE", ".")
 DATA_DIR = os.path.join(BASE_DIR, "data", "sets")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
-SEED = 42
 
 # ============================================================================================
 # METRICS
@@ -211,80 +210,87 @@ def compute_layer_metric(x: np.ndarray, y: np.ndarray, metric: str) -> tuple[np.
     return h_vals, m_vals
 
 
-def plot_metric(
+def save_metric_json(
+    dataset_name: str,
+    metric: str,
+    seed: int,
     h_vals: np.ndarray,
     m_vals: np.ndarray,
-    out_path: str,
-    title: str,
-    y_label: str,
-) -> None:
-    layers = np.arange(len(h_vals))
-    plt.figure(figsize=(10, 6))
-    plt.plot(layers, h_vals, marker="o", linewidth=2.0, label="Human")
-    plt.plot(layers, m_vals, marker="o", linewidth=2.0, label="Machine")
-    plt.xlabel("Layer")
-    plt.ylabel(y_label)
-    plt.title(title)
-    plt.grid(alpha=0.25)
-    plt.legend(frameon=True)
-    plt.tight_layout()
-    plt.savefig(out_path, dpi=240)
-    plt.close()
+    out_dir: str,
+) -> str:
+    out_path = os.path.join(out_dir, f"qual_{dataset_name}_{metric}_seed{seed}.json")
+    payload = {
+        "dataset": dataset_name,
+        "date": datetime.now().isoformat(),
+        "metric": metric,
+        "seed": int(seed),
+        "layers": list(range(len(h_vals))),
+        "human": [float(v) for v in h_vals],
+        "machine": [float(v) for v in m_vals],
+    }
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+    return out_path
 
 
 def parse_args() -> Namespace:
     parser = ArgumentParser()
     parser.add_argument("--model", type=str, default="qwen_06b")
-    parser.add_argument("--n_per_label", type=int, default=500)
+    parser.add_argument("--n_per_label", type=int, default=250)
     parser.add_argument("--smoke_test", type=int, default=0)
+    parser.add_argument(
+        "--metric",
+        type=str,
+        required=True,
+        choices=["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality"],
+    )
+    parser.add_argument("--seed", type=int, default=42)
     return parser.parse_args()
 
 
 def run(args: Namespace) -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
     n_per_label = 25 if bool(args.smoke_test) else int(args.n_per_label)
-    #  "anisotropy", "intrinsic_dimensionality"
-    metrics = ["intrinsic_dimensionality"]
+    metric = str(args.metric)
+    seed = int(args.seed)
 
     # d_m4_domains: run one balanced plot per source domain.
     d_m4_domains = ["wikipedia", "arxiv", "reddit", "peerread"]
     for domain in d_m4_domains:
         items = load_d_m4_domain_items(domain=domain)
-        sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=SEED)
+        sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=seed)
         print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:{domain}.")
 
         x, y = collect_hidden_states(items=sampled, model_name=args.model)
-        dataset_name = f"entropy_m4_{domain}"
-        for metric in metrics:
-            h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
-            out_path = os.path.join(OUT_DIR, f"qual_{metric}_{dataset_name}.pdf")
-            plot_metric(
-                h_vals=h_vals,
-                m_vals=m_vals,
-                out_path=out_path,
-                title=f"{metric} by Layer | {dataset_name}",
-                y_label=metric,
-            )
-            print(f"Saved figure: {out_path}")
+        dataset_name = f"d_m4_domains_{domain}"
+        h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
+        out_path = save_metric_json(
+            dataset_name=dataset_name,
+            metric=metric,
+            seed=seed,
+            h_vals=h_vals,
+            m_vals=m_vals,
+            out_dir=OUT_DIR,
+        )
+        print(f"Saved json: {out_path}")
 
     # drlDomain_* datasets: use test split only, no rebalancing.
-    drl_datasets = ["drlDomain_arxiv", "drlDomain_xsum"]
-    for dataset_name in drl_datasets:
-        items = load_main_data_items(dataset_name=dataset_name)
-        print(f"Loaded {len(items)} test items from {dataset_name} (no rebalancing).")
+    # drl_datasets = ["drlDomain_arxiv", "drlDomain_xsum"]
+    # for dataset_name in drl_datasets:
+    #     items = load_main_data_items(dataset_name=dataset_name)
+    #     print(f"Loaded {len(items)} test items from {dataset_name} (no rebalancing).")
 
-        x, y = collect_hidden_states(items=items, model_name=args.model)
-        for metric in metrics:
-            h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
-            out_path = os.path.join(OUT_DIR, f"qual_{metric}_{dataset_name}.pdf")
-            plot_metric(
-                h_vals=h_vals,
-                m_vals=m_vals,
-                out_path=out_path,
-                title=f"{metric} by Layer | {dataset_name}",
-                y_label=metric,
-            )
-            print(f"Saved figure: {out_path}")
+    #     x, y = collect_hidden_states(items=items, model_name=args.model)
+    #     h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
+    #     out_path = save_metric_json(
+    #         dataset_name=dataset_name,
+    #         metric=metric,
+    #         seed=seed,
+    #         h_vals=h_vals,
+    #         m_vals=m_vals,
+    #         out_dir=OUT_DIR,
+    #     )
+    #     print(f"Saved json: {out_path}")
 
 
 if __name__ == "__main__":
