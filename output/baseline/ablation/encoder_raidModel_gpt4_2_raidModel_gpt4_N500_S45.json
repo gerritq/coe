@@ -1,0 +1,25 @@
+{
+  "args": {
+    "dataset": "raidModel_gpt4",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": false,
+    "training_size": 500,
+    "folder": "ablation",
+    "seed": 45,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "raidModel_gpt4",
+    "datetime": "2026-05-13 04:12:58"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.879264,
+    "accuracy": 0.788,
+    "f1": 0.791970802919708,
+    "tpr_at_fpr_0_05": 0.632,
+    "optimal_threshold_f1": 0.5185185185185185,
+    "optimal_threshold_acc": 0.6486486486486487,
+    "aupr": 0.9003085817428644
+  }
+}

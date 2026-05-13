@@ -1,0 +1,25 @@
+{
+  "args": {
+    "dataset": "drlDomain_arxiv",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": false,
+    "training_size": 10,
+    "folder": "ablation",
+    "seed": 46,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "drlDomain_arxiv",
+    "datetime": "2026-05-13 03:54:55"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.8952640000000001,
+    "accuracy": 0.778,
+    "f1": 0.7494356659142212,
+    "tpr_at_fpr_0_05": 0.572,
+    "optimal_threshold_f1": 0.4394394394394394,
+    "optimal_threshold_acc": 0.4394394394394394,
+    "aupr": 0.8987259714885696
+  }
+}

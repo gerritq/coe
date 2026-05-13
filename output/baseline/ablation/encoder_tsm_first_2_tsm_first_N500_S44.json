@@ -1,0 +1,25 @@
+{
+  "args": {
+    "dataset": "tsm_first",
+    "model": "encoder",
+    "smoke_test": false,
+    "ood": false,
+    "training_size": 500,
+    "folder": "ablation",
+    "seed": 44,
+    "base_model_1": "meta-llama/Meta-Llama-3-8B",
+    "base_model_2": "meta-llama/Meta-Llama-3-8B-instruct",
+    "target_dataset": "tsm_first",
+    "datetime": "2026-05-13 04:03:10"
+  },
+  "metrics": {
+    "n_total": 500,
+    "auroc": 0.80032,
+    "accuracy": 0.706,
+    "f1": 0.7116564417177914,
+    "tpr_at_fpr_0_05": 0.372,
+    "optimal_threshold_f1": 0.4854854854854855,
+    "optimal_threshold_acc": 0.48848848848848847,
+    "aupr": 0.8148378313109244
+  }
+}

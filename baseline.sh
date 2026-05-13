@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_id_rank_fast_raidModels
+#SBATCH --job-name=baseline_rank_models
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=02:00:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -43,7 +43,7 @@ MODELS=(
         # "repreguard"
         # "encoder" 
         # "llr" 
-        "fastdetectgpt" 
+        # "fastdetectgpt" 
         "rank" 
         # "entropy"
         # "likelihood"

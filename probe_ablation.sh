@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=pa_mlp_ood_5_8
+#SBATCH --job-name=pa_training_size_seeds_default_gpt4
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=04:00:00
+#SBATCH --time=03:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
-#SBATCH --constraint=h200|b200|a100
+#SBATCH --constraint=h200|a100
 
 # set -euo pipefail
 
@@ -18,23 +18,23 @@ cd "${ROOT_DIR}"
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
 # DS for training size
-DATASETS=("drlDomain_arxiv")
+DATASETS=("raidModel_gpt4")
 
 # DS for other ablations
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 
-MODES=("mlp") # default | pca | meta | meta_attn | poly
+MODES=("default") # default | pca | meta | meta_attn | poly
 COMPONENTS_LIST=(50)
-TRAINING_SIZES=(-1) # -1 | 10 50 100 250 500
+TRAINING_SIZES=(10 50 100 250 500) # -1 | 10 50 100 250 500
 C_LIST=(1)
-MLP_DEPTH_LIST=(5 6 7 8)
-SEEDS=(42)
+MLP_DEPTH_LIST=(1)
+SEEDS=(42 43 44 45 46)
 
 TOKEN_MODE="last_token"
 FOLDER="ablation"
 SMOKE_TEST=0
-OOD=1
+OOD=0
 
 for MODEL in "${MODELS[@]}"; do
     for DATASET in "${DATASETS[@]}"; do
