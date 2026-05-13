@@ -44,8 +44,10 @@ def effective_rank(h: torch.Tensor, eps: float = 1e-12) -> float:
         with torch.no_grad():
             mean = R.mean(dim=0)
             R = R - mean
-            norms = torch.norm(R, p=2, dim=1, keepdim=True)
+            norms = torch.norm(R, p=2, dim=1, keepdim=True).clamp_min(eps)
             R = R/norms
+            # GQ added this
+            R = torch.nan_to_num(R, nan=0.0, posinf=0.0, neginf=0.0)
         return R
 
     def cal_cov(R):
