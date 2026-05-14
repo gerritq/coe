@@ -278,9 +278,10 @@ def run(args: Namespace) -> None:
     drl_datasets = ["drlDomain_arxiv", "tsm_first", "multisocial_en", "raidModel_gpt4"]
     for dataset_name in drl_datasets:
         items = load_main_data_items(dataset_name=dataset_name)
-        print(f"Loaded {len(items)} test items from {dataset_name} (no rebalancing).")
+        sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=seed)
+        print(f"Loaded {len(items)} train items from {dataset_name}, resampled to {n_per_label} per label.")
 
-        x, y = collect_hidden_states(items=items, model_name=args.model)
+        x, y = collect_hidden_states(items=sampled, model_name=args.model)
         h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
         out_path = save_metric_json(
             dataset_name=dataset_name,
