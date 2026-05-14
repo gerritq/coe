@@ -1,5 +1,21 @@
 # To do
 
+- change GEScore to GECScore and Revise is zero-shto
+- name xsum -> news
+- change tsm names
+
+- change name yelp uppercase
+
+- change tsm names
+- add revise to zero-shot
+- AUC in plots not AUROC
+- add repre to supervised
+
+
+- Read: https://www.goodfire.ai/research/manifold-steering#
+    - And their other paper
+
+- Check new meta pca yelp
 - ef rank missings
 - meta sizes attention issue
 
@@ -9,13 +25,17 @@
     - e-rank: 
 
 RUNNING
+    - ID
+        - 33886967 Raidar
+    - Sample
+        - 33889365 meta no pca
     - Training size
-        - Repre fix
+        - TO DO: Repre fix
         - BiScope 33879988
         - Beautify: renaming; no bench; Raid
 
     - Qual metrics:
-        - Effective Rank 33878730
+        - Effective Rank seed 46: 33889209 
         - Create a plot with CI
 
 
@@ -63,6 +83,10 @@ RUNNING
 ---
 
 6. **Descriptives/The why**
+
+    - HOT: Can we do something similar as in https://arxiv.org/pdf/2502.14888 see section 3.1
+
+    - read rel work: https://arxiv.org/pdf/2502.02013
 
     - check: LANGUAGE MODELS REPRESENT SPACE AND TIME
 
@@ -402,14 +426,25 @@ To better understand the representations of MGT and HWT, we perform PCA decompos
 
     - Why cone-shaped: embeddings scatter along one-dominant region (in 2D, instead of a circle as in isotropic spaces, the anisotropic space is an ellipse and a cone in higher d)
 
+    - This means a few-dominant directions explain much of the variance
+
 - Cosine similarity of unrelated tokens is larger than zero
 
 ## Effective Rank
 
-Idea: rank-based metric
+Idea: 
+    - rank-based metric, they introduce Diff-rank = differences between effective ranks
+    - Metric focused on the representations, different from the loss. Hidden states capture semantic and syntactic information of sentences
+    - How efficiently the model eliminates redundant information during training
 
 Intuition: 
-    - Metric focused on the representations, different from the loss. Hidden states capture semantic and syntactic information of sentences
-    - How efficiently they eliminate redundant information during training
-    - Diff-rank = differences between effective ranks
     - Information-theoretic measure: provides a measure for quantifying noise reduction in LLMs
+    - Rank provides two measures: 
+        - Geometric: linear independence/effective dimensions in the representation space
+        - Information: amount of information contained in the representations
+            - __Key__: a lower rank indicates that information has been structured or compressed
+
+    - From Latent thinking:
+        - How effectively the model extracts key concepts and reduces noisy features in its latent representations.
+        - A higher effective rank implies noisier features
+        - A lower effective rank implies better noise reduction and mroe compact representations

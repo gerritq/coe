@@ -14,7 +14,7 @@ MODE = "default"
 FAMILIES = ["drlDomain", "multisocial", "tsm", "raidModel"]
 FAMILY_LABELS = {
     "drlDomain": "DetectRL (Domains)",
-    "multisocial": "Multisocial (Languages)",
+    "multisocial": "MultiSocial (Languages)",
     "tsm": "TSM (Tasks)",
     "raidModel": "RAID (Generators)",
 }
@@ -31,9 +31,9 @@ MARKERS = {
     "raidModel": "D",
 }
 FONT_SIZES = {
-    "axis": 16,
-    "ticks": 14,
-    "legend": 14,
+    "axis": 20,
+    "ticks": 18,
+    "legend": 18,
 }
 
 
@@ -148,7 +148,7 @@ def _plot(
     if not means:
         raise RuntimeError("No ID default-mode per-layer AUROC curves found.")
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 7))
 
     global_min = 1.0
     global_max = 0.0
@@ -181,7 +181,7 @@ def _plot(
         plt.axvline(vline_layer, color="gray", linestyle="--", linewidth=1.2, alpha=0.8)
 
     plt.xlabel("Layer", fontsize=FONT_SIZES["axis"])
-    plt.ylabel("Mean AUROC", fontsize=FONT_SIZES["axis"])
+    plt.ylabel("Mean AUC", fontsize=FONT_SIZES["axis"])
     title_suffix = " (Zoomed)" if zoom else ""
     # plt.title(f"ID Per-Layer Mean AUROC by Dataset Family | mode={MODE}{title_suffix}")
     plt.grid(alpha=0.25)

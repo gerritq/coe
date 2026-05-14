@@ -26,18 +26,25 @@ MODE_COLORS = {
     "biscope": "#9467bd",
     "repreguard": "#ff7f0e",
 }
+MODE_LABELS = {
+    "default": "LLP",
+    "meta_no_pca": "CLP",
+    "encoder": "RoBERTa",
+    "biscope": "BiScope",
+    "repreguard": "RepreGuard",
+}
 DATASET_ORDER = ["drlDomain_arxiv", "multisocial_en", "tsm_first", "raidModel_gpt4"]
 DATASET_TITLES = {
     "drlDomain_arxiv": "DetectRL (ArXiv)",
     "multisocial_en": "MultiSocial (en)",
-    "tsm_first": "TSM-Bench (First)",
-    "raidModel_gpt4": "RAID Model (GPT4)",
+    "tsm_first": "TSM (FP)",
+    "raidModel_gpt4": "RAID (GPT4)",
 }
 FONT = {
-    "title": 16,
-    "axis": 14,
-    "ticks": 12,
-    "legend": 12,
+    "title": 20,
+    "axis": 18,
+    "ticks": 16,
+    "legend": 16,
 }
 FULL_TRAIN_SIZE = 1500
 
@@ -202,13 +209,6 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float, float]]], d
     for idx, (ax, dataset) in enumerate(zip(axes, datasets)):
         x_values_for_ticks = set()
         y_values_for_ylim: list[float] = []
-        x_to_ymax: dict[int, float] = {}
-
-        for mode in MODES:
-            series = points.get((dataset, mode), [])
-            for n, auroc, _ci95 in series:
-                if n not in x_to_ymax or auroc > x_to_ymax[n]:
-                    x_to_ymax[n] = auroc
 
         for mode in MODES:
             series = points.get((dataset, mode), [])
@@ -223,12 +223,10 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float, float]]], d
             y_values_for_ylim.extend(float(v) for v in (y + ci).tolist())
 
             # vertical guide lines for each data point
-            y_min_local = float(y.min())
-            y_line_floor = max(0.0, y_min_local - 0.01)
             ax.vlines(
                 x,
-                ymin=y_line_floor,
-                ymax=np.array([x_to_ymax[int(v)] for v in x], dtype=np.float64),
+                ymin=0.0,
+                ymax=y,
                 colors=MODE_COLORS[mode],
                 alpha=0.25,
                 linewidth=1.0,
@@ -242,7 +240,7 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float, float]]], d
                 linewidth=1.8,
                 markersize=6,
                 alpha=0.95,
-                label=mode,
+                label=MODE_LABELS.get(mode, mode),
             )
             y_lo = np.clip(y - ci, 0.0, 1.0)
             y_hi = np.clip(y + ci, 0.0, 1.0)
@@ -262,7 +260,7 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float, float]]], d
         else:
             ax.set_xlabel("")
         if idx in (0, 2):
-            ax.set_ylabel("AUROC")
+            ax.set_ylabel("AUC")
         else:
             ax.set_ylabel("")
         if x_values_for_ticks:
@@ -288,7 +286,7 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float, float]]], d
         ax.grid(alpha=0.25)
 
     handles = [legend_handles[m] for m in MODES if m in legend_handles]
-    labels = [m for m in MODES if m in legend_handles]
+    labels = [MODE_LABELS.get(m, m) for m in MODES if m in legend_handles]
     if handles:
         fig.legend(
             handles,
@@ -299,7 +297,7 @@ def plot_points(points: dict[tuple[str, str], list[tuple[int, float, float]]], d
             fontsize=FONT["legend"],
             bbox_to_anchor=(0.5, 0.0),
         )
-    fig.subplots_adjust(left=0.06, right=0.995, top=0.96, bottom=0.11, wspace=0.08, hspace=0.12)
+    fig.subplots_adjust(left=0.06, right=0.995, top=0.96, bottom=0.11, wspace=0.08, hspace=0.20)
 
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = os.path.join(OUT_DIR, "f_samples.pdf")

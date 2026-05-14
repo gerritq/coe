@@ -10,6 +10,7 @@ BASE_DIR = os.getenv("BASE_COE", ".")
 QUAL_DIR = os.path.join(BASE_DIR, "output", "qual_metrics")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 OUT_PATH = os.path.join(OUT_DIR, "f_qual.pdf")
+OUT_PATH_WIKI = os.path.join(OUT_DIR, "f_qual_wiki.pdf")
 
 METRIC_ORDER = [
     "von_neumann_entropy",
@@ -17,6 +18,12 @@ METRIC_ORDER = [
     "anisotropy",
     "intrinsic_dimensionality",
 ]
+FONT = {
+    "title": 14,
+    "axis": 13,
+    "ticks": 11,
+    "legend": 12,
+}
 
 
 def _metric_label(metric: str) -> str:
@@ -137,11 +144,13 @@ def _aggregate(grouped: dict[tuple[str, str], list[dict]]) -> dict[tuple[str, st
     return out
 
 
-def _plot(stats: dict[tuple[str, str], dict]) -> None:
+def _plot(stats: dict[tuple[str, str], dict], out_path: str, domains_override: list[str] | None = None) -> None:
     if not stats:
         raise RuntimeError("No qual metrics found in output/qual_metrics.")
 
     domains = sorted({dataset for dataset, _ in stats.keys()})
+    if domains_override is not None:
+        domains = [d for d in domains_override if d in {x for x, _ in stats.keys()}]
     metrics = [m for m in METRIC_ORDER if any((d, m) in stats for d in domains)]
 
     if len(domains) != 4:
@@ -173,19 +182,19 @@ def _plot(stats: dict[tuple[str, str], dict]) -> None:
             ax.fill_between(x, m_mean - m_ci, m_mean + m_ci, color="#d62728", alpha=0.2, linewidth=0)
 
             if r == 0:
-                ax.set_title(_metric_label(metric), fontsize=11)
+                ax.set_title(_metric_label(metric), fontsize=FONT["title"])
             if c == 0:
-                ax.set_ylabel(_domain_label(domain), fontsize=10)
+                ax.set_ylabel(_domain_label(domain), fontsize=FONT["axis"])
             else:
                 ax.set_ylabel("")
 
             if r == len(domains) - 1:
-                ax.set_xlabel("Layer", fontsize=10)
+                ax.set_xlabel("Layer", fontsize=FONT["axis"])
             else:
                 ax.set_xlabel("")
 
             ax.grid(alpha=0.25)
-            ax.tick_params(axis="both", labelsize=9)
+            ax.tick_params(axis="both", labelsize=FONT["ticks"])
 
     handles, labels = axes[0, 0].get_legend_handles_labels()
     if handles:
@@ -195,21 +204,24 @@ def _plot(stats: dict[tuple[str, str], dict]) -> None:
             loc="lower center",
             ncol=2,
             frameon=True,
-            fontsize=10,
+            fontsize=FONT["legend"],
             bbox_to_anchor=(0.5, -0.005),
         )
 
     plt.tight_layout(rect=(0, 0.04, 1, 1))
     os.makedirs(OUT_DIR, exist_ok=True)
-    plt.savefig(OUT_PATH, dpi=240)
+    plt.savefig(out_path, dpi=240)
     plt.close(fig)
-    print(f"Saved: {OUT_PATH}")
+    print(f"Saved: {out_path}")
 
 
 def main() -> None:
     grouped = _collect_records()
     stats = _aggregate(grouped)
-    _plot(stats)
+    _plot(stats, out_path=OUT_PATH)
+
+    # Extra single-row figure for wikipedia only.
+    _plot(stats, out_path=OUT_PATH_WIKI, domains_override=["d_m4_domains_wikipedia"])
 
 
 if __name__ == "__main__":

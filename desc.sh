@@ -28,14 +28,6 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 # --model "${MODEL}" \
 # --smoke_test "${SMOKE_TEST}"
 
-# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/l1_probe.py \
-# --model "${MODEL}" \
-# --smoke_test "${SMOKE_TEST}"
-
-# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/pca_ratio.py \
-# --model "${MODEL}" \
-# --smoke_test "${SMOKE_TEST}"
-
 # PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/lp.py \
 # --model "${MODEL}" \
 # --smoke_test "${SMOKE_TEST}"
@@ -56,5 +48,19 @@ for METRIC in "${METRICS[@]}"; do
       --smoke_test "${SMOKE_TEST}" \
       --metric "${METRIC}" \
       --seed "${SEED}"
+  done
+done
+
+# PROBE VECTORS
+PROBE_VECTOR_MODES=("default" "pca")
+PCA_COMPONENTS=100
+for MODE in "${PROBE_VECTOR_MODES[@]}"; do
+  for SEED in "${SEEDS[@]}"; do
+    echo "Running probe_vectors with mode=${MODE}, seed=${SEED}"
+    PYTHONPATH="${ROOT_DIR}" uv run python -m src.probes.probe_vectors \
+      --model "${MODEL}" \
+      --mode "${MODE}" \
+      --seed "${SEED}" \
+      --components "${PCA_COMPONENTS}"
   done
 done

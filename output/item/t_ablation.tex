@@ -1,0 +1,26 @@
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{4}{c}{\textbf{TSM~\citep{quaremba2026tsm}}} \\
+\cmidrule(lr){2-5}
+\textbf{Setting} & \textbf{FP} & \textbf{PE} & \textbf{SUM} & \textbf{TST} \\
+\midrule
+Baseline & 0.978 & 0.941 & 0.980 & 0.897 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Token Aggregation}} \\
+\hspace*{1em}Pooling & -0.008 & -0.073 & -0.011 & -0.046 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Layer Selection}} \\
+\hspace*{1em}First layer & -0.396 & -0.315 & -0.433 & -0.360 \\
+\hspace*{1em}Last layer & -0.031 & -0.078 & -0.045 & -0.066 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Regularization Penalty}} \\
+\hspace*{1em}C=0.01 & -0.002 & +0.003 & +0.001 & +0.002 \\
+\hspace*{1em}C=0.1 & -0.001 & +0.002 & +0.001 & -0.001 \\
+\hspace*{1em}C=10 & +0.000 & -0.000 & -0.000 & +0.001 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{PCA Activations}} \\
+\hspace*{1em}k=10 & -0.072 & -0.115 & -0.048 & -0.121 \\
+\hspace*{1em}k=50 & -0.017 & -0.013 & -0.011 & -0.024 \\
+\hspace*{1em}k=100 & -0.008 & +0.002 & -0.002 & -0.002 \\
+\bottomrule
+\end{tabular}

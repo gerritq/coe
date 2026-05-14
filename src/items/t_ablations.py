@@ -5,13 +5,13 @@ from typing import Any
 
 BASE_DIR = os.getenv("BASE_COE", ".")
 ABLATION_DIR = os.path.join(BASE_DIR, "output", "probe", "ablation")
-OUT_PATH = os.path.join(BASE_DIR, "output", "item", "ablation.tex")
+OUT_PATH = os.path.join(BASE_DIR, "output", "item", "t_ablation.tex")
 
 DATASETS = ["tsm_first", "tsm_extend", "tsm_sums", "tsm_tst"]
 DATASET_LABELS = {
-    "tsm_first": r"\textbf{First}",
-    "tsm_extend": r"\textbf{Extend}",
-    "tsm_sums": r"\textbf{Sums}",
+    "tsm_first": r"\textbf{FP}",
+    "tsm_extend": r"\textbf{PE}",
+    "tsm_sums": r"\textbf{SUM}",
     "tsm_tst": r"\textbf{TST}",
 }
 
