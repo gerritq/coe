@@ -1,0 +1,32 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "raidModel_gpt4",
+        "token_mode": "last_token",
+        "ood": false,
+        "smoke_test": false,
+        "components": 50,
+        "mode": "meta_no_pca",
+        "training_size": 250,
+        "folder": "ablation",
+        "C": 1.0,
+        "mlp_depth": 1,
+        "seed": 43,
+        "model_name": "llama_8b",
+        "target_dataset": "raidModel_gpt4",
+        "datetime": "2026-05-13 22:24:41"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.9655039999999999,
+            "accuracy": 0.886,
+            "f1": 0.87527352297593,
+            "tpr_at_fpr_0_05": 0.828,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.9700596184552646
+        }
+    },
+    "sim_correlations": null
+}
