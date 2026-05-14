@@ -130,7 +130,7 @@ def load_d_m4_domain_items(domain: str) -> list[dict[str, Any]]:
 
 
 def load_main_data_items(dataset_name: str) -> list[dict[str, Any]]:
-    path = os.path.join(DATA_DIR, dataset_name, "test.jsonl")
+    path = os.path.join(DATA_DIR, dataset_name, "train.jsonl")
     with open(path, "r", encoding="utf-8") as f:
         items = [json.loads(line) for line in f if line.strip()]
     return items
@@ -255,32 +255,14 @@ def run(args: Namespace) -> None:
     seed = int(args.seed)
 
     # d_m4_domains: run one balanced plot per source domain.
-    d_m4_domains = ["wikipedia", "arxiv", "reddit", "peerread"]
-    for domain in d_m4_domains:
-        items = load_d_m4_domain_items(domain=domain)
-        sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=seed)
-        print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:{domain}.")
+    # d_m4_domains = ["wikipedia", "arxiv", "reddit", "peerread"]
+    # for domain in d_m4_domains:
+    #     items = load_d_m4_domain_items(domain=domain)
+    #     sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=seed)
+    #     print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:{domain}.")
 
-        x, y = collect_hidden_states(items=sampled, model_name=args.model)
-        dataset_name = f"d_m4_domains_{domain}"
-        h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
-        out_path = save_metric_json(
-            dataset_name=dataset_name,
-            metric=metric,
-            seed=seed,
-            h_vals=h_vals,
-            m_vals=m_vals,
-            out_dir=OUT_DIR,
-        )
-        print(f"Saved json: {out_path}")
-
-    # drlDomain_* datasets: use test split only, no rebalancing.
-    # drl_datasets = ["drlDomain_arxiv", "drlDomain_xsum"]
-    # for dataset_name in drl_datasets:
-    #     items = load_main_data_items(dataset_name=dataset_name)
-    #     print(f"Loaded {len(items)} test items from {dataset_name} (no rebalancing).")
-
-    #     x, y = collect_hidden_states(items=items, model_name=args.model)
+    #     x, y = collect_hidden_states(items=sampled, model_name=args.model)
+    #     dataset_name = f"d_m4_domains_{domain}"
     #     h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
     #     out_path = save_metric_json(
     #         dataset_name=dataset_name,
@@ -291,6 +273,24 @@ def run(args: Namespace) -> None:
     #         out_dir=OUT_DIR,
     #     )
     #     print(f"Saved json: {out_path}")
+
+    # drlDomain_* datasets: use test split only, no rebalancing.
+    drl_datasets = ["drlDomain_arxiv", "tsm_first", "multisocial_en", "raidModel_gpt4"]
+    for dataset_name in drl_datasets:
+        items = load_main_data_items(dataset_name=dataset_name)
+        print(f"Loaded {len(items)} test items from {dataset_name} (no rebalancing).")
+
+        x, y = collect_hidden_states(items=items, model_name=args.model)
+        h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
+        out_path = save_metric_json(
+            dataset_name=dataset_name,
+            metric=metric,
+            seed=seed,
+            h_vals=h_vals,
+            m_vals=m_vals,
+            out_dir=OUT_DIR,
+        )
+        print(f"Saved json: {out_path}")
 
 
 if __name__ == "__main__":

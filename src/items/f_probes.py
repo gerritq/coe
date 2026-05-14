@@ -130,7 +130,7 @@ def _plot_heatmap(sim: np.ndarray, datasets: list[str], out_path: str, title: st
 def main() -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
 
-    for mode, out_name in [("default", "f_probes.pdf"), ("pca", "f_probes_pca.pdf"), ("pca_space", "f_probes_pca_space.pdf")]:
+    for mode, out_name in [("default", "f_probes.pdf"), ("pca", "f_probes_pca.pdf")]: # ("pca_space", "f_probes_pca_space.pdf")
         try:
             path = _find_probe_file(mode)
         except FileNotFoundError:

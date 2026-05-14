@@ -447,4 +447,4 @@ Intuition:
     - From Latent thinking:
         - How effectively the model extracts key concepts and reduces noisy features in its latent representations.
         - A higher effective rank implies noisier features
-        - A lower effective rank implies better noise reduction and mroe compact representations
+        - A lower effective rank implies better noise reduction and more compact representations
