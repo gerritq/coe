@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_raidar_models
+#SBATCH --job-name=baseline_raidar_mis
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
 #SBATCH --time=10:00:00
@@ -24,7 +24,7 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 # DATASETS=("drlDomain_xsum" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
-DATASETS=("raidModel_cohere_chat" "raidModel_gpt4" "raidModel_llama_chat" "raidModel_mistral_chat")
+DATASETS=("raidModel_mistral_chat")
 # DATASETS=("raidDomain_wiki" "raidDomain_reddit" "raidDomain_news" "raidDomain_abstracts")
 
 SMOKE_TEST=0
@@ -44,7 +44,7 @@ MODELS=(
         # "encoder" 
         # "llr" 
         # "fastdetectgpt" 
-        "rank" 
+        # "rank" 
         # "entropy"
         # "likelihood"
         # "binoculars" 
