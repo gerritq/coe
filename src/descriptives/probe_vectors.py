@@ -87,15 +87,18 @@ def run(args: Namespace) -> None:
     n_total = sum(v["x"].shape[0] for v in dataset_states.values())
     print(f"Loaded {len(DATASETS)} test sets with total {n_total} items.")
 
-    if args.mode == "pca":
+    if args.mode in {"pca", "pca_space"}:
         x_concat = np.concatenate(all_x, axis=0)
         pca = PCA(n_components=args.components, random_state=args.seed)
         pca.fit(x_concat)
         for dataset_name in DATASETS:
             x = dataset_states[dataset_name]["x"]
             x_low = pca.transform(x)
-            x_recon = pca.inverse_transform(x_low)
-            dataset_states[dataset_name]["x"] = x_recon.astype(np.float32)
+            if args.mode == "pca":
+                x_use = pca.inverse_transform(x_low)
+            else:
+                x_use = x_low
+            dataset_states[dataset_name]["x"] = x_use.astype(np.float32)
 
     vectors: dict[str, dict[str, Any]] = {}
     for dataset_name in DATASETS:
@@ -130,7 +133,7 @@ def run(args: Namespace) -> None:
 def parse_args() -> Namespace:
     parser = ArgumentParser()
     parser.add_argument("--model", type=str, default="llama_8b")
-    parser.add_argument("--mode", type=str, choices=["default", "pca"], required=True)
+    parser.add_argument("--mode", type=str, choices=["default", "pca", "pca_space"], required=True)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--components", type=int, default=100)
     return parser.parse_args()

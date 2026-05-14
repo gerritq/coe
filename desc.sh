@@ -53,7 +53,7 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
 # PROBE VECTORS
 
-PROBE_VECTOR_MODES=("default" "pca")
+PROBE_VECTOR_MODES=("pca_space") # "default" "pca" "pca_space"
 PCA_COMPONENTS=100
 for MODE in "${PROBE_VECTOR_MODES[@]}"; do
     echo "Running probe_vectors with mode=${MODE}"
