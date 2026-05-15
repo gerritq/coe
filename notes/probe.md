@@ -1,5 +1,15 @@
 # To do
 
+- pca for t-sne plots -> bc of linearity
+- Other metric: RankMe
+1. Understand metrics and write an intro to them in 3
+
+- Implement: Can we do something similar as in https://arxiv.org/pdf/2502.14888 see section 3.1
+
+    - What would be cool is a metric that shows that different set of activations are activated
+
+    - Implement other Hanqi method: then run a counterfactual
+
 - change GEScore to GECScore and Revise is zero-shto
 - name xsum -> news
 - change tsm names
@@ -83,8 +93,6 @@ RUNNING
 ---
 
 6. **Descriptives/The why**
-
-    - HOT: Can we do something similar as in https://arxiv.org/pdf/2502.14888 see section 3.1
 
     - read rel work: https://arxiv.org/pdf/2502.02013
 
@@ -448,3 +456,10 @@ Intuition:
         - How effectively the model extracts key concepts and reduces noisy features in its latent representations.
         - A higher effective rank implies noisier features
         - A lower effective rank implies better noise reduction and more compact representations
+
+## Intrinsic dimensionality
+
+
+Intuition
+    - Layer by later paper: describes the minimum number of features to represent the data
+

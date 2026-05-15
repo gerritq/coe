@@ -38,19 +38,19 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
 # QUAL METRICS
 
-METRICS=("von_neumann_entropy" "anisotropy" "intrinsic_dimensionality")
-# METRICS=("effective_rank")
-SEEDS=(42 43 44 45 46)
-for METRIC in "${METRICS[@]}"; do
-  for SEED in "${SEEDS[@]}"; do
-    echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
-    PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
-      --model "${MODEL}" \
-      --smoke_test "${SMOKE_TEST}" \
-      --metric "${METRIC}" \
-      --seed "${SEED}"
-  done
-done
+# METRICS=("von_neumann_entropy" "anisotropy" "intrinsic_dimensionality")
+# # METRICS=("effective_rank")
+# SEEDS=(42 43 44 45 46)
+# for METRIC in "${METRICS[@]}"; do
+#   for SEED in "${SEEDS[@]}"; do
+#     echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
+#     PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
+#       --model "${MODEL}" \
+#       --smoke_test "${SMOKE_TEST}" \
+#       --metric "${METRIC}" \
+#       --seed "${SEED}"
+#   done
+# done
 
 # PROBE VECTORS
 
@@ -63,3 +63,9 @@ done
 #       --mode "${MODE}" \
 #       --components "${PCA_COMPONENTS}"
 # done
+
+# ACTIVATIONS
+
+PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/activate.py \
+--model "${MODEL}" \
+--smoke_test "${SMOKE_TEST}"

@@ -11,6 +11,16 @@ QUAL_DIR = os.path.join(BASE_DIR, "output", "qual_metrics")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 OUT_PATH = os.path.join(OUT_DIR, "f_qual.pdf")
 OUT_PATH_WIKI = os.path.join(OUT_DIR, "f_qual_wiki.pdf")
+ALL_DOMAIN_ORDER = [
+    "d_m4_domains_wikipedia",
+    "d_m4_domains_arxiv",
+    "d_m4_domains_reddit",
+    "d_m4_domains_peerread",
+    "multisocial_en",
+    "raidModel_gpt4",
+    "tsm_first",
+    "drlDomain_arxiv",
+]
 
 METRIC_ORDER = [
     "von_neumann_entropy",
@@ -218,7 +228,7 @@ def _plot(stats: dict[tuple[str, str], dict], out_path: str, domains_override: l
 def main() -> None:
     grouped = _collect_records()
     stats = _aggregate(grouped)
-    _plot(stats, out_path=OUT_PATH)
+    _plot(stats, out_path=OUT_PATH, domains_override=ALL_DOMAIN_ORDER)
 
     # Extra single-row figure for wikipedia only.
     _plot(stats, out_path=OUT_PATH_WIKI, domains_override=["d_m4_domains_wikipedia"])
