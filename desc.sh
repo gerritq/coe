@@ -70,16 +70,19 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 # --smoke_test "${SMOKE_TEST}"
 
 # MLP
-DOMAINS=("wikipedia" "arxiv" "reddit" "peerread")
-MLP_DEPTH=(1 2 3 4 5 6 7 8)
+DOMAINS=("wikipedia") # "arxiv" "reddit" "peerread"
+COMPLEXITIES=(1 2 3 4 5 6 7 8)
+MODE="log" # mlp | log
 OOD=0
 for DOMAIN in "${DOMAINS[@]}"; do
-    for DEPTH in "${MLP_DEPTH[@]}"; do
-        echo "Running mlp with domain=${DOMAIN} | depth=${DEPTH} | ood=${OOD}"
+    for COMPLEXITY in "${COMPLEXITIES[@]}"; do
+        echo "Running mlp with domain=${DOMAIN} | complexity=${COMPLEXITY} | mode=${MODE} | ood=${OOD}"
         PYTHONPATH="${ROOT_DIR}" uv run python -m src.descriptives.mlp \
         --model "${MODEL}" \
+        --mode "${MODE}" \
         --domain "${DOMAIN}" \
         --ood "${OOD}" \
-        --mlp_depth "${DEPTH}"
+        --smoke_test "${SMOKE_TEST}" \
+        --complexity "${COMPLEXITY}"
     done
 done
