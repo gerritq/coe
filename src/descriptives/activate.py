@@ -75,7 +75,7 @@ def compute_activation_map_diff(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
     h_mag = np.abs(human).mean(axis=0)  # (n_layers, d_model)
     m_mag = np.abs(machine).mean(axis=0)  # (n_layers, d_model)
-    diff = m_mag - h_mag  # (n_layers, d_model)
+    diff = (m_mag - h_mag) / (h_mag.std(axis=0) + 1e-12)  # (n_layers, d_model)
     # no sorting on hidden dimension axis
     return diff.T  # (d_model, n_layers)
 

@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=desc_qual_3
+#SBATCH --job-name=desc_mlp_wiki
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=08:00:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
