@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=desc_probe_sim
+#SBATCH --job-name=desc_qual_3
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=08:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
@@ -39,7 +39,7 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 # QUAL METRICS
 
 METRICS=("von_neumann_entropy" "anisotropy" "intrinsic_dimensionality")
-METRICS=("effective_rank")
+# METRICS=("effective_rank")
 SEEDS=(42 43 44 45 46)
 for METRIC in "${METRICS[@]}"; do
   for SEED in "${SEEDS[@]}"; do
