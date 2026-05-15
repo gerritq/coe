@@ -65,7 +65,21 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 # done
 
 # ACTIVATIONS
+# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/activate.py \
+# --model "${MODEL}" \
+# --smoke_test "${SMOKE_TEST}"
 
-PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/activate.py \
---model "${MODEL}" \
---smoke_test "${SMOKE_TEST}"
+# MLP
+DOMAINS=("wikipedia" "arxiv" "reddit" "peerread")
+MLP_DEPTH=(1 2 3 4 5 6 7 8)
+OOD=0
+for DOMAIN in "${DOMAINS[@]}"; do
+    for DEPTH in "${MLP_DEPTH[@]}"; do
+        echo "Running mlp with domain=${DOMAIN} | depth=${DEPTH} | ood=${OOD}"
+        PYTHONPATH="${ROOT_DIR}" uv run python -m src.descriptives.mlp \
+        --model "${MODEL}" \
+        --domain "${DOMAIN}" \
+        --ood "${OOD}" \
+        --mlp_depth "${DEPTH}"
+    done
+done

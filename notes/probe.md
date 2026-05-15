@@ -2,6 +2,9 @@
 
 - pca for t-sne plots -> bc of linearity
 - Other metric: RankMe
+- Shoudl add Trychiunksi to models
+
+
 1. Understand metrics and write an intro to them in 3
 
 - Implement: Can we do something similar as in https://arxiv.org/pdf/2502.14888 see section 3.1
