@@ -65,7 +65,7 @@ def collect_hidden_states(items: list[dict[str, Any]], model_name: str) -> tuple
     return x, y
 
 
-def compute_activation_maps(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def compute_activation_map_diff(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     # x: (n_samples, n_layers, d_model)
     # output maps: (d_model, n_layers) for plotting
     human = x[y == 0]  # (n_h, n_layers, d_model)
@@ -73,40 +73,26 @@ def compute_activation_maps(x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, n
     if len(human) == 0 or len(machine) == 0:
         raise ValueError("Expected both human and machine samples.")
 
-    # Per layer and class: subtract sample mean (across samples), then abs, then mean across samples.
-    h_centered = human - human.mean(axis=0, keepdims=True)
-    m_centered = machine - machine.mean(axis=0, keepdims=True)
-    h_mag = np.abs(h_centered).mean(axis=0)  # (n_layers, d_model)
-    m_mag = np.abs(m_centered).mean(axis=0)  # (n_layers, d_model)
-
-    # Sort dimensions by overall size; highest at bottom -> ascending order.
-    h_order = np.argsort(h_mag.mean(axis=0))
-    m_order = np.argsort(m_mag.mean(axis=0))
-
-    h_map = h_mag[:, h_order].T  # (d_model, n_layers)
-    m_map = m_mag[:, m_order].T  # (d_model, n_layers)
-    return h_map, m_map
+    h_mag = np.abs(human).mean(axis=0)  # (n_layers, d_model)
+    m_mag = np.abs(machine).mean(axis=0)  # (n_layers, d_model)
+    diff = m_mag - h_mag  # (n_layers, d_model)
+    # no sorting on hidden dimension axis
+    return diff.T  # (d_model, n_layers)
 
 
-def plot_maps(h_map: np.ndarray, m_map: np.ndarray) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6), constrained_layout=True)
-    cmap = "viridis"
+def plot_map_diff(diff_map: np.ndarray) -> None:
+    fig, ax = plt.subplots(1, 1, figsize=(8, 6), constrained_layout=True)
+    cmap = "coolwarm"
+    vmax = float(np.max(np.abs(diff_map)))
+    vmin = -vmax
 
-    vmin = float(min(np.min(h_map), np.min(m_map)))
-    vmax = float(max(np.max(h_map), np.max(m_map)))
+    im = ax.imshow(diff_map, aspect="auto", cmap=cmap, vmin=vmin, vmax=vmax, origin="upper")
+    ax.set_title("Activation Difference (Machine - Human)")
+    ax.set_xlabel("Layer")
+    ax.set_ylabel("Dimension")
 
-    im0 = axes[0].imshow(h_map, aspect="auto", cmap=cmap, vmin=vmin, vmax=vmax, origin="upper")
-    axes[0].set_title("Human Activations")
-    axes[0].set_xlabel("Layer")
-    axes[0].set_ylabel("Dimension (sorted, high at bottom)")
-
-    im1 = axes[1].imshow(m_map, aspect="auto", cmap=cmap, vmin=vmin, vmax=vmax, origin="upper")
-    axes[1].set_title("Machine Activations")
-    axes[1].set_xlabel("Layer")
-    axes[1].set_ylabel("Dimension (sorted, high at bottom)")
-
-    cbar = fig.colorbar(im1, ax=axes.ravel().tolist(), fraction=0.03, pad=0.02)
-    cbar.set_label("Mean |activation| after sample-centering")
+    cbar = fig.colorbar(im, ax=ax, fraction=0.04, pad=0.02)
+    cbar.set_label("Mean |activation| difference")
 
     os.makedirs(OUT_DIR, exist_ok=True)
     plt.savefig(OUT_PATH, dpi=240)
@@ -135,8 +121,8 @@ def main() -> None:
     print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:wikipedia.")
 
     x, y = collect_hidden_states(sampled, model_name=args.model)
-    h_map, m_map = compute_activation_maps(x, y)
-    plot_maps(h_map, m_map)
+    diff_map = compute_activation_map_diff(x, y)
+    plot_map_diff(diff_map)
 
 
 if __name__ == "__main__":
