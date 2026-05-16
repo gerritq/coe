@@ -386,6 +386,60 @@ def process_beemo():
     check_for_duplicates(data_machine_edits)
 
 
+def process_d_M4_mix_domains_generators():
+    """
+    This is M4 for descriptives, 
+    """
+    n_per_label = 2000 // 2 
+
+    # load data
+    file_path = os.path.join(M4_RAW_DATA_DIR, f"SubtaskB.jsonl")
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = [json.loads(line) for line in f]
+    # check generators
+    # all_generators = set(x["model"] for x in data)
+    # print(all_generators)
+
+    # fixing dolly in case there is a naming issue
+    for item in data:
+            if item["model"] == "dolly-v2-12b":
+                item["model"] = "dolly"
+                
+    # check domains
+    all_domains = set(x["source"] for x in data)
+    print("All domains", all_domains)
+
+    # DOMAINS - but mix generators
+    domain_data = []
+    for domain in all_domains:
+        
+        pos = [{"text": x["text"], "label": 1, "source": domain, "model": x["model"]} for x in data if x["source"] == domain and x["model"] != "human"  and x["text"].strip()]
+        neg = [{"text": x["text"], "label": 0, "source": domain, "model": "human"} for x in data if x["source"] == domain and x["model"] == "human" and x["text"].strip()]
+
+        
+        random.shuffle(pos)
+        random.shuffle(neg)
+
+        domain_data.extend(pos[:n_per_label])
+        domain_data.extend(neg[:n_per_label])
+
+        print("Domain:", domain)
+        # count n generators in domain_data
+        generator_dist = {}
+        for item in domain_data:
+            generator = item["model"]
+            generator_dist[generator] = generator_dist.get(generator, 0) + 1
+        print("Generator distribution:", generator_dist)
+
+        
+    output_dir = os.path.join(DATA_DIR, f"d_m4_domains_mixed_generators")
+    os.makedirs(output_dir, exist_ok=True)
+    with open(os.path.join(output_dir, f"data.jsonl"), "w", encoding="utf-8") as f:
+        for item in domain_data:
+            f.write(json.dumps(item) + "\n")
+
+    check_for_duplicates({"train": domain_data, "val": [], "test": []})
+
 def process_d_M4():
     """This is M4 for descriptives, 
     """
@@ -1013,17 +1067,24 @@ def main() -> None:
     # print("Preparing editlens data...")
     # process_editlens()
 
-    # raid - model sDATASETS
-    print("="*60)
-    print("="*60)
-    print("Preparing raid generator data...")
-    process_raid_generators()
+    # # raid - model sDATASETS
+    # print("="*60)
+    # print("="*60)
+    # print("Preparing raid generator data...")
+    # process_raid_generators()
 
-    # raid - domain sDATASETS
+    # # raid - domain sDATASETS
+    # print("="*60)
+    # print("="*60)
+    # print("Preparing raid domain data...")
+    # process_raid_domains()
+
+    # M$ domains mix generators
     print("="*60)
     print("="*60)
-    print("Preparing raid domain data...")
-    process_raid_domains()
+    print("Preparing m4 domain data...")
+    process_d_M4_mix_domains_generators()
+
 
 if __name__ == "__main__":
     main()

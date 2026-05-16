@@ -21,16 +21,18 @@ DATA_DIR = os.path.join(BASE_DIR, "data", "sets")
 OUT_DIR = os.path.join(BASE_DIR, "output", "desc")
 os.makedirs(OUT_DIR, exist_ok=True)
 
-def load_d_m4_domain_items(args:Namespace, domain: str) -> list[dict[str, Any]]:
+def load_d_m4_domain_with_generators_items(args:Namespace, domain: str) -> list[dict[str, Any]]:
     
     set_seed(args.seed)
     
-    path = os.path.join(DATA_DIR, "d_m4_domains", "data.jsonl")
+    path = os.path.join(DATA_DIR, "d_m4_domains_mixed_generators", "data.jsonl")
     with open(path, "r", encoding="utf-8") as f:
         all_items = [json.loads(line) for line in f if line.strip()]
 
     target = domain.lower()
-    items = [x for x in all_items if str(x.get("source", "")).lower() == target]
+    items = [x for x in all_items if x["source"] == target]
+
+    assert len(items) == 2000, "Expected 2000 items for domain {}, but got {}".format(domain, len(items))
     
     pos = [x for x in items if x["label"] == 1]
     neg = [x for x in items if x["label"] == 0]
@@ -327,7 +329,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--smoke_test", type=int, default=0)
     parser.add_argument("--complexity", type=int, default=1)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--n_per_label", type=int, default=42)
+    parser.add_argument("--n_per_label", type=int, default=500)
     return parser.parse_args()
 
 
