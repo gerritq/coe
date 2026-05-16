@@ -296,7 +296,7 @@ class Probing:
             print(f"    Evaluating on target dataset: {target_dataset}")
             print("="*60)
 
-            target_items = load_d_m4_domain_items(args=args, 
+            target_items = load_d_m4_domain_with_generators_items(args=args, 
                                                   domain=target_dataset)
             test = self._collect_model_states(target_items["test"])
 
