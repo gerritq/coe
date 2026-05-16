@@ -118,7 +118,7 @@ class MLPProbe:
 class LogisticProbe:
     def __init__(self, degree: int = 1) -> None:
         self.degree = degree
-        self.pca = PCA(n_components=3, random_state=42)
+        self.pca = PCA(n_components=10, random_state=42)
         self.poly = PolynomialFeatures(degree=self.degree, include_bias=False)
         self.poly_scaler = StandardScaler()
         self.model = LogisticRegression(max_iter=2000, random_state=42)
@@ -279,7 +279,7 @@ class Probing:
     def run(self, args: Namespace) -> None:
         
         ALL_DOMAINS = ["wikipedia", "arxiv", "reddit", "peerread"]
-        training_items = load_d_m4_domain_items(args=args,
+        training_items = load_d_m4_domain_with_generators_items(args=args,
                                                 domain=args.domain)
         train = self._collect_model_states(training_items["train"])
         
