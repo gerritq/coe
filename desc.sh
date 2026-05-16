@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=desc_mlp_wiki
+#SBATCH --job-name=desc_curve
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
-#SBATCH --mem=20GB
+#SBATCH --mem=40GB
 #SBATCH --exclude=erc-hpc-comp054
 
 nvidia-smi

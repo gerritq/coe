@@ -18,7 +18,7 @@ import random
 
 BASE_DIR = os.getenv("BASE_COE")
 DATA_DIR = os.path.join(BASE_DIR, "data", "sets")
-OUT_DIR = os.path.join(BASE_DIR, "output", "desc")
+OUT_DIR = os.path.join(BASE_DIR, "output", "mlp")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 def load_d_m4_domain_with_generators_items(args:Namespace, domain: str) -> list[dict[str, Any]]:
@@ -118,7 +118,7 @@ class MLPProbe:
 class LogisticProbe:
     def __init__(self, degree: int = 1) -> None:
         self.degree = degree
-        self.pca = PCA(n_components=50, random_state=42)
+        self.pca = PCA(n_components=3, random_state=42)
         self.poly = PolynomialFeatures(degree=self.degree, include_bias=False)
         self.poly_scaler = StandardScaler()
         self.model = LogisticRegression(max_iter=2000, random_state=42)

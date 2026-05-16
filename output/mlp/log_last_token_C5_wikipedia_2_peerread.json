@@ -1,27 +1,28 @@
 {
     "args": {
         "model": "llama_8b",
+        "mode": "log",
         "domain": "wikipedia",
         "token_mode": "last_token",
         "ood": true,
         "smoke_test": false,
-        "mlp_depth": 18,
+        "complexity": 5,
         "seed": 42,
         "n_per_label": 500,
         "model_name": "llama_8b",
-        "target_dataset": "arxiv",
-        "datetime": "2026-05-15 21:51:49"
+        "target_dataset": "peerread",
+        "datetime": "2026-05-16 12:49:41"
     },
     "test_metrics": {
         "mean_projection_metrics": {
             "n_total": 500,
-            "auroc": 0.993752,
-            "accuracy": 0.5,
-            "f1": 0.0,
-            "tpr_at_fpr_0_05": 0.988,
+            "auroc": 0.9250079999999999,
+            "accuracy": 0.77,
+            "f1": 0.8092868988391376,
+            "tpr_at_fpr_0_05": 0.612,
             "optimal_threshold_f1": 0.5,
             "optimal_threshold_acc": 0.5,
-            "aupr": 0.9889665391031301
+            "aupr": 0.9201476489736207
         }
     }
 }
