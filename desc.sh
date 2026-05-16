@@ -38,19 +38,19 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
 # QUAL METRICS
 
-METRICS=("curvature")
-# METRICS=("effective_rank" "von_neumann_entropy" "anisotropy" "intrinsic_dimensionality" )
-SEEDS=(42)
-for METRIC in "${METRICS[@]}"; do
-  for SEED in "${SEEDS[@]}"; do
-    echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
-    PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
-      --model "${MODEL}" \
-      --smoke_test "${SMOKE_TEST}" \
-      --metric "${METRIC}" \
-      --seed "${SEED}"
-  done
-done
+# METRICS=("curvature")
+# # METRICS=("effective_rank" "von_neumann_entropy" "anisotropy" "intrinsic_dimensionality" )
+# SEEDS=(42)
+# for METRIC in "${METRICS[@]}"; do
+#   for SEED in "${SEEDS[@]}"; do
+#     echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
+#     PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
+#       --model "${MODEL}" \
+#       --smoke_test "${SMOKE_TEST}" \
+#       --metric "${METRIC}" \
+#       --seed "${SEED}"
+#   done
+# done
 
 # PROBE VECTORS
 
@@ -70,19 +70,19 @@ done
 # --smoke_test "${SMOKE_TEST}"
 
 # MLP
-# DOMAINS=("wikipedia") # "arxiv" "reddit" "peerread"
-# COMPLEXITIES=(1 2 3 4 5 6 7 8)
-# MODE="log" # mlp | log
-# OOD=0
-# for DOMAIN in "${DOMAINS[@]}"; do
-#     for COMPLEXITY in "${COMPLEXITIES[@]}"; do
-#         echo "Running mlp with domain=${DOMAIN} | complexity=${COMPLEXITY} | mode=${MODE} | ood=${OOD}"
-#         PYTHONPATH="${ROOT_DIR}" uv run python -m src.descriptives.mlp \
-#         --model "${MODEL}" \
-#         --mode "${MODE}" \
-#         --domain "${DOMAIN}" \
-#         --ood "${OOD}" \
-#         --smoke_test "${SMOKE_TEST}" \
-#         --complexity "${COMPLEXITY}"
-#     done
-# done
+DOMAINS=("wikipedia") # "arxiv" "reddit" "peerread"
+COMPLEXITIES=(1)
+MODE="mlp" # mlp | log
+OOD=1
+for DOMAIN in "${DOMAINS[@]}"; do
+    for COMPLEXITY in "${COMPLEXITIES[@]}"; do
+        echo "Running mlp with domain=${DOMAIN} | complexity=${COMPLEXITY} | mode=${MODE} | ood=${OOD}"
+        PYTHONPATH="${ROOT_DIR}" uv run python -m src.descriptives.mlp \
+        --model "${MODEL}" \
+        --mode "${MODE}" \
+        --domain "${DOMAIN}" \
+        --ood "${OOD}" \
+        --smoke_test "${SMOKE_TEST}" \
+        --complexity "${COMPLEXITY}"
+    done
+done
