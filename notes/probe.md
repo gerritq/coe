@@ -17,7 +17,7 @@ NEXT:
 2. **MGT Representations**
 - TO DO:  
     - Revise writing and reorder -- see above
-    - Add the curvature metric
+    - Add the curvature metric: https://github.com/OFSkean/information_flow/blob/main/experiments/utils/metrics/metric_functions.py#L126
 
 - POTENTIAL:
     - Readings:

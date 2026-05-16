@@ -18,6 +18,60 @@ OUT_DIR = os.path.join(BASE_DIR, "output", "qual_metrics")
 # ============================================================================================
 # METRICS
 # ============================================================================================
+
+
+def compute_curvature(hidden_states, k=1):
+    """
+    Compute the average k-step curvature of hidden states across layers.
+
+    Args:
+        hidden_states (torch.Tensor): List of hidden states tensors, one for each layer.
+        k (int): The step size for curvature calculation.
+
+    Returns:
+        dict: A dictionary containing the computed average k-step curvature values for each layer.
+    """
+    L, N, D = hidden_states.shape
+
+    def calculate_paired_curvature(a, b):
+        dotproduct = torch.abs(a.T @ b)
+        norm_a = torch.norm(a)
+        norm_b = torch.norm(b)
+
+        if norm_a == 0 or norm_b == 0:
+            return 0
+
+        argument = torch.clamp(dotproduct / (norm_a * norm_b), min=-1, max=1)
+        curvature = torch.arccos(argument)
+        
+        if torch.isnan(curvature):
+            print(a)
+            print(b)
+            print(curvature)
+            print(dotproduct)
+            print(norm_a)
+            print(norm_b)
+            print(dotproduct / (norm_a * norm_b))
+            raise Exception("Curvature is NaN")
+        return curvature.item()
+
+    def calculate_layer_average_k_curvature(layer_p):
+        summation, counter = 0, 0
+        for k in range(1, layer_p.shape[0]-1):
+            v_k = layer_p[k].unsqueeze(1) - layer_p[k-1].unsqueeze(1)
+            v_kplusone = layer_p[k+1].unsqueeze(1) - layer_p[k].unsqueeze(1)
+            curvature = calculate_paired_curvature(v_kplusone, v_k)
+            summation += curvature
+            counter += 1
+        return summation / counter if counter > 0 else 0
+
+    curvatures = [calculate_layer_average_k_curvature(layer.double()) for layer in hidden_states]
+    return { 
+        'raw': curvatures,
+        'logD': [x / math.log(D) for x in curvatures] 
+    }
+
+
 def intrinsic_dimensionality(h: torch.Tensor, eps: float = 1e-12) -> float:
     X = h.detach().float().cpu().numpy()
     X = X - X.mean(axis=0, keepdims=True)
@@ -185,6 +239,14 @@ def compute_layer_metric(x: np.ndarray, y: np.ndarray, metric: str) -> tuple[np.
     h_vals = np.zeros(n_layers, dtype=np.float64)
     m_vals = np.zeros(n_layers, dtype=np.float64)
 
+    if metric == "curvature":
+        x_h = torch.tensor(x[human_mask], dtype=torch.float32).transpose(0, 1)  # (n_layers, n_h, d_model)
+        x_m = torch.tensor(x[machine_mask], dtype=torch.float32).transpose(0, 1)  # (n_layers, n_m, d_model)
+
+        h_vals = np.asarray(compute_curvature(x_h)["raw"], dtype=np.float64)
+        m_vals = np.asarray(compute_curvature(x_m)["raw"], dtype=np.float64)
+        return h_vals, m_vals
+
     for layer in range(n_layers):
         print(f"Computing {metric} for layer {layer}...")
         h_layer = torch.tensor(x[human_mask, layer, :], dtype=torch.float32)
@@ -242,7 +304,7 @@ def parse_args() -> Namespace:
         "--metric",
         type=str,
         required=True,
-        choices=["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality"],
+        choices=["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality", "curvature"],
     )
     parser.add_argument("--seed", type=int, default=42)
     return parser.parse_args()
