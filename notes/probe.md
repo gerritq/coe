@@ -1,111 +1,33 @@
 # To do
 
-- pca for t-sne plots -> bc of linearity
-- Other metric: RankMe
-- Shoudl add Trychiunksi to models
+NEXT:
+ - Fix the complexity plot
+ - Rewrite the MGT Representation section
+    - And our notes to the description and make them sharper
+    - PCA by layer should come after the quality metrics, and before the non-linearity
+    - Add references to Turchinski and RepreGuard (they only state that there are differences in activations but they do not explain which)
 
+1. Quality Metrics
 
-1. Understand metrics and write an intro to them in 3
-
-- Implement: Can we do something similar as in https://arxiv.org/pdf/2502.14888 see section 3.1
-
-    - What would be cool is a metric that shows that different set of activations are activated
-
-    - Implement other Hanqi method: then run a counterfactual
-
-- change GEScore to GECScore and Revise is zero-shto
-- name xsum -> news
-- change tsm names
-
-- change name yelp uppercase
-
-- change tsm names
-- add revise to zero-shot
-- AUC in plots not AUROC
-- add repre to supervised
-
-
-- Read: https://www.goodfire.ai/research/manifold-steering#
-    - And their other paper
-
-- Check new meta pca yelp
-- ef rank missings
-- meta sizes attention issue
-
-
-- Write rel work + experimental setup + ID results with GPT
-- Read and get intuition for metrics 
-    - e-rank: 
-
-RUNNING
-    - ID
-        - 33886967 Raidar
-    - Sample
-        - 33889365 meta no pca
-    - Training size
-        - TO DO: Repre fix
-        - BiScope 33879988
-        - Beautify: renaming; no bench; Raid
-
-    - Qual metrics:
-        - Effective Rank seed 46: 33889209 
-        - Create a plot with CI
-
+    - TO DO:  
+        - Redo the complexity plot with M4GP --  find a way to drop performance (mix generators?\No answer needed paper uses gradient boosted decision trees)
 
 ---
 
-1. **ID**
+2. **MGT Representations**
 - TO DO:  
-    - Run missing models
-    - Other tables comments
-    - Writing 
+    - Revise writing and reorder -- see above
+    - Add the curvature metric
 
----
+- POTENTIAL:
+    - Readings:
+        - LANGUAGE MODELS REPRESENT SPACE AND TIME
+        - Rel work: https://arxiv.org/pdf/2502.02013
+        - Goodfire citations in their link
+        - https://arxiv.org/pdf/2511.17408
 
-2. **Edit distance**
-- TO DO:  
-    - Table comments and writing
-- POTENTIAL TO DO:  
-    - Reason why it not works with Beemo is that there is not variability
-    - We could try their other prompts and/or Llama
-    - Could add a baseline
-
----
-
-3. **Layer-analysis**
-- TO DO:  
-    - Update to new datasets and check that the aggregation is correct
-    - Writing 
-
----
-
-4. **Efficiency**
-- TO DO
-    - Hanqi: add confidence intervals! (run with 5 different seeds)
-    - Check the figure file
-    - Writing
-
----
-
-5. **OOD**
-- TO DO
-    - Add Biscope 
-    - Writing
-    - Check new defualt/meta-no-pca runs
-
----
-
-6. **Descriptives/The why**
-
-    - read rel work: https://arxiv.org/pdf/2502.02013
-
-    - check: LANGUAGE MODELS REPRESENT SPACE AND TIME
-
-    - HOT: Can we use feature activations as in: When Truthful Representations Flip Under Deceptive Instructions?
-
-        - Llama scope: Llama Scope
-
-    - We can make the same linearity claim as in: https://arxiv.org/pdf/2509.10625?
+- SORT 
+   - We can make the same linearity claim as in: https://arxiv.org/pdf/2509.10625?
 
     - Universal claim: https://aclanthology.org/2025.findings-acl.38.pdf
 
@@ -139,22 +61,46 @@ RUNNING
     - There is this within variance idea, somewhere I have read it.
 
 
-2. **Ablations**
-- We could keep PCA and then they we try but it does not work; we were motivated to use PCA componensts base don the findings that activations are separable in low-dimensions; but we did not find any imoprovement. We believe this is because the logistic regression with l2 penalty performs feature selection anywyas.
-- Check PCA one last time; attn does not make sense, this is a different space!
-- Confirm that PCA does not benefit for OOD
+---
 
-- Further ablations
-    - Layer
-        - default/pca: linear probe vs non linear MLP (strong evidence for linearity if the same)
-        - default vs pca across values
-        - default/pca: mean vs last token pooling
-        - default/pca: mean aggregation vs weighted aggregation (try F1)
-    - Meta
-        - pca: Attention vs no attention
-        - No attention: default vs pca values
+3. **ID**
+- TO DO:  
+    - Cut content
+    - Fix Binoculars
+    - Add Intrinsic Dim measure from Truchalski
 
-67. Hanqi Feedback
+---
+
+4. **Edit distance**
+- TO DO:  
+    - Cut writing, ensure the metrics are clear from the description (give examples and intuitions of the direction of metrics)
+- POTENTIAL TO DO:  
+    - Reason why it not works with Beemo is that there is not variability
+    - We could try their other prompts and/or Llama
+    - Could add a baseline
+
+---
+
+5. **Layer-analysis**
+- TO DO:  
+    - Check whether number of aggregations is correct
+    - Cut content
+
+---
+
+4. **Efficiency**
+- TO DO
+    - Cut content
+
+---
+
+6. **OOD**
+- TO DO
+    - Cut content
+
+---
+
+99. Hanqi Feedback
     
     1.  Can we understand why LP works so well OOD?
         - Can we see increase non-linearity and seeh whether it is getting worse?
@@ -162,17 +108,13 @@ RUNNING
         - MLP with or various activations or probe with higher exponents
         - Test this for OOD
 
-    2. Ablations with first and last layer
+    2. DONE Ablations with first and last layer
 
-    3. For sample efficiency: add CI, run with different seeds
+    3. DONE For sample efficiency: add CI, run with different seeds
 
     4. Combine datasets, apply pca
         - Get SV and the plot
         - Or show the decision boundary bc orthogonal
-
-70. Writing
-- CHECK TABLE AGGREGATIONS AND DUPLICATES
- - For probing generalization and performance: https://arxiv.org/pdf/2511.17408
 
 --- 
 
