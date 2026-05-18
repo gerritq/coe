@@ -462,6 +462,8 @@ class Probing:
             # SAVE OUTPUT
             if args.mode == "mlp":
                 filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_D{args.mlp_depth}_{args.dataset}_2_{target_dataset}.json"
+            elif args.model in ["llama_1b", "llama_3b"]:
+                filename = f"{args.mode}_{args.model}_{args.token_mode}_N{args.training_size}_PCA{args.components}_{args.dataset}_2_{target_dataset}_S{args.seed}.json"
             else:
                 filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_C{args.C}_{args.dataset}_2_{target_dataset}_S{args.seed}.json"
 
