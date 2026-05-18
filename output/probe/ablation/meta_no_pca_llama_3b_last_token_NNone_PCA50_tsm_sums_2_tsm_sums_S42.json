@@ -1,6 +1,6 @@
 {
     "args": {
-        "model": "llama_8b",
+        "model": "llama_3b",
         "dataset": "tsm_sums",
         "token_mode": "last_token",
         "ood": false,
@@ -12,20 +12,20 @@
         "C": 1.0,
         "mlp_depth": 1,
         "seed": 42,
-        "model_name": "llama_8b",
+        "model_name": "llama_3b",
         "target_dataset": "tsm_sums",
-        "datetime": "2026-05-18 15:19:07"
+        "datetime": "2026-05-18 14:59:39"
     },
     "test_metrics": {
         "meta_metrics": {
             "n_total": 500,
-            "auroc": 0.974944,
+            "auroc": 0.975168,
             "accuracy": 0.926,
-            "f1": 0.9267326732673268,
-            "tpr_at_fpr_0_05": 0.884,
+            "f1": 0.9249492900608519,
+            "tpr_at_fpr_0_05": 0.86,
             "optimal_threshold_f1": 0.5,
             "optimal_threshold_acc": 0.5,
-            "aupr": 0.9762370889253911
+            "aupr": 0.9694609276682662
         }
     },
     "sim_correlations": null
