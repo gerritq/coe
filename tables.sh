@@ -22,13 +22,13 @@ cd "${ROOT_DIR}"
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
 
 # f_complex
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_complex
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_complex
 
 # f_layer
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_layer
 
 # t_qual
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_qual
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_qual
 
 # t_probes
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_probes

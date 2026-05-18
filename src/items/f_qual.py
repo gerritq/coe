@@ -27,6 +27,9 @@ METRIC_ORDER = [
     "effective_rank",
     "anisotropy",
     "intrinsic_dimensionality",
+    "length",
+    "magnitude",
+    "angle",
 ]
 FONT = {
     "title": 14,
@@ -42,6 +45,9 @@ def _metric_label(metric: str) -> str:
         "effective_rank": "Effective Rank",
         "anisotropy": "Anisotropy",
         "intrinsic_dimensionality": "Intrinsic Dimensionality",
+        "length": "Length",
+        "magnitude": "Magnitude",
+        "angle": "Angle",
     }
     return labels.get(metric, metric)
 
@@ -165,8 +171,8 @@ def _plot(stats: dict[tuple[str, str], dict], out_path: str, domains_override: l
 
     if len(domains) != 4:
         print(f"[Warning] Expected 4 domains, found {len(domains)}: {domains}")
-    if len(metrics) != 4:
-        print(f"[Warning] Expected 4 metrics, found {len(metrics)}: {metrics}")
+    if len(metrics) != len(METRIC_ORDER):
+        print(f"[Warning] Expected {len(METRIC_ORDER)} metrics, found {len(metrics)}: {metrics}")
 
     fig, axes = plt.subplots(len(domains), len(metrics), figsize=(4.5 * len(metrics), 3.1 * len(domains)), squeeze=False)
 

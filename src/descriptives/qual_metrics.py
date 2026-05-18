@@ -25,55 +25,47 @@ def mean_and_pair_layers(hidden_states: torch.Tensor) -> list[tuple[torch.Tensor
     return layer_pairs
 
 def length(hidden_states: torch.Tensor) -> list[float]:
-    scores = []
-    for previous_state, current_state in mean_and_pair_layers(hidden_states):
-        previous_state = previous_state.float().reshape(-1)
-        current_state = current_state.float().reshape(-1)
-        ratio = torch.norm(current_state, p=2) / torch.norm(previous_state, p=2)
-        scores.append(ratio)
-
-    return scores
+    hs = hidden_states.float()  # (n_samples, n_layers, d_model)
+    previous_state = hs[:, :-1, :]
+    current_state = hs[:, 1:, :]
+    prev_norm = torch.norm(previous_state, p=2, dim=-1).clamp_min(1e-12)
+    curr_norm = torch.norm(current_state, p=2, dim=-1)
+    scores = curr_norm / prev_norm  # (n_samples, n_layers - 1)
+    return scores.mean(dim=0).tolist()
 
 def magnitude(hidden_states: torch.Tensor, 
               normalize: bool = True) -> list[float]:
-    scores = []
-    first_state = hidden_states[0]
-    last_state = hidden_states[-1]
-    total_change = torch.norm(last_state - first_state, p=2)
-    denom = torch.clamp(total_change, min=1e-12)
-
-    for previous_state, current_state in mean_and_pair_layers(hidden_states):
-        previous_state = previous_state.float().reshape(-1)
-        current_state = current_state.float().reshape(-1)
-        score = torch.norm(current_state - previous_state, p=2)
-        if normalize:
-            score = score / denom
-        scores.append(score)
-
-    return scores
+    hs = hidden_states.float()  # (n_samples, n_layers, d_model)
+    previous_state = hs[:, :-1, :]
+    current_state = hs[:, 1:, :]
+    scores = torch.norm(current_state - previous_state, p=2, dim=-1)  # (n_samples, n_layers - 1)
+    if normalize:
+        total_change = torch.norm(hs[:, -1, :] - hs[:, 0, :], p=2, dim=-1).clamp_min(1e-12)
+        scores = scores / total_change.unsqueeze(1)
+    return scores.mean(dim=0).tolist()
 
 def angle(hidden_states: torch.Tensor, 
           normalize: bool = True) -> list[float]:
-    def angle_between(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
-        cosine = torch.dot(a, b) / (torch.norm(a, p=2) * torch.norm(b, p=2))
-        cosine = torch.clamp(cosine, min=-1.0, max=1.0)
-        return torch.acos(cosine)
-    
-    scores = []
-    first_state = hidden_states[0].float().reshape(-1)
-    last_state = hidden_states[-1].float().reshape(-1)
-    total_change = angle_between(first_state, last_state)
-    denom = torch.clamp(total_change, min=1e-12)
+    hs = hidden_states.float()  # (n_samples, n_layers, d_model)
+    previous_state = hs[:, :-1, :]
+    current_state = hs[:, 1:, :]
+    denom = (
+        torch.norm(previous_state, p=2, dim=-1) * torch.norm(current_state, p=2, dim=-1)
+    ).clamp_min(1e-12)
+    cosine = (previous_state * current_state).sum(dim=-1) / denom
+    cosine = torch.clamp(cosine, min=-1.0, max=1.0)
+    scores = torch.acos(cosine)  # (n_samples, n_layers - 1)
 
-    for previous_state, current_state in mean_and_pair_layers(hidden_states):
-        previous_state = previous_state.float().reshape(-1)
-        current_state = current_state.float().reshape(-1)
-        score = angle_between(previous_state, current_state)
-        if normalize:
-            score = score / denom
-        scores.append(score)
+    if normalize:
+        first_state = hs[:, 0, :]
+        last_state = hs[:, -1, :]
+        total_denom = (torch.norm(first_state, p=2, dim=-1) * torch.norm(last_state, p=2, dim=-1)).clamp_min(1e-12)
+        total_cos = (first_state * last_state).sum(dim=-1) / total_denom
+        total_cos = torch.clamp(total_cos, min=-1.0, max=1.0)
+        total_change = torch.acos(total_cos).clamp_min(1e-12)
+        scores = scores / total_change.unsqueeze(1)
 
-    return scores
+    return scores.mean(dim=0).tolist()
 
 
 def intrinsic_dimensionality(h: torch.Tensor, eps: float = 1e-12) -> float:
@@ -245,19 +237,18 @@ def compute_layer_metric(x: np.ndarray, y: np.ndarray, metric: str) -> tuple[np.
 
     if metric in ['angle', 'magnitude', 'length']:
 
-        mean_human_sample = torch.tensor(x[human_mask, :, :].mean(axis=0), dtype=torch.float32)  # (n_layers, d_model)
-        mean_machine_sample = torch.tensor(x[machine_mask, :, :].mean(axis=0), dtype=torch.float32)  # (n_layers, d_model)
-
+        human_sample = torch.tensor(x[human_mask, :, :], dtype=torch.float32)  # (n_samples, n_layers, d_model)
+        machine_sample = torch.tensor(x[machine_mask, :, :], dtype=torch.float32)  # (n_samples, n_layers, d_model)
 
         if metric == "angle":
-            h_vals = angle(mean_human_sample)
-            m_vals = angle(mean_machine_sample)
+            h_vals = angle(human_sample)
+            m_vals = angle(machine_sample)
         elif metric == "magnitude":
-            h_vals = magnitude(mean_human_sample)
-            m_vals = magnitude(mean_machine_sample)
+            h_vals = magnitude(human_sample)
+            m_vals = magnitude(machine_sample)
         elif metric == "length":
-            h_vals = length(mean_human_sample)
-            m_vals = length(mean_machine_sample)
+            h_vals = length(human_sample)
+            m_vals = length(machine_sample)
     else:
         for layer in range(n_layers):
             print(f"Computing {metric} for layer {layer}...")

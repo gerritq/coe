@@ -4,10 +4,10 @@
 - DONE conclusion
 
 - write the table desc
-
-- run radar
+- add radar
+- Model size exp running, add to appendix 
 - smoothenss measure
-- May want to include a simple model experiment
+
 
 - reorganize notes
 
