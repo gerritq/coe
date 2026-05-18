@@ -42,6 +42,10 @@ def supervised_models(args):
         from src.baseline.biscope import BiScope
         baseline = BiScope(args=args)
 
+    if args.model == "id":
+        from src.baseline.id import IDEstimator
+        baseline = IDEstimator(args=args)
+
     source_data = load_dataset(args=args)
     ood_data = []
     for target_dataset in OOD[args.dataset.split("_")[0]]:

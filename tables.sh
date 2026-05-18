@@ -7,7 +7,7 @@ cd "${ROOT_DIR}"
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood
 
 # # t_id
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id
 
 # # f_ood
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_ood
@@ -28,7 +28,7 @@ cd "${ROOT_DIR}"
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_layer
 
 # t_qual
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_qual
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_qual
 
 # t_probes
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_probes

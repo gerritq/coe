@@ -2,36 +2,20 @@
 - DONE write lit
 - DONE write probing vectors
 - DONE conclusion
+- DONE add radar
+- DONE smoothenss measure ---  no results
+- DONE Model size exp running, add to appendix 
+- DONE write the table desc
+- DONE cut run but save before 
 
-- write the table desc
-- add radar
-- Model size exp running, add to appendix 
-- smoothenss measure
-
-
-- reorganize notes
-
-- cut run but save before
-- 
-
-
-NEXT:
- - Rewrite the MGT Representation section
-    - And our notes to the description and make them sharper
-    - PCA by layer should come after the quality metrics, and before the non-linearity
-    - Add references to Turchinski and RepreGuard (they only state that there are differences in activations but they do not explain which)
-
-1. Quality Metrics
-
-    - TO DO:  
-        - Redo the complexity plot with M4GP --  find a way to drop performance (mix generators?\No answer needed paper uses gradient boosted decision trees)
+- Intrinsic Dim/mayeb another
+- Add appendix
 
 ---
 
 2. **MGT Representations**
 - TO DO:  
-    - Revise writing and reorder -- see above
-    - Add the curvature metric: https://github.com/OFSkean/information_flow/blob/main/experiments/utils/metrics/metric_functions.py#L126
+    - See overleaf
 
 - POTENTIAL:
     - Readings:
@@ -129,6 +113,24 @@ NEXT:
     4. Combine datasets, apply pca
         - Get SV and the plot
         - Or show the decision boundary bc orthogonal
+
+I have implemented your feedback as follows:
+    1.  Can we understand why LP works so well OOD?
+        - Added "Section 3: The Geometry of MGT Representations" to compare representation metrics and linearity
+        - Added "5.4 Probing Vector Similarity" to show probing vectors are similar across datasets
+
+    2. Ablations for last layer
+        - Added to the table + added smaller models
+
+    3. Sample efficieny confidence intervals
+        -  Added CIs for five seed different runs 
+    
+
+
+What is missing:
+    - Need to cut content considerably
+    - Section 3: I will add more references to existing work on representation differences
+    - Results: will also connect more to existing literature (e.g., layer-wise performance on other tasks)
 
 --- 
 

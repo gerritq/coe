@@ -48,6 +48,7 @@ def _load_rows() -> list[dict[str, Any]]:
         rows.append(
             {
                 "dataset": dataset,
+                "model": args.get("model"),
                 "mode": args.get("mode"),
                 "token_mode": args.get("token_mode"),
                 "training_size": args.get("training_size"),
@@ -138,7 +139,13 @@ def _render(rows: list[dict[str, Any]]) -> str:
         r"\midrule",
     ]
 
-    ref_cond = {"mode": "default", "token_mode": "last_token", "C": 1.0, "training_size_is_none": True}
+    ref_cond = {
+        "model": "llama_8b",
+        "mode": "default",
+        "token_mode": "last_token",
+        "C": 1.0,
+        "training_size_is_none": True,
+    }
     ref_vals = {d: _best_match(rows, d, ref_cond) for d in DATASETS}
     lines.append("Baseline" + " & " + " & ".join(_fmt(ref_vals[d]) for d in DATASETS) + r" \\")
 
@@ -175,6 +182,37 @@ def _render(rows: list[dict[str, Any]]) -> str:
         r"\hspace*{1em}Last layer"
         + " & "
         + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(last_layer_vals, DATASETS))
+        + r" \\"
+    )
+
+    lines.append(r"\addlinespace")
+    lines.append(r"\multicolumn{5}{l}{\textbf{Model}} \\")
+    llama_3b_vals = [
+        _best_match(
+            rows,
+            d,
+            {"model": "llama_3b", "mode": "default", "token_mode": "last_token", "training_size_is_none": True},
+        )
+        for d in DATASETS
+    ]
+    lines.append(
+        r"\hspace*{1em}Llama-3B"
+        + " & "
+        + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(llama_3b_vals, DATASETS))
+        + r" \\"
+    )
+    llama_1b_vals = [
+        _best_match(
+            rows,
+            d,
+            {"model": "llama_1b", "mode": "default", "token_mode": "last_token", "training_size_is_none": True},
+        )
+        for d in DATASETS
+    ]
+    lines.append(
+        r"\hspace*{1em}Llama-1B"
+        + " & "
+        + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(llama_1b_vals, DATASETS))
         + r" \\"
     )
 

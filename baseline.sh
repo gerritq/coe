@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_radar_a
+#SBATCH --job-name=baseline_id_test
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=08:00:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -24,20 +24,22 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 # DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
-DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "raidModel_cohere_chat" "raidModel_gpt4" "raidModel_llama_chat" "raidModel_mistral_chat")
+# DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "raidModel_cohere_chat" "raidModel_gpt4" "raidModel_llama_chat" "raidModel_mistral_chat")
+DATASETS=("drlDomain_arxiv")
 
 SMOKE_TEST=0
 OOD=0
 
 # "raidar"
 MODELS=(
+        "id"
         # "raidar"
         # "editlens"
         # "revise"
         # "gescore"
         # "biscope"
         # "text_fluoroscopy"
-        "radar"
+        # "radar"
         # "openai_roberta"
         # "repreguard"
         # "encoder" 
