@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=pa_size_seeds_meta_no_pca_all
+#SBATCH --job-name=pa_models
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=05:00:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -15,21 +15,21 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-MODELS=("llama_8b") # "llama_8b" "qwen_06b"
+MODELS=("llama_1b" "llama_3b") # "llama_8b" "qwen_06b"
 
 # DS for training size
-DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "raidModel_gpt4")
+# DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "raidModel_gpt4")
 
 # DS for other ablations
-# DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 
-MODES=("meta_no_pca") # default | pca | meta | meta_attn | poly
+MODES=("default" "meta_no_pca") # default | pca | meta | meta_attn | poly
 COMPONENTS_LIST=(50)
-TRAINING_SIZES=(10 50 100 250 500) # -1 | 10 50 100 250 500
+TRAINING_SIZES=(-1) # -1 | 10 50 100 250 500
 C_LIST=(1)
 MLP_DEPTH_LIST=(1)
-SEEDS=(42 43 44 45 46)
+SEEDS=(42)
 
 TOKEN_MODE="last_token"
 FOLDER="ablation"

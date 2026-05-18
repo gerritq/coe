@@ -26,7 +26,7 @@ class MLModels:
         if not texts:
             return []
 
-        batch_size = 24
+        batch_size = 16
         scores: list[float] = []
 
         with torch.no_grad():
