@@ -8,6 +8,8 @@
 - DONE write the table desc
 - DONE cut run but save before 
 
+- run batch inference
+- try implement ada
 - Intrinsic Dim/mayeb another
 - Add appendix
 
