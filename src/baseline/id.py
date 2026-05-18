@@ -10,7 +10,7 @@ from transformers import RobertaTokenizer, RobertaModel
 
 from tqdm import tqdm
 
-from IntrinsicDim import PHD
+from src.baseline.IntrinsicDim import PHD
 
 import os
 from datetime import datetime
