@@ -19,57 +19,61 @@ OUT_DIR = os.path.join(BASE_DIR, "output", "qual_metrics")
 # METRICS
 # ============================================================================================
 
+def mean_and_pair_layers(hidden_states: torch.Tensor) -> list[tuple[torch.Tensor, torch.Tensor]]:
+    # zip
+    layer_pairs = list(zip(hidden_states[:-1], hidden_states[1:]))
+    return layer_pairs
 
-def compute_curvature(hidden_states, k=1):
-    """
-    Compute the average k-step curvature of hidden states across layers.
+def length(hidden_states: torch.Tensor) -> list[float]:
+    scores = []
+    for previous_state, current_state in mean_and_pair_layers(hidden_states):
+        previous_state = previous_state.float().reshape(-1)
+        current_state = current_state.float().reshape(-1)
+        ratio = torch.norm(current_state, p=2) / torch.norm(previous_state, p=2)
+        scores.append(ratio)
 
-    Args:
-        hidden_states (torch.Tensor): List of hidden states tensors, one for each layer.
-        k (int): The step size for curvature calculation.
+    return scores
 
-    Returns:
-        dict: A dictionary containing the computed average k-step curvature values for each layer.
-    """
-    L, N, D = hidden_states.shape
+def magnitude(hidden_states: torch.Tensor, 
+              normalize: bool = True) -> list[float]:
+    scores = []
+    first_state = hidden_states[0]
+    last_state = hidden_states[-1]
+    total_change = torch.norm(last_state - first_state, p=2)
+    denom = torch.clamp(total_change, min=1e-12)
 
-    def calculate_paired_curvature(a, b):
-        dotproduct = torch.abs(a.T @ b)
-        norm_a = torch.norm(a)
-        norm_b = torch.norm(b)
+    for previous_state, current_state in mean_and_pair_layers(hidden_states):
+        previous_state = previous_state.float().reshape(-1)
+        current_state = current_state.float().reshape(-1)
+        score = torch.norm(current_state - previous_state, p=2)
+        if normalize:
+            score = score / denom
+        scores.append(score)
 
-        if norm_a == 0 or norm_b == 0:
-            return 0
+    return scores
 
-        argument = torch.clamp(dotproduct / (norm_a * norm_b), min=-1, max=1)
-        curvature = torch.arccos(argument)
-        
-        if torch.isnan(curvature):
-            print(a)
-            print(b)
-            print(curvature)
-            print(dotproduct)
-            print(norm_a)
-            print(norm_b)
-            print(dotproduct / (norm_a * norm_b))
-            raise Exception("Curvature is NaN")
-        return curvature.item()
+def angle(hidden_states: torch.Tensor, 
+          normalize: bool = True) -> list[float]:
+    def angle_between(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
+        cosine = torch.dot(a, b) / (torch.norm(a, p=2) * torch.norm(b, p=2))
+        cosine = torch.clamp(cosine, min=-1.0, max=1.0)
+        return torch.acos(cosine)
+    
+    scores = []
+    first_state = hidden_states[0].float().reshape(-1)
+    last_state = hidden_states[-1].float().reshape(-1)
+    total_change = angle_between(first_state, last_state)
+    denom = torch.clamp(total_change, min=1e-12)
 
-    def calculate_layer_average_k_curvature(layer_p):
-        summation, counter = 0, 0
-        for k in range(1, layer_p.shape[0]-1):
-            v_k = layer_p[k].unsqueeze(1) - layer_p[k-1].unsqueeze(1)
-            v_kplusone = layer_p[k+1].unsqueeze(1) - layer_p[k].unsqueeze(1)
-            curvature = calculate_paired_curvature(v_kplusone, v_k)
-            summation += curvature
-            counter += 1
-        return summation / counter if counter > 0 else 0
+    for previous_state, current_state in mean_and_pair_layers(hidden_states):
+        previous_state = previous_state.float().reshape(-1)
+        current_state = current_state.float().reshape(-1)
+        score = angle_between(previous_state, current_state)
+        if normalize:
+            score = score / denom
+        scores.append(score)
 
-    curvatures = [calculate_layer_average_k_curvature(layer.double()) for layer in hidden_states]
-    return { 
-        'raw': curvatures,
-        'logD': [x / math.log(D) for x in curvatures] 
-    }
+    return scores
 
 
 def intrinsic_dimensionality(h: torch.Tensor, eps: float = 1e-12) -> float:
@@ -239,35 +243,43 @@ def compute_layer_metric(x: np.ndarray, y: np.ndarray, metric: str) -> tuple[np.
     h_vals = np.zeros(n_layers, dtype=np.float64)
     m_vals = np.zeros(n_layers, dtype=np.float64)
 
-    if metric == "curvature":
-        x_h = torch.tensor(x[human_mask], dtype=torch.float32).transpose(0, 1)  # (n_layers, n_h, d_model)
-        x_m = torch.tensor(x[machine_mask], dtype=torch.float32).transpose(0, 1)  # (n_layers, n_m, d_model)
+    if metric in ['angle', 'magnitude', 'length']:
 
-        h_vals = np.asarray(compute_curvature(x_h)["raw"], dtype=np.float64)
-        m_vals = np.asarray(compute_curvature(x_m)["raw"], dtype=np.float64)
-        return h_vals, m_vals
+        mean_human_sample = torch.tensor(x[human_mask, :, :].mean(axis=0), dtype=torch.float32)  # (n_layers, d_model)
+        mean_machine_sample = torch.tensor(x[machine_mask, :, :].mean(axis=0), dtype=torch.float32)  # (n_layers, d_model)
 
-    for layer in range(n_layers):
-        print(f"Computing {metric} for layer {layer}...")
-        h_layer = torch.tensor(x[human_mask, layer, :], dtype=torch.float32)
-        m_layer = torch.tensor(x[machine_mask, layer, :], dtype=torch.float32)
 
-        if metric == "von_neumann_entropy":
-            h_vals[layer] = float(von_neumann_entropy_2(h_layer))
-            m_vals[layer] = float(von_neumann_entropy_2(m_layer))
-        elif metric == "effective_rank":
-            print(f"Human samples ")
-            h_vals[layer] = effective_rank(h_layer)
-            print(f"Machine samples ")
-            m_vals[layer] = effective_rank(m_layer)
-        elif metric == "anisotropy":
-            h_vals[layer] = anisotropy(h_layer)
-            m_vals[layer] = anisotropy(m_layer)
-        elif metric == "intrinsic_dimensionality":
-            h_vals[layer] = intrinsic_dimensionality(h_layer)
-            m_vals[layer] = intrinsic_dimensionality(m_layer)
-        else:
-            raise ValueError(f"Unknown metric: {metric}")
+        if metric == "angle":
+            h_vals = angle(mean_human_sample)
+            m_vals = angle(mean_machine_sample)
+        elif metric == "magnitude":
+            h_vals = magnitude(mean_human_sample)
+            m_vals = magnitude(mean_machine_sample)
+        elif metric == "length":
+            h_vals = length(mean_human_sample)
+            m_vals = length(mean_machine_sample)
+    else:
+        for layer in range(n_layers):
+            print(f"Computing {metric} for layer {layer}...")
+            h_layer = torch.tensor(x[human_mask, layer, :], dtype=torch.float32)
+            m_layer = torch.tensor(x[machine_mask, layer, :], dtype=torch.float32)
+
+            if metric == "von_neumann_entropy":
+                h_vals[layer] = float(von_neumann_entropy_2(h_layer))
+                m_vals[layer] = float(von_neumann_entropy_2(m_layer))
+            elif metric == "effective_rank":
+                print(f"Human samples ")
+                h_vals[layer] = effective_rank(h_layer)
+                print(f"Machine samples ")
+                m_vals[layer] = effective_rank(m_layer)
+            elif metric == "anisotropy":
+                h_vals[layer] = anisotropy(h_layer)
+                m_vals[layer] = anisotropy(m_layer)
+            elif metric == "intrinsic_dimensionality":
+                h_vals[layer] = intrinsic_dimensionality(h_layer)
+                m_vals[layer] = intrinsic_dimensionality(m_layer)
+            else:
+                raise ValueError(f"Unknown metric: {metric}")
 
     return h_vals, m_vals
 
@@ -304,7 +316,7 @@ def parse_args() -> Namespace:
         "--metric",
         type=str,
         required=True,
-        choices=["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality", "curvature"],
+        choices=["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality"],
     )
     parser.add_argument("--seed", type=int, default=42)
     return parser.parse_args()
@@ -317,33 +329,14 @@ def run(args: Namespace) -> None:
     seed = int(args.seed)
 
     # d_m4_domains: run one balanced plot per source domain.
-    # d_m4_domains = ["wikipedia", "arxiv", "reddit", "peerread"]
-    # for domain in d_m4_domains:
-    #     items = load_d_m4_domain_items(domain=domain)
-    #     sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=seed)
-    #     print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:{domain}.")
-
-    #     x, y = collect_hidden_states(items=sampled, model_name=args.model)
-    #     dataset_name = f"d_m4_domains_{domain}"
-    #     h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
-    #     out_path = save_metric_json(
-    #         dataset_name=dataset_name,
-    #         metric=metric,
-    #         seed=seed,
-    #         h_vals=h_vals,
-    #         m_vals=m_vals,
-    #         out_dir=OUT_DIR,
-    #     )
-    #     print(f"Saved json: {out_path}")
-
-    # drlDomain_* datasets: use test split only, no rebalancing.
-    drl_datasets = ["drlDomain_arxiv", "tsm_first", "multisocial_en", "raidModel_gpt4"]
-    for dataset_name in drl_datasets:
-        items = load_main_data_items(dataset_name=dataset_name)
+    d_m4_domains = ["wikipedia", "arxiv", "reddit", "peerread"]
+    for domain in d_m4_domains:
+        items = load_d_m4_domain_items(domain=domain)
         sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=seed)
-        print(f"Loaded {len(items)} train items from {dataset_name}, resampled to {n_per_label} per label.")
+        print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:{domain}.")
 
         x, y = collect_hidden_states(items=sampled, model_name=args.model)
+        dataset_name = f"d_m4_domains_{domain}"
         h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
         out_path = save_metric_json(
             dataset_name=dataset_name,
@@ -354,6 +347,25 @@ def run(args: Namespace) -> None:
             out_dir=OUT_DIR,
         )
         print(f"Saved json: {out_path}")
+
+    # drlDomain_* datasets: use test split only, no rebalancing.
+    # drl_datasets = ["drlDomain_arxiv", "tsm_first", "multisocial_en", "raidModel_gpt4"]
+    # for dataset_name in drl_datasets:
+    #     items = load_main_data_items(dataset_name=dataset_name)
+    #     sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=seed)
+    #     print(f"Loaded {len(items)} train items from {dataset_name}, resampled to {n_per_label} per label.")
+
+    #     x, y = collect_hidden_states(items=sampled, model_name=args.model)
+    #     h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
+    #     out_path = save_metric_json(
+    #         dataset_name=dataset_name,
+    #         metric=metric,
+    #         seed=seed,
+    #         h_vals=h_vals,
+    #         m_vals=m_vals,
+    #         out_dir=OUT_DIR,
+    #     )
+    #     print(f"Saved json: {out_path}")
 
 
 if __name__ == "__main__":

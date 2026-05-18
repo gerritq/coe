@@ -14,6 +14,7 @@ class MLModels:
         self.model = AutoModelForSequenceClassification.from_pretrained(
                 self.model_name,
                 attn_implementation=attn_impl,
+                use_safetensors=True,
             ).to(self.device)
         self.model.eval()
 

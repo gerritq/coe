@@ -1,7 +1,21 @@
 # To do
+- DONE write lit
+- DONE write probing vectors
+- DONE conclusion
+
+- write the table desc
+
+- run radar
+- smoothenss measure
+- May want to include a simple model experiment
+
+- reorganize notes
+
+- cut run but save before
+- 
+
 
 NEXT:
- - Fix the complexity plot
  - Rewrite the MGT Representation section
     - And our notes to the description and make them sharper
     - PCA by layer should come after the quality metrics, and before the non-linearity
@@ -67,7 +81,7 @@ NEXT:
 - TO DO:  
     - Cut content
     - Fix Binoculars
-    - Add Intrinsic Dim measure from Truchalski
+    - Add Intrinsic Dim measure from Truchalski/may add another supervised detector
 
 ---
 

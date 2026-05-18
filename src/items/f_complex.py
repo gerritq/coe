@@ -7,16 +7,18 @@ import numpy as np
 
 
 BASE_DIR = os.getenv("BASE_COE", ".")
-ABLATION_DIR = os.path.join(BASE_DIR, "output", "probe", "ablation")
+MLP_DIR = os.path.join(BASE_DIR, "output", "mlp")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
-OUT_PATH = os.path.join(OUT_DIR, "f_complex.pdf")
+OUT_PATH = os.path.join(OUT_DIR, "f_complex_id.pdf")
 OUT_PATH_OOD = os.path.join(OUT_DIR, "f_complex_ood.pdf")
-OOD_SOURCE = "drlDomain_arxiv"
-OOD_TARGETS = ["drlDomain_writing_prompt", "drlDomain_xsum", "drlDomain_yelp_review"]
+TRAIN_DOMAIN = "wikipedia"
+ID_DOMAINS = ["wikipedia", "arxiv", "peerread", "reddit"]
+OOD_TARGETS = ["arxiv", "peerread", "reddit"]
 OOD_LABELS = {
-    "drlDomain_writing_prompt": "Reddit",
-    "drlDomain_xsum": "News",
-    "drlDomain_yelp_review": "Yelp",
+    "wikipedia": "Wikipedia",
+    "arxiv": "Arxiv",
+    "peerread": "PeerRead",
+    "reddit": "Reddit",
 }
 MAX_DEPTH = 5
 FONT = {
@@ -45,14 +47,14 @@ def _extract_auroc(obj: dict) -> float | None:
 
 def _collect_mlp_points() -> list[dict]:
     rows: list[dict] = []
-    if not os.path.isdir(ABLATION_DIR):
+    if not os.path.isdir(MLP_DIR):
         return rows
 
-    for filename in sorted(os.listdir(ABLATION_DIR)):
+    for filename in sorted(os.listdir(MLP_DIR)):
         if not filename.endswith(".json"):
             continue
 
-        path = os.path.join(ABLATION_DIR, filename)
+        path = os.path.join(MLP_DIR, filename)
         try:
             with open(path, "r", encoding="utf-8") as f:
                 obj = json.load(f)
@@ -63,18 +65,20 @@ def _collect_mlp_points() -> list[dict]:
         if args.get("mode") != "mlp":
             continue
 
-        if "mlp_depth" not in args:
+        if "complexity" not in args:
             continue
         try:
-            depth = int(args["mlp_depth"])
+            depth = int(args["complexity"])
         except (TypeError, ValueError):
             continue
         if depth < 1 or depth > MAX_DEPTH:
             continue
 
-        dataset = args.get("dataset")
+        dataset = args.get("domain")
         target_dataset = args.get("target_dataset")
         if not isinstance(dataset, str):
+            continue
+        if not isinstance(target_dataset, str):
             continue
 
         auroc = _extract_auroc(obj)
@@ -92,17 +96,17 @@ def _collect_mlp_points() -> list[dict]:
     return rows
 
 
-def collect_points_id_tsm() -> dict[str, dict[int, list[float]]]:
+def collect_points_id_domains() -> dict[str, dict[int, list[float]]]:
     # dataset -> depth -> list[auroc]
     points: dict[str, dict[int, list[float]]] = defaultdict(lambda: defaultdict(list))
     for row in _collect_mlp_points():
         dataset = row["dataset"]
         target_dataset = row["target_dataset"]
-        if not dataset.startswith("tsm_"):
+        if dataset != TRAIN_DOMAIN:
             continue
-        if target_dataset != dataset:
+        if target_dataset not in ID_DOMAINS:
             continue
-        points[dataset][row["mlp_depth"]].append(row["auroc"])
+        points[target_dataset][row["mlp_depth"]].append(row["auroc"])
     return points
 
 
@@ -112,7 +116,7 @@ def collect_points_ood_drl() -> dict[str, dict[int, list[float]]]:
     for row in _collect_mlp_points():
         dataset = row["dataset"]
         target_dataset = row["target_dataset"]
-        if dataset != OOD_SOURCE:
+        if dataset != TRAIN_DOMAIN:
             continue
         if target_dataset not in OOD_TARGETS:
             continue
@@ -122,7 +126,7 @@ def collect_points_ood_drl() -> dict[str, dict[int, list[float]]]:
 
 def plot(points: dict[str, dict[int, list[float]]], out_path: str, label_map: dict[str, str] | None = None) -> None:
     if not points:
-        raise RuntimeError("No matching mlp ablation points found in output/probe/ablation.")
+        raise RuntimeError("No matching mlp points found in output/mlp.")
 
     plt.figure(figsize=(11, 7))
 
@@ -184,21 +188,13 @@ def plot(points: dict[str, dict[int, list[float]]], out_path: str, label_map: di
                 zorder=3,
             )
 
-    default_label_map = {
-        "tsm_first": "TSM First",
-        "drlDomain_arxiv": "DetectRL ArXiv",
-        "multisocial_en": "MultiSocial EN",
-        "raidModel_gpt4": "RAID Model GPT4",
-        "drlDomain_writing_prompt": "Writing Prompts",
-        "drlDomain_xsum": "XSum",
-        "drlDomain_yelp_review": "Yelp Review",
-    }
+    default_label_map = OOD_LABELS
     x_labels = [
         label_map.get(d, default_label_map.get(d, d)) if label_map is not None else default_label_map.get(d, d)
         for d in datasets
     ]
     plt.xlabel("")
-    plt.ylabel("AUROC")
+    plt.ylabel("AUC")
     plt.xticks(x_base, x_labels, rotation=0, ha="center")
     if all_y:
         y_min = min(all_y)
@@ -227,8 +223,8 @@ def plot(points: dict[str, dict[int, list[float]]], out_path: str, label_map: di
 
 
 def main() -> None:
-    points = collect_points_id_tsm()
-    plot(points, OUT_PATH)
+    points = collect_points_id_domains()
+    plot(points, OUT_PATH, label_map=OOD_LABELS)
     print(f"Saved: {OUT_PATH}")
 
     points_ood = collect_points_ood_drl()
