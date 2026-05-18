@@ -115,7 +115,7 @@ def return_model(args: Namespace):
 def run(args):
 
     # SUPERVISED MODELS
-    if args.model in ['encoder', "repreguard", "text_fluoroscopy", "raidar", "biscope"]:
+    if args.model in ['encoder', "repreguard", "text_fluoroscopy", "raidar", "biscope", "id"]:
         supervised_models(args)
     # UNSUPERVISED MODELS
     else:

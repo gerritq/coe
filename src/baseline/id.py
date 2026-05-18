@@ -25,7 +25,7 @@ from src.utils import metrics, return_device, return_args,metrics
 BASE_DIR = os.getenv("BASE_COE")
 
 class IDEstimator:
-    def __init__(self):
+    def __init__(self, args: Namespace):
         self.model_path = 'FacebookAI/xlm-roberta-base'
         self.tokenizer = RobertaTokenizer.from_pretrained(self.model_path)
         self.model = RobertaModel.from_pretrained(self.model_path).to(return_device())
