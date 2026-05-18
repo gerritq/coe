@@ -316,7 +316,7 @@ def parse_args() -> Namespace:
         "--metric",
         type=str,
         required=True,
-        choices=["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality"],
+        choices=["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality", "angle", "length", "magnitude"],
     )
     parser.add_argument("--seed", type=int, default=42)
     return parser.parse_args()
