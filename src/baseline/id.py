@@ -131,10 +131,10 @@ class IDEstimator:
 
         for ood_dict in ood_data:
             ood_name = ood_dict['name']
-            ood_dataset = ood_dict['dataset']
+            ood_dataset = ood_dict['data']
 
-            x_ood = ood_dataset["text"]
-            y_ood = ood_dataset["label"]
+            x_ood = ood_dataset['test']["text"]
+            y_ood = ood_dataset['test']["label"]
 
             X_ood_phd = self.get_phd_batch(x_ood)
             X_ood_scaled = self.scaler.transform(X_ood_phd)
