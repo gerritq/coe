@@ -46,8 +46,8 @@ def group_items_by_domain(items: list[dict[str, Any]]) -> dict[str, list[dict[st
     return groups
 
 
-def select_five_layers(n_layers: int) -> list[int]:
-    idx = np.linspace(0, n_layers - 1, num=5, dtype=int).tolist()
+def select_six_layers(n_layers: int) -> list[int]:
+    idx = np.linspace(0, n_layers - 1, num=6, dtype=int).tolist()
     return sorted(set(idx))
 
 
@@ -85,6 +85,10 @@ def plot_layer_projections(
     layer_indices: list[int],
     out_path: str,
 ) -> None:
+    axis_font = 16
+    tick_font = 14
+    legend_font = 14
+    title_font = 16
     fig, axes = plt.subplots(1, len(layer_indices), figsize=(4.2 * len(layer_indices), 4.0), squeeze=False)
     axes = axes[0]
 
@@ -108,15 +112,15 @@ def plot_layer_projections(
                 edgecolors="none",
             )
         if panel_idx == 0:
-            ax.set_title("Layer 0")
+            ax.set_title("Layer 0", fontsize=title_font)
         else:
-            ax.set_title(f"Layer {layer_idx}")
-        ax.set_xlabel("PC1")
-        ax.set_ylabel("PC2")
+            ax.set_title(f"Layer {layer_idx}", fontsize=title_font)
+        ax.set_xlabel("PC1", fontsize=axis_font)
+        ax.set_ylabel("PC2", fontsize=axis_font)
+        ax.tick_params(axis="both", labelsize=tick_font)
         ax.grid(alpha=0.2)
         if panel_idx == len(layer_indices) - 1:
-            ax.legend(title="Label", loc="best")
-    fig.suptitle("Per-layer PCA Projections (2D)", y=1.03)
+            ax.legend(title="Label", loc="best", fontsize=legend_font, title_fontsize=legend_font)
     fig.tight_layout()
     fig.savefig(out_path, dpi=240, bbox_inches="tight")
     plt.close(fig)
@@ -140,7 +144,7 @@ def run(args: Namespace) -> None:
 
     for domain, domain_items in sorted(by_domain.items()):
         x, y = collect_hidden_states(items=domain_items, model_name=args.model, token_mode="last_token")
-        layer_indices = select_five_layers(x.shape[1])
+        layer_indices = select_six_layers(x.shape[1])
 
         safe_domain = domain.replace("/", "_").replace(" ", "_")
         out_path = os.path.join(

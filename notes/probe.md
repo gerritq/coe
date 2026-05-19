@@ -9,16 +9,15 @@
 - DONE cut run but save before 
 - DONE cut results massively!
 - DONE fluo non linear
+- DONE DimScore for multi
+- DONE Add represnetaiotn metrics fmrula and intution 
+
 
 - Add the layer pca for other domains --- add a layer
-- Add represnetaiotn metrics fmrula and intution 
-
-
-- RUNNING: DimScore for multi
+- Add the benchmarks and baselines to the appendix
+- RUNNING: qwen to ablations
 - Cut representation and add intuition to appendix
     - Hanqi feedback
-- Add appendix
-
 
 ---
 
@@ -74,7 +73,7 @@
 - TO DO:  
     - Cut content
     - Fix Binoculars
-    - Add Intrinsic Dim measure from Truchalski/may add another supervised detector
+    - May add detector nr 18 from the great repo that has all hehe
 
 ---
 
