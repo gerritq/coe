@@ -74,6 +74,7 @@ MODEL_LABELS = {
     "editlens": "EditLens",
     "encoder": "RoBERTa",
     "revise": "Revise",
+    "id": "ID",
 }
 
 ZERO_SHOT_MODELS = [
@@ -92,6 +93,7 @@ SUPERVISED_MODELS = [
     "radar",
     "editlens",
     "raidar",
+    "id",
     "repreguard",
     "biscope",
     "text_fluoroscopy",
@@ -144,7 +146,7 @@ def _probe_auroc(test_metrics: dict, mode: str | None) -> float | None:
 
 def _all_datasets() -> list[str]:
     datasets = []
-    for group in ["drlDomain", "multisocial", "tsm", "raid"]:
+    for group in ["drlDomain", "multisocial", "raid", "tsm"]:
         datasets.extend(DATASET_GROUPS[group])
     return datasets
 
@@ -248,17 +250,17 @@ def render_table(
 
     drldomain_n = len(DATASET_GROUPS["drlDomain"])
     multisocial_n = len(DATASET_GROUPS["multisocial"])
-    tsm_n = len(DATASET_GROUPS["tsm"])
     raid_n = len(DATASET_GROUPS["raid"])
+    tsm_n = len(DATASET_GROUPS["tsm"])
 
     start_drldomain = 2
     end_drldomain = start_drldomain + drldomain_n - 1
     start_multisocial = end_drldomain + 1
     end_multisocial = start_multisocial + multisocial_n - 1
-    start_tsm = end_multisocial + 1
-    end_tsm = start_tsm + tsm_n - 1
-    start_raid = end_tsm + 1
+    start_raid = end_multisocial + 1
     end_raid = start_raid + raid_n - 1
+    start_tsm = end_raid + 1
+    end_tsm = start_tsm + tsm_n - 1
 
     # Keep only selected probe rows.
     ordered_probe_rows = []
@@ -312,14 +314,14 @@ def render_table(
     lines = [
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
-        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM~\\citep{{quaremba2026tsm}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{RAID~\\cite{{dugan2024raid}}}}}} \\\\".format(
-            drldomain_n, multisocial_n, tsm_n, raid_n
+        "& \\multicolumn{{{}}}{{c}}{{\\textbf{{DetectRL~\\citep{{wu2024detectrl}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{MultiSocial~\\citep{{macko2025multi}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{RAID~\\cite{{dugan2024raid}}}}}} & \\multicolumn{{{}}}{{c}}{{\\textbf{{TSM~\\citep{{quaremba2026tsm}}}}}} \\\\".format(
+            drldomain_n, multisocial_n, raid_n, tsm_n
         ),
         "\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}\\cmidrule(lr){{{}-{}}}".format(
             start_drldomain, end_drldomain,
             start_multisocial, end_multisocial,
-            start_tsm, end_tsm,
             start_raid, end_raid,
+            start_tsm, end_tsm,
         ),
         "\\textbf{Model} & " + " & ".join(DATASET_LABELS[d] for d in datasets) + " \\\\",
         "\\midrule",

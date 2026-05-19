@@ -27,7 +27,7 @@ PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id
 # f_layer
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_layer
 
-# t_qual
+# f_qual
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_qual
 
 # t_probes

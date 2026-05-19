@@ -64,6 +64,11 @@ class IDEstimator:
 
                 mx_points = token_vecs.shape[0]
                 mn_points = self.MIN_SUBSAMPLE
+
+                if mx_points <= mn_points:
+                    # need this fallback for multisocial 
+                    
+                    continue
                 step = ( mx_points - mn_points ) // self.INTERMEDIATE_POINTS
 
                 phd_val = solver.fit_transform(token_vecs,  min_points=mn_points, max_points=mx_points - step, \

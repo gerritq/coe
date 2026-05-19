@@ -7,11 +7,18 @@
 - DONE Model size exp running, add to appendix 
 - DONE write the table desc
 - DONE cut run but save before 
+- DONE cut results massively!
 
-- run batch inference
-- try implement ada
-- Intrinsic Dim/mayeb another
+- fluo non linear
+- Add represnetaiotn metrics fmrula and intution 
+- Add the layer pca for other domains --- add a layer
+
+- RUNNING: DimScore
+- Cut representation and add intuition to appendix
+    - Begin hanqi feedback
+- Implement Hanqi feedback
 - Add appendix
+
 
 ---
 

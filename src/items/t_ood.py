@@ -35,7 +35,7 @@ DATASET_GROUPS = {
     ],
 }
 
-FAMILY_ORDER = ["drlDomain", "multisocial", "tsm", "raid"]
+FAMILY_ORDER = ["drlDomain", "multisocial", "raid", "tsm"]
 FAMILY_TITLE = {
     "drlDomain": r"\textbf{DetectRL~\citep{wu2024detectrl}}",
     "multisocial": r"\textbf{MultiSocial~\citep{macko2025multi}}",
@@ -230,17 +230,17 @@ def render_table(rows: dict[str, dict[str, float | None]]) -> str:
 
     drl_n = len(DATASET_GROUPS["drlDomain"])
     ms_n = len(DATASET_GROUPS["multisocial"])
-    tsm_n = len(DATASET_GROUPS["tsm"])
     raid_n = len(DATASET_GROUPS["raid"])
+    tsm_n = len(DATASET_GROUPS["tsm"])
 
     s1 = 2
     e1 = s1 + drl_n - 1
     s2 = e1 + 1
     e2 = s2 + ms_n - 1
     s3 = e2 + 1
-    e3 = s3 + tsm_n - 1
+    e3 = s3 + raid_n - 1
     s4 = e3 + 1
-    e4 = s4 + raid_n - 1
+    e4 = s4 + tsm_n - 1
 
     # Per-column styles across all models (tie-aware on displayed precision).
     style_map: dict[str, dict[str, str | None]] = {subset: {} for subset in all_subsets}
@@ -269,7 +269,7 @@ def render_table(rows: dict[str, dict[str, float | None]]) -> str:
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
         "& \\multicolumn{%d}{c}{%s} & \\multicolumn{%d}{c}{%s} & \\multicolumn{%d}{c}{%s} & \\multicolumn{%d}{c}{%s} \\\\"
-        % (drl_n, FAMILY_TITLE["drlDomain"], ms_n, FAMILY_TITLE["multisocial"], tsm_n, FAMILY_TITLE["tsm"], raid_n, FAMILY_TITLE["raid"]),
+        % (drl_n, FAMILY_TITLE["drlDomain"], ms_n, FAMILY_TITLE["multisocial"], raid_n, FAMILY_TITLE["raid"], tsm_n, FAMILY_TITLE["tsm"]),
         "\\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d}\\cmidrule(lr){%d-%d}"
         % (s1, e1, s2, e2, s3, e3, s4, e4),
         "\\textbf{Model $\\downarrow$ / OOD $\\rightarrow$} & " + " & ".join(SUBSET_LABELS[s] for s in all_subsets) + " \\\\",

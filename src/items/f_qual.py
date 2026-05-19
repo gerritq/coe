@@ -27,9 +27,6 @@ METRIC_ORDER = [
     "effective_rank",
     "anisotropy",
     "intrinsic_dimensionality",
-    "length",
-    "magnitude",
-    "angle",
 ]
 FONT = {
     "title": 14,
@@ -41,13 +38,10 @@ FONT = {
 
 def _metric_label(metric: str) -> str:
     labels = {
-        "von_neumann_entropy": "Von Neumann Entropy",
+        "von_neumann_entropy": "Entropy",
         "effective_rank": "Effective Rank",
         "anisotropy": "Anisotropy",
         "intrinsic_dimensionality": "Intrinsic Dimensionality",
-        "length": "Length",
-        "magnitude": "Magnitude",
-        "angle": "Angle",
     }
     return labels.get(metric, metric)
 
