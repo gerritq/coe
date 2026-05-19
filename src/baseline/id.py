@@ -65,10 +65,11 @@ class IDEstimator:
                 mx_points = token_vecs.shape[0]
                 mn_points = self.MIN_SUBSAMPLE
 
-                if mx_points <= mn_points:
+                if mx_points < mn_points:
                     # need this fallback for multisocial 
                     dims.append(None)
                     continue
+
                 step = ( mx_points - mn_points ) // self.INTERMEDIATE_POINTS
                 if step == 0:
                     dims.append(None)

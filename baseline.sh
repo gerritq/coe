@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_id_2
+#SBATCH --job-name=baseline_id_multi
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=10:00:00
+#SBATCH --time=06:00:00
 #SBATCH --partition=gpu,nmes_gpu,interruptible_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -24,12 +24,7 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 # DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
-# 1
-# DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "tsm_first")
-
-# 2
-DATASETS=( "tsm_extend" "tsm_sums" "tsm_tst" "raidModel_cohere_chat" "raidModel_gpt4" "raidModel_llama_chat" "raidModel_mistral_chat")
-# DATASETS=("drlDomain_arxiv")
+DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 
 SMOKE_TEST=0
 OOD=0
