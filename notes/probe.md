@@ -8,15 +8,15 @@
 - DONE write the table desc
 - DONE cut run but save before 
 - DONE cut results massively!
+- DONE fluo non linear
 
-- fluo non linear
-- Add represnetaiotn metrics fmrula and intution 
 - Add the layer pca for other domains --- add a layer
+- Add represnetaiotn metrics fmrula and intution 
 
-- RUNNING: DimScore
+
+- RUNNING: DimScore for multi
 - Cut representation and add intuition to appendix
-    - Begin hanqi feedback
-- Implement Hanqi feedback
+    - Hanqi feedback
 - Add appendix
 
 

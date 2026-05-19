@@ -67,15 +67,18 @@ class IDEstimator:
 
                 if mx_points <= mn_points:
                     # need this fallback for multisocial 
-                    
+                    dims.append(None)
                     continue
                 step = ( mx_points - mn_points ) // self.INTERMEDIATE_POINTS
+                if step == 0:
+                    dims.append(None)
+                    continue
 
                 phd_val = solver.fit_transform(token_vecs,  min_points=mn_points, max_points=mx_points - step, \
                                 point_jump=step)
                 dims.append(phd_val)
 
-        return np.array(dims).reshape(-1, 1)
+        return np.array(dims, dtype=object).reshape(-1, 1)
 
     # def get_phd_single(self, text, solver):
     #     inputs = self.tokenizer(self.preprocess_text(text), truncation=True, max_length=512, return_tensors="pt")
@@ -104,6 +107,12 @@ class IDEstimator:
                                  x: dict, 
                                  y: list[int]
                                  ) -> None:
+        valid_idx = [i for i in range(len(x)) if x[i][0] is not None]
+        x = np.array([float(x[i][0]) for i in valid_idx], dtype=np.float32).reshape(-1, 1)
+        y = [y[i] for i in valid_idx]
+        if len(x) == 0:
+            raise ValueError("No valid PHD features found for training.")
+
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(x)
 
@@ -142,11 +151,18 @@ class IDEstimator:
             y_ood = ood_dataset['test']["label"]
 
             X_ood_phd = self.get_phd_batch(x_ood)
-            X_ood_scaled = self.scaler.transform(X_ood_phd)
+            valid_idx = [i for i in range(len(X_ood_phd)) if X_ood_phd[i][0] is not None]
+            if len(valid_idx) == 0:
+                print(f"[Warning] No valid PHD features for target dataset: {ood_name}. Skipping.")
+                continue
+            X_ood_phd_valid = np.array([float(X_ood_phd[i][0]) for i in valid_idx], dtype=np.float32).reshape(-1, 1)
+            y_ood_valid = [y_ood[i] for i in valid_idx]
+
+            X_ood_scaled = self.scaler.transform(X_ood_phd_valid)
 
             y_scores = self.classifier.predict_proba(X_ood_scaled)[:, 1]
 
-            metrics_res = metrics(y_true=y_ood,
+            metrics_res = metrics(y_true=y_ood_valid,
                                   y_predict=y_scores,
                                   f1_threshold=0.5,
                                   acc_threshold=0.5)
