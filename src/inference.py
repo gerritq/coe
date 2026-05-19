@@ -7,6 +7,7 @@ from argparse import Namespace
 MODEL_DIR = {
     "smol": "HuggingFaceTB/SmolLM-135M",
     "qwen_06b": "Qwen/Qwen3-0.6B",
+    "qwen_4b": "Qwen/Qwen3-4B",
     "qwen_8b": "Qwen/Qwen3-8B",
     "llama_1b": "meta-llama/Llama-3.2-1B-Instruct",
     "llama_3b": "meta-llama/Llama-3.2-3B-Instruct",

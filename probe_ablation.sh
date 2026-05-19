@@ -15,7 +15,7 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-MODELS=("llama_1b" "llama_3b" "llama_8b") # "llama_8b" "qwen_06b"
+MODELS=("qwen_06b" "qwen_4b" "qwen_8b") # "llama_8b" "qwen_06b"
 
 # DS for training size
 # DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "raidModel_gpt4")

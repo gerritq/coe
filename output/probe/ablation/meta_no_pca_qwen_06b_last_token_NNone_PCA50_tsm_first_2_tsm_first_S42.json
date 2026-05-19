@@ -1,0 +1,32 @@
+{
+    "args": {
+        "model": "qwen_06b",
+        "dataset": "tsm_first",
+        "token_mode": "last_token",
+        "ood": false,
+        "smoke_test": false,
+        "components": 50,
+        "mode": "meta_no_pca",
+        "training_size": null,
+        "folder": "ablation",
+        "C": 1.0,
+        "mlp_depth": 1,
+        "seed": 42,
+        "model_name": "qwen_06b",
+        "target_dataset": "tsm_first",
+        "datetime": "2026-05-19 21:19:58"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.96488,
+            "accuracy": 0.9,
+            "f1": 0.8995983935742972,
+            "tpr_at_fpr_0_05": 0.8,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.9667550334546793
+        }
+    },
+    "sim_correlations": null
+}

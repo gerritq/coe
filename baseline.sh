@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=baseline_id_multi
+#SBATCH --job-name=baseline_id_first_tsm
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=06:00:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu,interruptible_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -24,7 +24,7 @@ export CUDA_LAUNCH_BLOCKING=1
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 # DATASETS=("m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz")
 
-DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
+DATASETS=("tsm_first")
 
 SMOKE_TEST=0
 OOD=0
