@@ -19,6 +19,79 @@ OUT_DIR = os.path.join(BASE_DIR, "output", "qual_metrics")
 # METRICS
 # ============================================================================================
 
+def compute_curvature(hidden_states, k=1):
+    """
+    Compute the average k-step curvature of hidden states across layers.
+
+    Args:
+        hidden_states (torch.Tensor): List of hidden states tensors, one for each layer.
+        k (int): The step size for curvature calculation.
+
+    Returns:
+        dict: A dictionary containing the computed average k-step curvature values for each layer.
+    """
+    L, N, D = hidden_states.shape
+
+    def calculate_paired_curvature(a, b):
+        dotproduct = torch.abs(a.T @ b)
+        norm_a = torch.norm(a)
+        norm_b = torch.norm(b)
+
+        if norm_a == 0 or norm_b == 0:
+            return 0
+
+        argument = torch.clamp(dotproduct / (norm_a * norm_b), min=-1, max=1)
+        curvature = torch.arccos(argument)
+        
+        if torch.isnan(curvature):
+            print(a)
+            print(b)
+            print(curvature)
+            print(dotproduct)
+            print(norm_a)
+            print(norm_b)
+            print(dotproduct / (norm_a * norm_b))
+            raise Exception("Curvature is NaN")
+        return curvature.item()
+
+    def calculate_layer_average_k_curvature(layer_p):
+        summation, counter = 0, 0
+        for k in range(1, layer_p.shape[0]-1):
+            v_k = layer_p[k].unsqueeze(1) - layer_p[k-1].unsqueeze(1)
+            v_kplusone = layer_p[k+1].unsqueeze(1) - layer_p[k].unsqueeze(1)
+            curvature = calculate_paired_curvature(v_kplusone, v_k)
+            summation += curvature
+            counter += 1
+        return summation / counter if counter > 0 else 0
+
+    curvatures = [calculate_layer_average_k_curvature(layer.double()) for layer in hidden_states]
+    return { 
+        'raw': curvatures,
+        'logD': [x / math.log(D) for x in curvatures] 
+    }
+
+def compute_curvature_metric_from_samples(
+    x_list: list[torch.Tensor],  # each: (L, N_i, D)
+    y: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    human_vals = []
+    machine_vals = []
+
+    for h, label in zip(x_list, y):
+        # if compute_curvature expects numpy:
+        curv = compute_curvature(h)      # shape e.g. (L,) or (L-1)/(L-2)
+        # if it expects torch, use: curv = compute_curvature(h)
+
+        curv = np.asarray(curv['logD'], dtype=np.float64)
+        if label == 0:
+            human_vals.append(curv)
+        else:
+            machine_vals.append(curv)
+
+    h_mean = np.stack(human_vals, axis=0).mean(axis=0)
+    m_mean = np.stack(machine_vals, axis=0).mean(axis=0)
+    return h_mean, m_mean
+
 def mean_and_pair_layers(hidden_states: torch.Tensor) -> list[tuple[torch.Tensor, torch.Tensor]]:
     # zip
     layer_pairs = list(zip(hidden_states[:-1], hidden_states[1:]))
@@ -206,7 +279,30 @@ def sample_balanced(items: list[dict[str, Any]], n_per_label: int, seed: int) ->
     return sampled
 
 
-def collect_hidden_states(items: list[dict[str, Any]], model_name: str) -> tuple[np.ndarray, np.ndarray]:
+def collect_hidden_states_all_tokens(
+    items: list[dict[str, Any]],
+    model_name: str,
+) -> tuple[list[torch.Tensor], np.ndarray]:
+    inference = Inference(model_name=model_name)
+    infer_args = Namespace(mode="default", token_mode="all_tokens")
+
+    all_hidden: list[torch.Tensor] = []
+    labels: list[int] = []
+
+    for item in items:
+        out = inference.run(item=item, args=infer_args)
+        hs = out["hidden_states"]  # tuple of L tensors, each (N_i, D)
+
+        # stack layers -> (L, N_i, D)
+        sample = torch.stack([h.detach().to(torch.float32).cpu() for h in hs], dim=0)
+        all_hidden.append(sample)
+        labels.append(int(out["label"]))
+
+    y = np.asarray(labels, dtype=np.int32)
+    return all_hidden, y
+
+def collect_hidden_states(items: list[dict[str, Any]], 
+                          model_name: str) -> tuple[np.ndarray, np.ndarray]:
     inference = Inference(model_name=model_name)
     infer_args = Namespace(mode="default", token_mode="last_token")
 
@@ -297,22 +393,6 @@ def save_metric_json(
         json.dump(payload, f, ensure_ascii=False, indent=2)
     return out_path
 
-
-def parse_args() -> Namespace:
-    parser = ArgumentParser()
-    parser.add_argument("--model", type=str, default="qwen_06b")
-    parser.add_argument("--n_per_label", type=int, default=250)
-    parser.add_argument("--smoke_test", type=int, default=0)
-    parser.add_argument(
-        "--metric",
-        type=str,
-        required=True,
-        choices=["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality", "angle", "length", "magnitude"],
-    )
-    parser.add_argument("--seed", type=int, default=42)
-    return parser.parse_args()
-
-
 def run(args: Namespace) -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
     n_per_label = 25 if bool(args.smoke_test) else int(args.n_per_label)
@@ -326,9 +406,16 @@ def run(args: Namespace) -> None:
         sampled = sample_balanced(items=items, n_per_label=n_per_label, seed=seed)
         print(f"Sampled {n_per_label} human + {n_per_label} machine from d_m4_domains:{domain}.")
 
-        x, y = collect_hidden_states(items=sampled, model_name=args.model)
+
+        if metric == "curvature":
+            x_list, y = collect_hidden_states_all_tokens(items=sampled, model_name=args.model)
+            h_vals, m_vals = compute_curvature_metric_from_samples(x_list=x_list, y=y)        
+        else:
+            x, y = collect_hidden_states(items=sampled, model_name=args.model)
+            h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
+        
+        # save
         dataset_name = f"d_m4_domains_{domain}"
-        h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)
         out_path = save_metric_json(
             dataset_name=dataset_name,
             metric=metric,
@@ -360,5 +447,23 @@ def run(args: Namespace) -> None:
 
 
 if __name__ == "__main__":
-    cli_args = parse_args()
-    run(cli_args)
+    
+    parser = ArgumentParser()
+    parser.add_argument("--model", type=str, default="qwen_06b")
+    parser.add_argument("--n_per_label", type=int, default=250)
+    parser.add_argument("--smoke_test", type=int, default=0)
+    parser.add_argument(
+        "--metric",
+        type=str,
+        required=True,
+        choices=["von_neumann_entropy", "effective_rank", "anisotropy", "intrinsic_dimensionality", "angle", "length", "magnitude", "curvature"],
+    )
+    parser.add_argument("--seed", type=int, default=42)
+    args = parser.parse_args()
+    
+    if args.metric == "curvature":
+        args.token_mode = "all_tokens"
+    else:
+        args.token_mode = "last_token"
+
+    run(args=args)

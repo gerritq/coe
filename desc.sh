@@ -40,18 +40,18 @@ PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/layer_pca.py \
 
 
 # METRICS=("effective_rank" "von_neumann_entropy" "anisotropy" "intrinsic_dimensionality" )
-# METRICS=("angle" "magnitude" "length")
-# SEEDS=(42)
-# for METRIC in "${METRICS[@]}"; do
-#   for SEED in "${SEEDS[@]}"; do
-#     echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
-#     PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
-#       --model "${MODEL}" \
-#       --smoke_test "${SMOKE_TEST}" \
-#       --metric "${METRIC}" \
-#       --seed "${SEED}"
-#   done
-# done
+METRICS=("curvature")
+SEEDS=(42)
+for METRIC in "${METRICS[@]}"; do
+  for SEED in "${SEEDS[@]}"; do
+    echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
+    PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
+      --model "${MODEL}" \
+      --smoke_test "${SMOKE_TEST}" \
+      --metric "${METRIC}" \
+      --seed "${SEED}"
+  done
+done
 
 # PROBE VECTORS
 

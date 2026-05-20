@@ -215,6 +215,48 @@ def _render(rows: list[dict[str, Any]]) -> str:
         + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(llama_1b_vals, DATASETS))
         + r" \\"
     )
+    qwen_8b_vals = [
+        _best_match(
+            rows,
+            d,
+            {"model": "qwen_8b", "mode": "default", "token_mode": "last_token", "training_size_is_none": True},
+        )
+        for d in DATASETS
+    ]
+    lines.append(
+        r"\hspace*{1em}Qwen-8B"
+        + " & "
+        + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(qwen_8b_vals, DATASETS))
+        + r" \\"
+    )
+    qwen_4b_vals = [
+        _best_match(
+            rows,
+            d,
+            {"model": "qwen_4b", "mode": "default", "token_mode": "last_token", "training_size_is_none": True},
+        )
+        for d in DATASETS
+    ]
+    lines.append(
+        r"\hspace*{1em}Qwen-4B"
+        + " & "
+        + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(qwen_4b_vals, DATASETS))
+        + r" \\"
+    )
+    qwen_06b_vals = [
+        _best_match(
+            rows,
+            d,
+            {"model": "qwen_06b", "mode": "default", "token_mode": "last_token", "training_size_is_none": True},
+        )
+        for d in DATASETS
+    ]
+    lines.append(
+        r"\hspace*{1em}Qwen-0.6B"
+        + " & "
+        + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(qwen_06b_vals, DATASETS))
+        + r" \\"
+    )
 
     lines.append(r"\addlinespace")
     lines.append(r"\multicolumn{5}{l}{\textbf{Regularization Penalty}} \\")

@@ -57,10 +57,16 @@ class Inference:
                 layer[:, -1, :].detach().cpu().squeeze(0) for layer in outputs.hidden_states
             )
         if args.token_mode == "pooling":
+            # dim
             hidden_states = tuple(
                 layer.mean(dim=1).detach().cpu().squeeze(0) for layer in outputs.hidden_states
             )
 
+        if args.token_mode == "all_tokens":
+            # (seq_len, hidden_size) bc batch size is 1
+            hidden_states = tuple(
+                layer.detach().cpu().squeeze(0) for layer in outputs.hidden_states
+            )
 
         return {
             "model_id": self.model_id,

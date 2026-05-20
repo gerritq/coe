@@ -11,13 +11,24 @@
 - DONE fluo non linear
 - DONE DimScore for multi
 - DONE Add represnetaiotn metrics fmrula and intution 
+- DONE qwen to ablations
+- DONE Add the layer pca for other domains --- add a layer
 
 
-- Add the layer pca for other domains --- add a layer
+- Abstract: connect prbe sim to OOD findings as why and shared latent space
+- The only furhter analysis into probing behaviour revela .. .
+- Growing body focuses on learning based l2d l2r.. 
+    - however add overherad coast of rewrinting based! also in ada but in bicsope and learn to distance o guess
+    We ask: is their another direction of models that is more lightweight, robsut and sample efficient than curernt supervised detecotrs?
+
+- Hanqi md feedback
+- Intro cut Hanqi suggested
+- Improve the representation analysis
+
+Later
 - Add the benchmarks and baselines to the appendix
-- RUNNING: qwen to ablations
-- Cut representation and add intuition to appendix
-    - Hanqi feedback
+
+
 
 ---
 
