@@ -25,10 +25,19 @@ Skean et al. (2025)
 
     - They can be unified with matrix-based entropy
 
+        - 
+
 
 
 ## Information Content
+
 ### Entropy
+
+**Intuition**
+- Low:
+    - Representations are compressed
+- High:
+    - Representation is spread out across many principal directions
 
 ## eRank
 
@@ -48,6 +57,7 @@ Skean et al. (2025)
 
 # Notes
 
+- Mention that information-theoretic and geometric metrics offer complementary perspective on representation quality
 - Beyond confirmining that MGT cn be detected in latent space, we try to elucidate __why__ --- this is strong and should be placed 1-3 times
 - We should add what each metric is answering!
 - For each perspective, we should have one takeaway

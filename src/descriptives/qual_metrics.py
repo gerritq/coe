@@ -70,23 +70,31 @@ def compute_curvature(hidden_states, k=1):
         'logD': [x / math.log(D) for x in curvatures] 
     }
 
-def compute_curvature_metric_from_samples(
-    x_list: list[torch.Tensor],  # each: (L, N_i, D)
-    y: np.ndarray,
+def compute_curvature_metric_by_sample(
+    items: list[dict[str, Any]],
+    model_name: str,
 ) -> tuple[np.ndarray, np.ndarray]:
-    human_vals = []
-    machine_vals = []
+    inference = Inference(model_name=model_name)
+    infer_args = Namespace(mode="default", token_mode="all_tokens")
 
-    for h, label in zip(x_list, y):
-        # if compute_curvature expects numpy:
-        curv = compute_curvature(h)      # shape e.g. (L,) or (L-1)/(L-2)
-        # if it expects torch, use: curv = compute_curvature(h)
+    human_vals: list[np.ndarray] = []
+    machine_vals: list[np.ndarray] = []
 
-        curv = np.asarray(curv['logD'], dtype=np.float64)
+    for item in items:
+        out = inference.run(item=item, args=infer_args)
+        hs = out["hidden_states"]  # tuple of L tensors, each (N_i, D)
+        sample = torch.stack([h.detach().to(torch.float32).cpu() for h in hs], dim=0)  # (L, N_i, D)
+
+        curv = compute_curvature(sample)
+        vals = np.asarray(curv["logD"], dtype=np.float64)
+        label = int(out["label"])
         if label == 0:
-            human_vals.append(curv)
+            human_vals.append(vals)
         else:
-            machine_vals.append(curv)
+            machine_vals.append(vals)
+
+    if len(human_vals) == 0 or len(machine_vals) == 0:
+        raise ValueError("Curvature requires both human(label=0) and machine(label=1) samples.")
 
     h_mean = np.stack(human_vals, axis=0).mean(axis=0)
     m_mean = np.stack(machine_vals, axis=0).mean(axis=0)
@@ -408,8 +416,7 @@ def run(args: Namespace) -> None:
 
 
         if metric == "curvature":
-            x_list, y = collect_hidden_states_all_tokens(items=sampled, model_name=args.model)
-            h_vals, m_vals = compute_curvature_metric_from_samples(x_list=x_list, y=y)        
+            h_vals, m_vals = compute_curvature_metric_by_sample(items=sampled, model_name=args.model)
         else:
             x, y = collect_hidden_states(items=sampled, model_name=args.model)
             h_vals, m_vals = compute_layer_metric(x=x, y=y, metric=metric)

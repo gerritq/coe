@@ -24,7 +24,8 @@
 - Hanqi md feedback
 - Intro cut Hanqi suggested
 - Improve the representation analysis
-
+- Consider OOB for appendix
+    - At least for probes and reference to the probe vector sim plot
 Later
 - Add the benchmarks and baselines to the appendix
 
