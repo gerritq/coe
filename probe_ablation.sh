@@ -25,7 +25,7 @@ DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 
 MODES=("pca" "meta") # default | pca | meta | meta_attn | poly
-COMPONENTS_LIST=(100)
+COMPONENTS_LIST=(200 250)
 TRAINING_SIZES=(-1) # -1 | 10 50 100 250 500
 C_LIST=(1)
 MLP_DEPTH_LIST=(1)

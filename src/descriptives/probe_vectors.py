@@ -14,7 +14,7 @@ from src.utils import load_dataset, return_args
 
 
 BASE_DIR = os.getenv("BASE_COE", ".")
-OUT_DIR = os.path.join(BASE_DIR, "output", "desc")
+OUT_DIR = os.path.join(BASE_DIR, "output", "probe", "vectors")
 
 DATASETS = [
     "drlDomain_arxiv",

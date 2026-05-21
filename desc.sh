@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=desc_parallel
+#SBATCH --job-name=desc_probes
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=01:00:00
@@ -56,15 +56,15 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
 # PROBE VECTORS
 
-# PROBE_VECTOR_MODES=("pca_space") # "default" "pca" "pca_space"
-# PCA_COMPONENTS=100
-# for MODE in "${PROBE_VECTOR_MODES[@]}"; do
-#     echo "Running probe_vectors with mode=${MODE}"
-#     PYTHONPATH="${ROOT_DIR}" uv run python -m src.descriptives.probe_vectors \
-#       --model "${MODEL}" \
-#       --mode "${MODE}" \
-#       --components "${PCA_COMPONENTS}"
-# done
+PROBE_VECTOR_MODES=("pca_space") # "default" "pca" "pca_space"
+PCA_COMPONENTS=100
+for MODE in "${PROBE_VECTOR_MODES[@]}"; do
+    echo "Running probe_vectors with mode=${MODE}"
+    PYTHONPATH="${ROOT_DIR}" uv run python -m src.descriptives.probe_vectors \
+      --model "${MODEL}" \
+      --mode "${MODE}" \
+      --components "${PCA_COMPONENTS}"
+done
 
 # ACTIVATIONS
 # PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/activate.py \
@@ -89,6 +89,6 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 #     done
 # done
 
-PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/parallel.py \
-  --model "${MODEL}" \
-  --smoke_test "${SMOKE_TEST}"
+# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/parallel.py \
+#   --model "${MODEL}" \
+#   --smoke_test "${SMOKE_TEST}"
