@@ -381,8 +381,18 @@ class LinearProbing:
             if target_dataset in ["apt", "apt_m4_train", "beemo_human_edits", "beemo_machine_edits", "editlens"]:
                 apt_correlations = self.correlate_apt(test_data=test, 
                                                         scores=test_metrics['scores'])
+                # Keep plotting payload: projection scores + raw dataset similarity metrics.
+                plot_layer_payload = {
+                    "projection_scores": test_metrics.get("scores", {}),
+                    "similarity_metrics": {
+                        "sem_similarity": [m.get("sem_similarity") for m in test["meta"]],
+                        "levenshtein_distance": [m.get("levenshtein_distance") for m in test["meta"]],
+                        "jaccard_distance": [m.get("jaccard_distance") for m in test["meta"]],
+                    },
+                }
             else:
                 apt_correlations = None
+                plot_layer_payload = None
         
             # del scores
             del test_metrics['scores']
@@ -397,7 +407,8 @@ class LinearProbing:
 
             out = {'args': out_args, 
                     'test_metrics': test_metrics,
-                    'sim_correlations': apt_correlations}
+                    'sim_correlations': apt_correlations,
+                    'plot_layer_payload': plot_layer_payload}
             
             
             with open(os.path.join(self.out_dir, filename), "w") as f:

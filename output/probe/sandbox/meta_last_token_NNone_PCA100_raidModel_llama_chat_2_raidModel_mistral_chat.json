@@ -1,0 +1,28 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "raidModel_llama_chat",
+        "token_mode": "last_token",
+        "ood": true,
+        "smoke_test": false,
+        "components": 100,
+        "mode": "meta",
+        "training_size": null,
+        "folder": "sandbox",
+        "target_dataset": "raidModel_mistral_chat",
+        "datetime": "2026-05-21 18:04:00"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.981664,
+            "accuracy": 0.936,
+            "f1": 0.934156378600823,
+            "tpr_at_fpr_0_05": 0.912,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.9831217976309518
+        }
+    },
+    "sim_correlations": null
+}

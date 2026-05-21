@@ -149,7 +149,7 @@ class Probing:
             scaler = StandardScaler()
             x_hidden_layer_train_scaled = scaler.fit_transform(x_hidden_layer_train)
             
-            if self.args.mode in ["pca"]:
+            if self.args.mode in ["meta"]:
                 layer_pca = PCA(n_components=self.args.components, random_state=42)
                 x_hidden_layer_train_scaled = layer_pca.fit_transform(x_hidden_layer_train_scaled)
             else:
