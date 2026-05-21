@@ -51,7 +51,7 @@ def load_dataset_states(args: Namespace) -> dict[str, dict[str, np.ndarray]]:
                 seed=args.seed,
             )
         )
-        test_items = [dict(x) for x in ds["test"]]
+        test_items = [dict(x) for x in ds["train"]]
         x, y = collect_mid_layer_representations(test_items, inference=inference)
         out[dataset_name] = {"x": x, "y": y}
         print(f"Loaded {dataset_name}: n={len(y)}")
