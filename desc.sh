@@ -4,8 +4,9 @@
 #SBATCH --error=logs/%j.err
 #SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu,interruptible_gpu
+#SBATCH --constraint=h200|a100
 #SBATCH --gres=gpu:1
-#SBATCH --mem=80GB
+#SBATCH --mem=20GB
 #SBATCH --exclude=erc-hpc-comp054
 
 nvidia-smi

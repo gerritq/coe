@@ -1,0 +1,28 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "m4_gpt4",
+        "token_mode": "last_token",
+        "ood": true,
+        "smoke_test": false,
+        "components": 100,
+        "mode": "meta",
+        "training_size": null,
+        "folder": "sandbox",
+        "target_dataset": "m4_dolly",
+        "datetime": "2026-05-21 16:17:10"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.8230879999999999,
+            "accuracy": 0.63,
+            "f1": 0.4126984126984127,
+            "tpr_at_fpr_0_05": 0.484,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.8473632227997198
+        }
+    },
+    "sim_correlations": null
+}
