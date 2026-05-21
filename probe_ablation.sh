@@ -18,10 +18,10 @@ cd "${ROOT_DIR}"
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
 # DS for training size
-DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "raidModel_gpt4")
+# DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "raidModel_gpt4")
 
 # DS for other ablations
-# DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 
 MODES=("pca" "meta") # default | pca | meta | meta_attn | poly
