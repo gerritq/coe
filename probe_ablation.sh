@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=pa_models
+#SBATCH --job-name=pa_pca_100
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=02:00:00
@@ -15,7 +15,7 @@ nvidia-smi
 ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
-MODELS=("qwen_06b" "qwen_4b" "qwen_8b") # "llama_8b" "qwen_06b"
+MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
 # DS for training size
 # DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "raidModel_gpt4")
@@ -24,8 +24,8 @@ MODELS=("qwen_06b" "qwen_4b" "qwen_8b") # "llama_8b" "qwen_06b"
 DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 
-MODES=("default" "meta_no_pca") # default | pca | meta | meta_attn | poly
-COMPONENTS_LIST=(50)
+MODES=("pca") # default | pca | meta | meta_attn | poly
+COMPONENTS_LIST=(150)
 TRAINING_SIZES=(-1) # -1 | 10 50 100 250 500
 C_LIST=(1)
 MLP_DEPTH_LIST=(1)

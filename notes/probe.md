@@ -14,6 +14,12 @@
 - DONE qwen to ablations
 - DONE Add the layer pca for other domains --- add a layer
 
+1. Run all analyses with PCA 100
+2. New pca viz
+3. New AI-edit viz
+2. Write the full appendix with new pca viz
+3. Collect notes and plan
+
 
 - Abstract: connect prbe sim to OOD findings as why and shared latent space
 - The only furhter analysis into probing behaviour revela .. .
