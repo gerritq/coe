@@ -18,6 +18,7 @@
     - RUNNING ablation and full for meta and pca
 2. New pca viz
 3. New AI-edit viz
+    - Simple linear plot would suffice + correlation within the plot!!!
 4. Write the full appendix with new pca viz
 5. Collect notes and plan
 

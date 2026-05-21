@@ -14,7 +14,7 @@ BASE_DIR = os.getenv("BASE_COE", ".")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 OUT_PATH = os.path.join(OUT_DIR, "f_parallel.pdf")
 
-DATASETS = ["multisocial_en", "multisocial_de"]
+DATASETS = ["drlDomain_arxiv", "drlDomain_writing_prompt"]
 
 
 def collect_mid_layer_representations(
@@ -77,16 +77,16 @@ def build_combined_pca_projection(
 
 def plot_parallel(projected: dict[str, dict[str, np.ndarray]], out_path: str) -> None:
     colors = {
-        ("multisocial_en", 0): "#1f77b4",  # en human
-        ("multisocial_en", 1): "#ff7f0e",  # en machine
-        ("multisocial_de", 0): "#2ca02c",  # de human
-        ("multisocial_de", 1): "#d62728",  # de machine
+        ("drlDomain_arxiv", 0): "#1f77b4",  # arxiv human
+        ("drlDomain_arxiv", 1): "#ff7f0e",  # arxiv machine
+        ("drlDomain_writing_prompt", 0): "#2ca02c",  # reddit human
+        ("drlDomain_writing_prompt", 1): "#d62728",  # reddit machine
     }
     labels = {
-        ("multisocial_en", 0): "en Human",
-        ("multisocial_en", 1): "en Machine",
-        ("multisocial_de", 0): "de Human",
-        ("multisocial_de", 1): "de Machine",
+        ("drlDomain_arxiv", 0): "ArXiv Human",
+        ("drlDomain_arxiv", 1): "ArXiv Machine",
+        ("drlDomain_writing_prompt", 0): "Reddit Human",
+        ("drlDomain_writing_prompt", 1): "Reddit Machine",
     }
 
     plt.figure(figsize=(8.0, 6.0))
