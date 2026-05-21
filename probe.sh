@@ -30,7 +30,7 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=("apt" "editlens")
 
 TOKEN_MODE="last_token"
-MODES=("pca" "meta") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
+MODES=("meta") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
 OOD=0
 COMPONENTS=100
 SMOKE_TEST=0
