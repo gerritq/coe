@@ -5,15 +5,14 @@ cd "${ROOT_DIR}"
 
 
 # ===========================================================================
-# OOD
+# EDITS
 # ===========================================================================
 
 # t_edits
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_edits
 
 # f_edits
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_edits
-
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_edits
 
 # ===========================================================================
 # OOD
@@ -25,27 +24,17 @@ PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_edits
 # # t_ood_pca
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood_pca
 
+# # f_ood
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_ood
+
 # ===========================================================================
 # ID
 # ===========================================================================
 # # t_id
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id
 
-# # # t_id_pca
+#  t_id_pca
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id_pca
-
-# # f_ood
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_ood
-
-# f_samples
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_samples
-
-# t_ablations
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
-
-# f_complex
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_complex
-
 
 # ===========================================================================
 # LAYER
@@ -57,8 +46,40 @@ PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_edits
 # f_layer_pca
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_layer_pca
 
+# ===========================================================================
+# ABLATIONS
+# ===========================================================================
+
+# t_ablations
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
+
+# t_ablations_pca
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_pca
+
+# ===========================================================================
+# PROBES
+# ===========================================================================
+# what is this
+# t_probes
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_probes
+
+# ===========================================================================
+# QUAL
+# ===========================================================================
+
 # f_qual
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_qual
 
-# t_probes
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_probes
+# ===========================================================================
+# SAMPLES
+# ===========================================================================
+
+# f_samples
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_samples
+
+# ===========================================================================
+# COMPLEX
+# ===========================================================================
+
+# f_complex
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_complex

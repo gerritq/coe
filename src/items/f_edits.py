@@ -66,48 +66,71 @@ def _load_mode_dataset_payload(dataset: str, mode: str) -> tuple[np.ndarray, dic
     return x, y_by_metric
 
 
-def _plot_one_dataset(dataset: str) -> None:
-    fig, axes = plt.subplots(len(MODES), len(METRICS), figsize=(15, 8), squeeze=False)
+def _plot_one_dataset_mode(dataset: str, mode: str) -> None:
+    axis_font = 16
+    tick_font = 14
+    corr_font = 13
+    fig, axes = plt.subplots(1, len(METRICS), figsize=(15, 4.2), squeeze=False)
+    axes = axes[0]
 
-    for r, mode in enumerate(MODES):
-        x, y_by_metric = _load_mode_dataset_payload(dataset=dataset, mode=mode)
-        for c, metric in enumerate(METRICS):
-            ax = axes[r, c]
-            y = y_by_metric[metric]
+    x, y_by_metric = _load_mode_dataset_payload(dataset=dataset, mode=mode)
+    for c, metric in enumerate(METRICS):
+        ax = axes[c]
+        y = y_by_metric[metric]
 
-            valid = np.isfinite(x) & np.isfinite(y)
-            xv = x[valid]
-            yv = y[valid]
+        valid = np.isfinite(x) & np.isfinite(y)
+        xv = x[valid]
+        yv = y[valid]
 
-            ax.scatter(xv, yv, s=12, alpha=0.7, edgecolors="none")
+        ax.scatter(xv, yv, s=12, alpha=0.7, edgecolors="none")
 
-            if len(xv) >= 2:
-                slope, intercept = np.polyfit(xv, yv, 1)
-                xs = np.linspace(float(np.min(xv)), float(np.max(xv)), 200)
-                ys = slope * xs + intercept
-                ax.plot(xs, ys, linewidth=1.8)
-                corr = float(np.corrcoef(xv, yv)[0, 1])
-                ax.text(
-                    0.03,
-                    0.95,
-                    f"r={corr:.3f}",
-                    transform=ax.transAxes,
-                    va="top",
-                )
+        if len(xv) >= 2:
+            slope, intercept = np.polyfit(xv, yv, 1)
+            xs = np.linspace(float(np.min(xv)), float(np.max(xv)), 200)
+            ys = slope * xs + intercept
+            ax.plot(xs, ys, color="black", linestyle="--", linewidth=1.8)
+            corr = float(np.corrcoef(xv, yv)[0, 1])
+            if metric == "sem_similarity":
+                x_text, ha = 0.97, "right"
             else:
-                ax.text(0.03, 0.95, "r=NA", transform=ax.transAxes, va="top")
+                x_text, ha = 0.03, "left"
+            ax.text(
+                x_text,
+                0.95,
+                f"r={corr:.3f}",
+                transform=ax.transAxes,
+                va="top",
+                ha=ha,
+                fontsize=corr_font,
+                bbox=dict(facecolor="lightgray", edgecolor="black", linewidth=0.8, alpha=0.8),
+            )
+        else:
+            if metric == "sem_similarity":
+                x_text, ha = 0.97, "right"
+            else:
+                x_text, ha = 0.03, "left"
+            ax.text(
+                x_text,
+                0.95,
+                "r=NA",
+                transform=ax.transAxes,
+                va="top",
+                ha=ha,
+                fontsize=corr_font,
+                bbox=dict(facecolor="lightgray", edgecolor="black", linewidth=0.8, alpha=0.8),
+            )
 
-            if r == 0:
-                ax.set_title(METRIC_LABELS[metric])
-            if c == 0:
-                ax.set_ylabel(mode.upper())
-            if r == len(MODES) - 1:
-                ax.set_xlabel("Projection Score")
-            ax.grid(alpha=0.25)
+        ax.set_ylabel(METRIC_LABELS[metric], fontsize=axis_font)
+        if c == len(METRICS) // 2:
+            ax.set_xlabel("Projection Score", fontsize=axis_font)
+        else:
+            ax.set_xlabel("")
+        ax.tick_params(axis="both", labelsize=tick_font)
+        ax.grid(alpha=0.25)
 
     plt.tight_layout()
     os.makedirs(OUT_DIR, exist_ok=True)
-    out_path = os.path.join(OUT_DIR, f"f_edit_{dataset}.pdf")
+    out_path = os.path.join(OUT_DIR, f"f_edit_{dataset}_{mode}.pdf")
     plt.savefig(out_path, dpi=240, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -115,7 +138,8 @@ def _plot_one_dataset(dataset: str) -> None:
 
 def main() -> None:
     for dataset in DATASETS:
-        _plot_one_dataset(dataset)
+        for mode in MODES:
+            _plot_one_dataset_mode(dataset, mode)
 
 
 if __name__ == "__main__":

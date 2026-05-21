@@ -1,17 +1,16 @@
 # To do
-
+- DONE OOD and ID look good
+- DONE edit plot
 
 1. Run all analyses with PCA 100
-    - Run all meta again with the projection scores
-    - DO ablation with 200 and 250
-        - The run remaining for pca baseline
-    - DO: OOD add missing
+    - RUNNING all meta again with the projection scores
+    - RUNNING ablation with 200 and 250 --- rerun bc of wrong datasets
+        - The reverse ablation and run remaining for pca baseline
     
     - DO: Get heatmap with pca space of 100
-    - Do the edit plot
     
-    - Sample-efficiency has to be done in the full space
-    - Compare all results
+    
+
 
 2. New AI-edit viz
     - Simple linear plot would suffice + correlation within the plot!!!
