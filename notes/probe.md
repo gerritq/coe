@@ -15,10 +15,11 @@
 - DONE Add the layer pca for other domains --- add a layer
 
 1. Run all analyses with PCA 100
+    - RUNNING ablation and full for meta and pca
 2. New pca viz
 3. New AI-edit viz
-2. Write the full appendix with new pca viz
-3. Collect notes and plan
+4. Write the full appendix with new pca viz
+5. Collect notes and plan
 
 
 - Abstract: connect prbe sim to OOD findings as why and shared latent space

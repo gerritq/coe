@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=desc_layer_pca
+#SBATCH --job-name=desc_parallel
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=02:00:00
-#SBATCH --partition=gpu,nmes_gpu
+#SBATCH --time=01:00:00
+#SBATCH --partition=gpu,nmes_gpu,interruptible_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=40GB
 #SBATCH --exclude=erc-hpc-comp054
@@ -20,9 +20,9 @@ SMOKE_TEST="0"
 
 echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
-PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/layer_pca.py \
-  --model "${MODEL}" \
-  --smoke_test "${SMOKE_TEST}"
+# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/layer_pca.py \
+#   --model "${MODEL}" \
+#   --smoke_test "${SMOKE_TEST}"
 
 # PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/map.py \
 # --model "${MODEL}" \
@@ -40,18 +40,18 @@ PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/layer_pca.py \
 
 
 # METRICS=("effective_rank" "von_neumann_entropy" "anisotropy" "intrinsic_dimensionality" )
-METRICS=("curvature")
-SEEDS=(42)
-for METRIC in "${METRICS[@]}"; do
-  for SEED in "${SEEDS[@]}"; do
-    echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
-    PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
-      --model "${MODEL}" \
-      --smoke_test "${SMOKE_TEST}" \
-      --metric "${METRIC}" \
-      --seed "${SEED}"
-  done
-done
+# METRICS=("curvature")
+# SEEDS=(42)
+# for METRIC in "${METRICS[@]}"; do
+#   for SEED in "${SEEDS[@]}"; do
+#     echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
+#     PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
+#       --model "${MODEL}" \
+#       --smoke_test "${SMOKE_TEST}" \
+#       --metric "${METRIC}" \
+#       --seed "${SEED}"
+#   done
+# done
 
 # PROBE VECTORS
 
@@ -87,3 +87,7 @@ done
 #         --complexity "${COMPLEXITY}"
 #     done
 # done
+
+PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/parallel.py \
+  --model "${MODEL}" \
+  --smoke_test "${SMOKE_TEST}"
