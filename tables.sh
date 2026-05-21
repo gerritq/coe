@@ -8,11 +8,22 @@ cd "${ROOT_DIR}"
 # OOD
 # ===========================================================================
 
+# t_edits
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_edits
+
+# f_edits
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_edits
+
+
+# ===========================================================================
+# OOD
+# ===========================================================================
+
 # # t_ood
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood
 
 # # t_ood_pca
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood_pca
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood_pca
 
 # ===========================================================================
 # ID
@@ -28,9 +39,6 @@ PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood_pca
 
 # f_samples
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_samples
-
-# t_edits
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_edits
 
 # t_ablations
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations

@@ -198,21 +198,26 @@ class LinearProbing:
         # Combine (pca-ed) hidden states and attention features
         hidden_pca_features_concatenated = np.concatenate(hidden_pca_features_concatenated, axis=1) 
 
-        # run the meta probe
+        # Project activations on the learned meta probing vector.
         meta_probe = train_out["meta_probe"]
-        meta_scores = meta_probe.predict_proba(hidden_pca_features_concatenated)[:, 1]
+        probe_vector = meta_probe.coef_[0]
+        norm = np.linalg.norm(probe_vector)
+        if norm > 0:
+            probe_vector = probe_vector / norm
+        meta_projection = np.dot(hidden_pca_features_concatenated, probe_vector)
+        meta_projection = np.nan_to_num(meta_projection, nan=0.0, posinf=0.0, neginf=0.0)
 
 
         meta_metrics = metrics(
             y_true=y_true,
-            y_predict=meta_scores,
+            y_predict=meta_projection,
             f1_threshold=0.5,
             acc_threshold=0.5,
         )
 
         return {
             "meta_metrics": meta_metrics,
-            "scores": {"meta_scores": meta_scores.tolist()},
+            "scores": {"meta_projection": meta_projection.tolist()},
         }
 
 

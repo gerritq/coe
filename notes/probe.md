@@ -2,6 +2,7 @@
 
 
 1. Run all analyses with PCA 100
+    - Run all meta again with the projection scores
     - DO ablation with 200 and 250
         - The run remaining for pca baseline
     - DO: OOD add missing
