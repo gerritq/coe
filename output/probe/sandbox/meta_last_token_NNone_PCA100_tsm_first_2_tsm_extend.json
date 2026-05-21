@@ -1,0 +1,28 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "tsm_first",
+        "token_mode": "last_token",
+        "ood": true,
+        "smoke_test": false,
+        "components": 100,
+        "mode": "meta",
+        "training_size": null,
+        "folder": "sandbox",
+        "target_dataset": "tsm_extend",
+        "datetime": "2026-05-21 16:05:57"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.791488,
+            "accuracy": 0.688,
+            "f1": 0.5783783783783784,
+            "tpr_at_fpr_0_05": 0.408,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.8070170932165988
+        }
+    },
+    "sim_correlations": null
+}

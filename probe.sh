@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=probe_meta_100_all_ood
+#SBATCH --job-name=probe_pca_100_all_ood
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=05:00:00
@@ -30,7 +30,7 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "m4_gpt4" "m4_dolly" "m4_cohere" "m4_bloomz" "apt" "editlens")
 
 TOKEN_MODE="last_token"
-MODES=("meta") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
+MODES=("pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
 OOD=1
 COMPONENTS=100
 SMOKE_TEST=0
