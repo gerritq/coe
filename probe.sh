@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_pca_meta_edits
+#SBATCH --job-name=probe_meta_all_ps
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -27,11 +27,11 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("apt" "apt_m4_train")
 
 # ALL
-DATASETS=("apt" "editlens")
+DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "raidModel_cohere_chat" "raidModel_gpt4" "raidModel_llama_chat" "raidModel_mistral_chat")
 
 TOKEN_MODE="last_token"
 MODES=("meta") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 
-OOD=0
+OOD=1
 COMPONENTS=100
 SMOKE_TEST=0
 FOLDER="sandbox"
