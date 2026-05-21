@@ -1,24 +1,26 @@
 # To do
-- DONE write lit
-- DONE write probing vectors
-- DONE conclusion
-- DONE add radar
-- DONE smoothenss measure ---  no results
-- DONE Model size exp running, add to appendix 
-- DONE write the table desc
-- DONE cut run but save before 
-- DONE cut results massively!
-- DONE fluo non linear
-- DONE DimScore for multi
-- DONE Add represnetaiotn metrics fmrula and intution 
-- DONE qwen to ablations
-- DONE Add the layer pca for other domains --- add a layer
+
 
 1. Run all analyses with PCA 100
-    - RUNNING ablation and full for meta and pca
-2. New pca viz
-3. New AI-edit viz
+    - DO ablation with 200 and 250
+        - The run remaining for pca baseline
+    - DO: OOD add missing
+    
+    - DO: Get heatmap with pca space of 100
+    - Do the edit plot
+    
+    - Sample-efficiency has to be done in the full space
+    - Compare all results
+
+2. New AI-edit viz
     - Simple linear plot would suffice + correlation within the plot!!!
+
+
+
+2. New pca viz
+    - Do it on clean data and our --- draw lines
+
+
 4. Write the full appendix with new pca viz
 5. Collect notes and plan
 

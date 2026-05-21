@@ -276,7 +276,7 @@ def _render(rows: list[dict[str, Any]]) -> str:
 
     lines.append(r"\addlinespace")
     lines.append(r"\multicolumn{5}{l}{\textbf{PCA Activations}} \\")
-    keep_k = {10, 50, 100}
+    keep_k = {10, 50, 100, 150}
     for k in pca_components:
         if k not in keep_k:
             continue

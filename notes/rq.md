@@ -3,6 +3,8 @@
 - Should it maybe be
     - Decision boundary is linear --- but why
 
+- Need to add 100 components
+    - In the story and methodology
 
 # Representation Quality Analysis
 
