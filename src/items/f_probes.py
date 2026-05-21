@@ -7,7 +7,7 @@ import numpy as np
 
 
 BASE_DIR = os.getenv("BASE_COE", ".")
-DESC_DIR = os.path.join(BASE_DIR, "output", "desc")
+DESC_DIR = os.path.join(BASE_DIR, "output", "probe", "vectors")
 OUT_DIR = os.path.join(BASE_DIR, "output", "item")
 
 
@@ -44,14 +44,22 @@ def _short_name(dataset: str) -> str:
 
 
 def _find_probe_file(mode: str) -> str:
-    matches = sorted(
-        [
-            p
-            for p in Path(DESC_DIR).glob(f"probe_vectors_{mode}_*.json")
-            if p.is_file()
-        ],
-        key=lambda p: p.stat().st_mtime,
-    )
+    matches = []
+    for p in Path(DESC_DIR).glob("probe_vectors_*.json"):
+        if not p.is_file():
+            continue
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                obj = json.load(f)
+        except Exception:
+            continue
+        args = obj.get("args", {})
+        if not isinstance(args, dict):
+            continue
+        if args.get("mode") == mode:
+            matches.append(p)
+
+    matches = sorted(matches, key=lambda p: p.stat().st_mtime)
     if not matches:
         raise FileNotFoundError(f"No probe vector file found for mode={mode} in {DESC_DIR}")
     if len(matches) > 1:
@@ -130,7 +138,7 @@ def _plot_heatmap(sim: np.ndarray, datasets: list[str], out_path: str, title: st
 def main() -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
 
-    for mode, out_name in [("default", "f_probes.pdf"), ("pca", "f_probes_pca.pdf")]: # ("pca_space", "f_probes_pca_space.pdf")
+    for mode in ["default", "pca", "pca_space"]:
         try:
             path = _find_probe_file(mode)
         except FileNotFoundError:
@@ -140,7 +148,7 @@ def main() -> None:
         if len(datasets) != 16:
             print(f"[Warning] Expected 16 datasets for mode={mode}, found {len(datasets)}")
         sim = _cosine_matrix(x)
-        out_path = os.path.join(OUT_DIR, out_name)
+        out_path = os.path.join(OUT_DIR, f"f_probes_{mode}.pdf")
         _plot_heatmap(sim, datasets, out_path, title=f"Probe Cosine Similarity ({mode})")
 
 

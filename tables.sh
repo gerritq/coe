@@ -51,7 +51,7 @@ cd "${ROOT_DIR}"
 # ===========================================================================
 
 # t_ablations
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
 
 # t_ablations_pca
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_pca
@@ -59,9 +59,9 @@ PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
 # ===========================================================================
 # PROBES
 # ===========================================================================
-# what is this
+
 # t_probes
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_probes
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_probes
 
 # ===========================================================================
 # QUAL

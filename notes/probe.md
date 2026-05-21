@@ -1,46 +1,32 @@
 # To do
 - DONE OOD and ID look good
 - DONE edit plot
+- DONE New AI-edit viz
+- DONE heatmap with PCA space
+
+- Hanqi plot
+
+Writing
+- Results
+    - (!) Rewrite each experiment section with: Motivation -> RQ -> How we answer it -> results
+
+- Abstract: Explain good OOD through the shared latent MGT direction (across dimensions)
+
+- Intro
+    - Intro cut Hanqi suggested (mention 15 multiple times)
+    - New strody clearer
+    - Contributions sharper
+    - Additionally, while a growing direction is based on rewrite-based detectors that exploit that LLMs rewrite HWT and MGT differently, which adds a costly overhead (Ada, biscope)
+    - Use the motivation as in Time and Space for detectors OR We ask: is their another direction of models that is more lightweight, robsut and sample efficient than curernt supervised detecotrs?
+
+- R Analysis
+    - Apply new logic and make the paragraphs sharper
+    - End with the strong linearity motivation that Hanqi suggested
 
 1. Run all analyses with PCA 100
     - RUNNING all meta again with the projection scores
     - RUNNING ablation with 200 and 250 --- rerun bc of wrong datasets
         - The reverse ablation and run remaining for pca baseline
-    
-    - DO: Get heatmap with pca space of 100
-    
-    
-
-
-2. New AI-edit viz
-    - Simple linear plot would suffice + correlation within the plot!!!
-
-
-
-2. New pca viz
-    - Do it on clean data and our --- draw lines
-
-
-4. Write the full appendix with new pca viz
-5. Collect notes and plan
-
-
-- Abstract: connect prbe sim to OOD findings as why and shared latent space
-- The only furhter analysis into probing behaviour revela .. .
-- Growing body focuses on learning based l2d l2r.. 
-    - however add overherad coast of rewrinting based! also in ada but in bicsope and learn to distance o guess
-    We ask: is their another direction of models that is more lightweight, robsut and sample efficient than curernt supervised detecotrs?
-
-- Hanqi md feedback
-- Intro cut Hanqi suggested
-- Improve the representation analysis
-- Consider OOB for appendix
-    - At least for probes and reference to the probe vector sim plot
-Later
-- Add the benchmarks and baselines to the appendix
-
-
-
 ---
 
 2. **MGT Representations**
