@@ -21,11 +21,14 @@ cd "${ROOT_DIR}"
 # # t_ood
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood
 
+# # f_ood
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_ood
+
 # # t_ood_pca
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood_pca
 
-# # f_ood
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_ood
+# f_ood_pca
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_ood_pca
 
 # ===========================================================================
 # ID
@@ -51,7 +54,7 @@ cd "${ROOT_DIR}"
 # ===========================================================================
 
 # t_ablations
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
 
 # t_ablations_pca
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_pca
@@ -61,7 +64,7 @@ cd "${ROOT_DIR}"
 # ===========================================================================
 
 # t_probes
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_probes
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_probes
 
 # ===========================================================================
 # QUAL

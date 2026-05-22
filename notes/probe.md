@@ -3,33 +3,29 @@
 - DONE edit plot
 - DONE New AI-edit viz
 - DONE heatmap with PCA space
+- DONE Update tables with new meta scores
+- DONE Introductio
 
-- Tables/Figures
-    - Update tables with new meta scores
-    - Update and refactor ablation table
-    - Hanqi plot
 
-Writing
-- Results
-    - (!) Rewrite each experiment section with: Motivation -> RQ -> How we answer it -> results
+- (!) Rewrite each experiment section with: Motivation -> RQ -> How we answer it -> results
+
+- Sample efficiency with full pca space but only few training instnaces 
+
+- Full appendix
+    - Detectors
+    - Benchmarks
+    - Ablation new
+    - Mapping
+
+
+- R Analysis
+    - Rewrite the quality section
+    - End with the strong linearity motivation that Hanqi suggested
 
 - Abstract: Explain good OOD through the shared latent MGT direction (across dimensions)
 
-- Intro
-    - Intro cut Hanqi suggested (mention 15 multiple times)
-    - New strody clearer
-    - Contributions sharper
-    - Additionally, while a growing direction is based on rewrite-based detectors that exploit that LLMs rewrite HWT and MGT differently, which adds a costly overhead (Ada, biscope)
-    - Use the motivation as in Time and Space for detectors OR We ask: is their another direction of models that is more lightweight, robsut and sample efficient than curernt supervised detecotrs?
+- Hanqi figure
 
-- R Analysis
-    - Apply new logic and make the paragraphs sharper
-    - End with the strong linearity motivation that Hanqi suggested
-
-1. Run all analyses with PCA 100
-    - RUNNING all meta again with the projection scores
-    - RUNNING ablation with 200 and 250 --- rerun bc of wrong datasets
-        - The reverse ablation and run remaining for pca baseline
 ---
 
 2. **MGT Representations**

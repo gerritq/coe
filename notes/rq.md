@@ -6,6 +6,8 @@
 - Need to add 100 components
     - In the story and methodology
 
+---
+
 # Representation Quality Analysis
 
 Skean et al. (2025)
@@ -35,7 +37,7 @@ Skean et al. (2025)
 
 - They group entropy to compression and curvature,rank,id to geometry; but the "Layer Optimization" paper does it differently
 
-
+---
 
 ## Information Content
 
@@ -139,6 +141,14 @@ Observation:
 - Help to explain why the linear separability emerge
 
 - These metrics can provide a plausible mechanistic explanation for why linear boundaries work
+
+
+---
+
+# Introduction Logic
+
+---
+
 
 Hi Hanqi, about your comment "How about this logic: firstly, we just blindly (not real blind) evaluate existing latent metrics (so we need to justify they are from different aspects), then the evaluation results point out, they could be linear separated."
 
