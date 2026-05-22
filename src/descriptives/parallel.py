@@ -63,11 +63,11 @@ M4_DOMAINS = ["wikipedia", "arxiv", "reddit", "peerread"]
 M4_REFERENCE = "wikipedia"
 
 
-# Fixed label colors across plots.
-COLOR_MAP = {
-    0: ["#1f77b4", "#2ca02c", "#9467bd", "#8c564b"],  # human
-    1: ["#ff7f0e", "#d62728", "#e377c2", "#7f7f7f"],  # machine
-}
+# Fixed colors across plots (4 clouds per subplot).
+REF_HUMAN_COLOR = "#1f77b4"
+REF_MACHINE_COLOR = "#ff7f0e"
+OTHER_HUMAN_COLOR = "#2ca02c"
+OTHER_MACHINE_COLOR = "#d62728"
 
 
 def collect_mid_layer_representations(
@@ -108,11 +108,9 @@ def load_benchmark_dataset_states(
             )
         )
 
-        test_items = ds.get("test", [])
-        if len(test_items) == 0:
-            test_items = ds.get("train", [])
-
-        items = [dict(x) for x in test_items]
+        # Use train split for the four non-M4 benchmarks.
+        train_items = ds.get("train", [])
+        items = [dict(x) for x in train_items]
         x, y = collect_mid_layer_representations(items, inference=inference)
         out[dataset_name] = {"x": x, "y": y}
         print(f"Loaded {dataset_name}: n={len(y)}")
@@ -170,7 +168,6 @@ def _plot_pair_subplot(
     ref_name: str,
     other_name: str,
     labels_map: dict[str, str],
-    pair_index: int,
 ) -> None:
     datasets = [ref_name, other_name]
 
@@ -182,12 +179,16 @@ def _plot_pair_subplot(
             mask = y == lab
             if not np.any(mask):
                 continue
+            if dataset_name == ref_name:
+                color = REF_HUMAN_COLOR if lab == 0 else REF_MACHINE_COLOR
+            else:
+                color = OTHER_HUMAN_COLOR if lab == 0 else OTHER_MACHINE_COLOR
             ax.scatter(
                 x2d[mask, 0],
                 x2d[mask, 1],
                 s=12,
                 alpha=0.7,
-                c=COLOR_MAP[lab][pair_index],
+                c=color,
                 label=f"{labels_map[dataset_name]} {'Human' if lab == 0 else 'Machine'}",
                 edgecolors="none",
             )
@@ -216,7 +217,6 @@ def plot_benchmark_parallel(
             ref_name=ref_name,
             other_name=other,
             labels_map=labels_map,
-            pair_index=idx,
         )
 
     fig.tight_layout()
