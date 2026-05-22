@@ -4,7 +4,10 @@
 - DONE New AI-edit viz
 - DONE heatmap with PCA space
 
-- Hanqi plot
+- Tables/Figures
+    - Update tables with new meta scores
+    - Update and refactor ablation table
+    - Hanqi plot
 
 Writing
 - Results
