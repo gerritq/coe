@@ -5,26 +5,22 @@
 - DONE heatmap with PCA space
 - DONE Update tables with new meta scores
 - DONE Introductio
+- DONE (!) Rewrite each experiment section with: Motivation -> RQ -> How we answer it -> results
+- DONE benchmarsk, new ablation
+- DONE Rewrite the qual analysis
+    - - End with the strong linearity motivation that Hanqi suggested
+
+- Sample efficiency with full pca space but only few training instances
+- Add info flow metrics
+- Rm entropy
+- Hanqi figure
 
 
-- (!) Rewrite each experiment section with: Motivation -> RQ -> How we answer it -> results
-
-- Sample efficiency with full pca space but only few training instnaces 
-
-- Full appendix
+- Appendix
     - Detectors
-    - Benchmarks
-    - Ablation new
-    - Mapping
-
-
-- R Analysis
-    - Rewrite the quality section
-    - End with the strong linearity motivation that Hanqi suggested
 
 - Abstract: Explain good OOD through the shared latent MGT direction (across dimensions)
 
-- Hanqi figure
 
 ---
 

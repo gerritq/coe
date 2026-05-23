@@ -1,0 +1,35 @@
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{4}{c}{\textbf{TSM~\citep{quaremba2026tsm}}} \\
+\cmidrule(lr){2-5}
+\textbf{Setting} & \textbf{FP} & \textbf{PE} & \textbf{SUM} & \textbf{TST} \\
+\midrule
+Baseline & 0.971 & 0.944 & 0.979 & 0.898 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Token Aggregation}} \\
+\hspace*{1em}Pooling & -0.020 & -0.156 & -0.022 & -0.086 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Layer Selection}} \\
+\hspace*{1em}First layer & -0.389 & -0.318 & -0.432 & -0.357 \\
+\hspace*{1em}Last layer & -0.036 & -0.079 & -0.038 & -0.066 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Model}} \\
+\hspace*{1em}Llama-3B & +0.001 & -0.013 & +0.005 & -0.001 \\
+\hspace*{1em}Llama-1B & -0.012 & -0.035 & +0.003 & -0.013 \\
+\hspace*{1em}Qwen-8B & +0.015 & +0.014 & +0.010 & +0.029 \\
+\hspace*{1em}Qwen-4B & +0.014 & +0.010 & +0.007 & +0.027 \\
+\hspace*{1em}Qwen-0.6B &  &  &  &  \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{Regularization Penalty}} \\
+\hspace*{1em}C=0.01 & -0.001 & -0.000 & -0.000 & -0.000 \\
+\hspace*{1em}C=0.1 & -0.000 & -0.000 & +0.000 & +0.000 \\
+\hspace*{1em}C=10 & +0.000 & -0.000 & -0.000 & -0.000 \\
+\addlinespace
+\multicolumn{5}{l}{\textbf{PCA Activations}} \\
+\hspace*{1em}k=10 & -0.065 & -0.118 & -0.047 & -0.121 \\
+\hspace*{1em}k=50 & -0.010 & -0.016 & -0.009 & -0.024 \\
+\hspace*{1em}k=150 & +0.003 & +0.004 & +0.000 & +0.009 \\
+\hspace*{1em}k=200 & +0.002 & +0.004 & -0.001 & +0.010 \\
+\hspace*{1em}k=250 & +0.002 & +0.005 & -0.002 & +0.008 \\
+\bottomrule
+\end{tabular}

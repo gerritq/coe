@@ -134,7 +134,8 @@ class Probing:
 
     def _train_meta_probe(self, 
                           x_hidden_train: np.ndarray, 
-                          y_train: np.ndarray) -> dict[str, Any]:
+                          y_train: np.ndarray,
+                          x_hidden_train_pca: np.ndarray | None = None) -> dict[str, Any]:
         
         scalers_by_layer = []
         pca_by_layer = []
@@ -144,16 +145,20 @@ class Probing:
 
             # get data
             x_hidden_layer_train = x_hidden_train[layer]  # (n_samples, d_model)
+            x_hidden_layer_pca_train = x_hidden_train_pca[layer] if x_hidden_train_pca is not None else x_hidden_layer_train
 
             # Hidden states scaling and pca
             scaler = StandardScaler()
-            x_hidden_layer_train_scaled = scaler.fit_transform(x_hidden_layer_train)
+            x_hidden_layer_pca_train_scaled = scaler.fit_transform(x_hidden_layer_pca_train)
             
             if self.args.mode in ["meta"]:
                 layer_pca = PCA(n_components=self.args.components, random_state=42)
-                x_hidden_layer_train_scaled = layer_pca.fit_transform(x_hidden_layer_train_scaled)
+                x_hidden_layer_pca_train_scaled = layer_pca.fit_transform(x_hidden_layer_pca_train_scaled)
+                x_hidden_layer_train_scaled = scaler.transform(x_hidden_layer_train)
+                x_hidden_layer_train_scaled = layer_pca.transform(x_hidden_layer_train_scaled)
             else:
                 layer_pca = None
+                x_hidden_layer_train_scaled = scaler.transform(x_hidden_layer_train)
 
             hidden_pca_features_concatenated.append(x_hidden_layer_train_scaled)
 
@@ -180,7 +185,8 @@ class Probing:
                           x_train: np.ndarray,
                           y_train: np.ndarray,
                           x_val: np.ndarray,
-                          y_val: np.ndarray
+                          y_val: np.ndarray,
+                          x_train_pca: np.ndarray | None = None,
                           ) -> dict[str, Any]:
 
         scalers_by_layer = []
@@ -194,13 +200,18 @@ class Probing:
 
             # get data and scale
             x_layer_train = x_train[layer]  # (n_samples, d_model)
+            x_layer_pca_train = x_train_pca[layer] if x_train_pca is not None else x_layer_train
 
             scaler = StandardScaler()
-            x_layer_train_scaled = scaler.fit_transform(x_layer_train)
+            x_layer_pca_train_scaled = scaler.fit_transform(x_layer_pca_train)
 
             if self.args.mode in ["pca"]:
                 pca = PCA(n_components=self.args.components, random_state=42)
-                x_layer_train_scaled = pca.fit_transform(x_layer_train_scaled)
+                x_layer_pca_train_scaled = pca.fit_transform(x_layer_pca_train_scaled)
+                x_layer_train_scaled = scaler.transform(x_layer_train)
+                x_layer_train_scaled = pca.transform(x_layer_train_scaled)
+            else:
+                x_layer_train_scaled = scaler.transform(x_layer_train)
 
             probe_kind = "linear"
             if self.args.mode == "mlp":
@@ -408,9 +419,20 @@ class Probing:
 
 
     def run(self, args: Namespace) -> None:
+        # source
         source_data = load_dataset(args=args)
         train = self._collect_model_states(source_data["train"])
-        val = self._collect_model_states(source_data["val"])
+        val = self._collect_model_states(source_data["val"])    
+
+        # separate full training subset for fitting scaler/PCA in pca mode
+        pca_train = None
+        if args.mode in {"pca", "meta"}:
+            pca_args = Namespace(**vars(args))
+            pca_args.training_size = None
+            pca_data = load_dataset(args=pca_args)
+            pca_train = self._collect_model_states(pca_data["train"])
+        
+        # ood
         dataset_group = args.dataset.split("_")[0]
         target_datasets = OOD.get(dataset_group, [args.dataset])
 
@@ -422,11 +444,13 @@ class Probing:
             train_out = self._train_linear_probe(x_train=train["hidden_x"], 
                                                 y_train=train["y"],
                                                 x_val=val["hidden_x"], 
-                                                y_val=val["y"])
+                                                y_val=val["y"],
+                                                x_train_pca=(pca_train["hidden_x"] if pca_train is not None else None))
         # meta probe
         else:
             train_out = self._train_meta_probe(x_hidden_train=train["hidden_x"], 
-                                               y_train=train["y"])
+                                               y_train=train["y"],
+                                               x_hidden_train_pca=(pca_train["hidden_x"] if pca_train is not None else None))
 
         # RUNNING EAL
         for target_dataset in target_datasets:
