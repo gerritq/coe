@@ -31,30 +31,30 @@ BENCHMARK_SPECS: dict[str, dict[str, Any]] = {
         "datasets": ["multisocial_en", "multisocial_de", "multisocial_ru", "multisocial_zh"],
         "reference": "multisocial_en",
         "labels": {
-            "multisocial_en": "en",
-            "multisocial_de": "de",
-            "multisocial_ru": "ru",
-            "multisocial_zh": "zh",
+            "multisocial_en": "English",
+            "multisocial_de": "German",
+            "multisocial_ru": "Russian",
+            "multisocial_zh": "Chinese",
         },
     },
     "tsm": {
         "datasets": ["tsm_first", "tsm_extend", "tsm_sums", "tsm_tst"],
         "reference": "tsm_first",
         "labels": {
-            "tsm_first": "first",
-            "tsm_extend": "extend",
-            "tsm_sums": "sums",
-            "tsm_tst": "tst",
+            "tsm_first": "First",
+            "tsm_extend": "Extend",
+            "tsm_sums": "Sums",
+            "tsm_tst": "Tst",
         },
     },
     "raid": {
         "datasets": ["raidModel_cohere_chat", "raidModel_gpt4", "raidModel_llama_chat", "raidModel_mistral_chat"],
         "reference": "raidModel_gpt4",
         "labels": {
-            "raidModel_cohere_chat": "cohere",
-            "raidModel_gpt4": "gpt4",
-            "raidModel_llama_chat": "llama",
-            "raidModel_mistral_chat": "mistral",
+            "raidModel_cohere_chat": "Cohere",
+            "raidModel_gpt4": "GPT4",
+            "raidModel_llama_chat": "Llama",
+            "raidModel_mistral_chat": "Mistral",
         },
     },
 }
@@ -108,9 +108,9 @@ def load_benchmark_dataset_states(
             )
         )
 
-        # Use train split for the four non-M4 benchmarks.
-        train_items = ds.get("train", [])
-        items = [dict(x) for x in train_items]
+        # Use test split for the non-M4 benchmarks.
+        test_items = ds.get("test", [])
+        items = [dict(x) for x in test_items]
         x, y = collect_mid_layer_representations(items, inference=inference)
         out[dataset_name] = {"x": x, "y": y}
         print(f"Loaded {dataset_name}: n={len(y)}")
@@ -183,12 +183,14 @@ def _plot_pair_subplot(
                 color = REF_HUMAN_COLOR if lab == 0 else REF_MACHINE_COLOR
             else:
                 color = OTHER_HUMAN_COLOR if lab == 0 else OTHER_MACHINE_COLOR
+            marker = "o" if lab == 0 else "^"
             ax.scatter(
                 x2d[mask, 0],
                 x2d[mask, 1],
                 s=12,
                 alpha=0.7,
                 c=color,
+                marker=marker,
                 label=f"{labels_map[dataset_name]} {'Human' if lab == 0 else 'Machine'}",
                 edgecolors="none",
             )
@@ -267,7 +269,7 @@ def run(args: Namespace) -> None:
         dataset_order=M4_DOMAINS,
         seed=args.seed,
     )
-    m4_labels = {d: d for d in M4_DOMAINS}
+    m4_labels = {d: d.capitalize() for d in M4_DOMAINS}
     plot_benchmark_parallel(
         benchmark_name="m4",
         projected=m4_projected,

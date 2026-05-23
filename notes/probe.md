@@ -11,9 +11,10 @@
     - - End with the strong linearity motivation that Hanqi suggested
 
 - Sample efficiency with full pca space but only few training instances
+- Hanqi figure
 - Add info flow metrics
 - Rm entropy
-- Hanqi figure
+
 
 
 - Appendix
