@@ -1,6 +1,7 @@
 import json
 import os
 from argparse import ArgumentParser, Namespace
+from itertools import combinations
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -27,36 +28,36 @@ BENCHMARK_SPECS: dict[str, dict[str, Any]] = {
             "drlDomain_xsum": "News",
         },
     },
-    "multisocial": {
-        "datasets": ["multisocial_en", "multisocial_de", "multisocial_ru", "multisocial_zh"],
-        "reference": "multisocial_en",
-        "labels": {
-            "multisocial_en": "English",
-            "multisocial_de": "German",
-            "multisocial_ru": "Russian",
-            "multisocial_zh": "Chinese",
-        },
-    },
-    "tsm": {
-        "datasets": ["tsm_first", "tsm_extend", "tsm_sums", "tsm_tst"],
-        "reference": "tsm_first",
-        "labels": {
-            "tsm_first": "First",
-            "tsm_extend": "Extend",
-            "tsm_sums": "Sums",
-            "tsm_tst": "Tst",
-        },
-    },
-    "raid": {
-        "datasets": ["raidModel_cohere_chat", "raidModel_gpt4", "raidModel_llama_chat", "raidModel_mistral_chat"],
-        "reference": "raidModel_gpt4",
-        "labels": {
-            "raidModel_cohere_chat": "Cohere",
-            "raidModel_gpt4": "GPT4",
-            "raidModel_llama_chat": "Llama",
-            "raidModel_mistral_chat": "Mistral",
-        },
-    },
+    # "multisocial": {
+    #     "datasets": ["multisocial_en", "multisocial_de", "multisocial_ru", "multisocial_zh"],
+    #     "reference": "multisocial_en",
+    #     "labels": {
+    #         "multisocial_en": "English",
+    #         "multisocial_de": "German",
+    #         "multisocial_ru": "Russian",
+    #         "multisocial_zh": "Chinese",
+    #     },
+    # },
+    # "tsm": {
+    #     "datasets": ["tsm_first", "tsm_extend", "tsm_sums", "tsm_tst"],
+    #     "reference": "tsm_first",
+    #     "labels": {
+    #         "tsm_first": "First",
+    #         "tsm_extend": "Extend",
+    #         "tsm_sums": "Sums",
+    #         "tsm_tst": "Tst",
+    #     },
+    # },
+    # "raid": {
+    #     "datasets": ["raidModel_cohere_chat", "raidModel_gpt4", "raidModel_llama_chat", "raidModel_mistral_chat"],
+    #     "reference": "raidModel_gpt4",
+    #     "labels": {
+    #         "raidModel_cohere_chat": "Cohere",
+    #         "raidModel_gpt4": "GPT4",
+    #         "raidModel_llama_chat": "Llama",
+    #         "raidModel_mistral_chat": "Mistral",
+    #     },
+    # },
 }
 
 M4_DOMAINS = ["wikipedia", "arxiv", "reddit", "peerread"]
@@ -81,8 +82,10 @@ def collect_mid_layer_representations(
     for item in items:
         out = inference.run(item=item, args=infer_args)
         hs = out["hidden_states"]
-        mid_idx = len(hs) // 2
-        vec = hs[mid_idx].detach().to(torch.float32).cpu().numpy()
+        layer_idx = 10
+        if layer_idx >= len(hs):
+            raise ValueError(f"Requested layer {layer_idx}, but model returned only {len(hs)} layers.")
+        vec = hs[layer_idx].detach().to(torch.float32).cpu().numpy()
         x_all.append(vec)
         y_all.append(int(out["label"]))
 
@@ -109,7 +112,7 @@ def load_benchmark_dataset_states(
         )
 
         # Use test split for the non-M4 benchmarks.
-        test_items = ds.get("test", [])
+        test_items = ds.get("train", [])
         items = [dict(x) for x in test_items]
         x, y = collect_mid_layer_representations(items, inference=inference)
         out[dataset_name] = {"x": x, "y": y}
@@ -170,15 +173,18 @@ def _plot_pair_subplot(
     labels_map: dict[str, str],
 ) -> None:
     datasets = [ref_name, other_name]
+    centers: dict[str, dict[int, np.ndarray]] = {}
 
     for i, dataset_name in enumerate(datasets):
         x2d = projected[dataset_name]["x2d"]
         y = projected[dataset_name]["y"]
+        centers[dataset_name] = {}
 
         for lab in [0, 1]:
             mask = y == lab
             if not np.any(mask):
                 continue
+            centers[dataset_name][lab] = x2d[mask].mean(axis=0)
             if dataset_name == ref_name:
                 color = REF_HUMAN_COLOR if lab == 0 else REF_MACHINE_COLOR
             else:
@@ -194,6 +200,45 @@ def _plot_pair_subplot(
                 label=f"{labels_map[dataset_name]} {'Human' if lab == 0 else 'Machine'}",
                 edgecolors="none",
             )
+
+    # Draw direction from human center to machine center for each subset in the panel.
+    for dataset_name in datasets:
+        if 0 not in centers.get(dataset_name, {}) or 1 not in centers.get(dataset_name, {}):
+            continue
+        p_h = centers[dataset_name][0]
+        p_m = centers[dataset_name][1]
+        color = "#000000"
+
+        # dashed direction line, extended beyond both centers
+        delta = p_m - p_h
+        p_start = p_h - 0.25 * delta
+        p_end = p_m + 0.25 * delta
+        ax.plot(
+            [p_start[0], p_end[0]],
+            [p_start[1], p_end[1]],
+            linestyle="--",
+            linewidth=2.4,
+            color=color,
+            alpha=0.98,
+            zorder=6,
+        )
+        # arrow head beyond machine center, pointing toward machine direction
+        p_tail = p_m + 0.05 * delta
+        p_head = p_m + 0.30 * delta
+        ax.annotate(
+            "",
+            xy=(p_head[0], p_head[1]),
+            xytext=(p_tail[0], p_tail[1]),
+            arrowprops=dict(
+                arrowstyle="-|>",
+                color=color,
+                lw=2.4,
+                mutation_scale=18,
+                shrinkA=0,
+                shrinkB=0,
+            ),
+            zorder=7,
+        )
 
     ax.set_xlabel("PC1")
     ax.set_ylabel("PC2")
@@ -224,6 +269,34 @@ def plot_benchmark_parallel(
     fig.tight_layout()
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = os.path.join(OUT_DIR, f"f_parallel_{benchmark_name}.pdf")
+    fig.savefig(out_path, dpi=240, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved: {out_path}")
+
+
+def plot_detectrl_all_pairs(
+    projected: dict[str, dict[str, np.ndarray]],
+    detectrl_datasets: list[str],
+    labels_map: dict[str, str],
+) -> None:
+    pairs = list(combinations(detectrl_datasets, 2))
+    fig, axes = plt.subplots(2, 3, figsize=(15.0, 8.6), squeeze=False)
+
+    for idx, (left_ds, right_ds) in enumerate(pairs):
+        r = idx // 3
+        c = idx % 3
+        ax = axes[r, c]
+        _plot_pair_subplot(
+            ax=ax,
+            projected=projected,
+            ref_name=left_ds,
+            other_name=right_ds,
+            labels_map=labels_map,
+        )
+
+    fig.tight_layout()
+    os.makedirs(OUT_DIR, exist_ok=True)
+    out_path = os.path.join(OUT_DIR, "f_parallel_detectrl_all_pairs.pdf")
     fig.savefig(out_path, dpi=240, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved: {out_path}")
@@ -263,20 +336,27 @@ def run(args: Namespace) -> None:
             labels_map=labels_map,
         )
 
-    m4_states = load_m4_domain_states(args=args, inference=inference)
-    m4_projected = build_combined_pca_projection(
-        dataset_states=m4_states,
-        dataset_order=M4_DOMAINS,
-        seed=args.seed,
-    )
-    m4_labels = {d: d.capitalize() for d in M4_DOMAINS}
-    plot_benchmark_parallel(
-        benchmark_name="m4",
-        projected=m4_projected,
-        dataset_order=M4_DOMAINS,
-        ref_name=M4_REFERENCE,
-        labels_map=m4_labels,
-    )
+        if benchmark_name == "detectrl":
+            plot_detectrl_all_pairs(
+                projected=projected,
+                detectrl_datasets=dataset_order,
+                labels_map=labels_map,
+            )
+
+    # m4_states = load_m4_domain_states(args=args, inference=inference)
+    # m4_projected = build_combined_pca_projection(
+    #     dataset_states=m4_states,
+    #     dataset_order=M4_DOMAINS,
+    #     seed=args.seed,
+    # )
+    # m4_labels = {d: d.capitalize() for d in M4_DOMAINS}
+    # plot_benchmark_parallel(
+    #     benchmark_name="m4",
+    #     projected=m4_projected,
+    #     dataset_order=M4_DOMAINS,
+    #     ref_name=M4_REFERENCE,
+    #     labels_map=m4_labels,
+    # )
 
 
 def main() -> None:
