@@ -78,7 +78,6 @@ MODEL_LABELS = {
 }
 
 ZERO_SHOT_MODELS = [
-    "entropy",
     "likelihood",
     "llr",
     "rank",

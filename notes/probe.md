@@ -9,11 +9,13 @@
 - DONE benchmarsk, new ablation
 - DONE Rewrite the qual analysis
     - - End with the strong linearity motivation that Hanqi suggested
+- DONE Rm entropy
 
 - Sample efficiency with full pca space but only few training instances
+    - Run seeds
 - Hanqi figure
 - Add info flow metrics
-- Rm entropy
+
 
 
 

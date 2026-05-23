@@ -37,7 +37,7 @@ cd "${ROOT_DIR}"
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id
 
 #  t_id_pca
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id_pca
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id_pca
 
 # ===========================================================================
 # LAYER
@@ -57,7 +57,7 @@ cd "${ROOT_DIR}"
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
 
 # t_ablations_pca
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_pca
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_pca
 
 # ===========================================================================
 # PROBES
