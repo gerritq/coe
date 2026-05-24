@@ -170,7 +170,7 @@ def metrics(y_true: np.ndarray,
 
 
 
-def return_args(args: Any | None) -> dict[str, Any] | None:
+def return_args(args) -> dict[str, Any]:
     if args is None:
         return None
     if isinstance(args, dict):
