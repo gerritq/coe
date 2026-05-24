@@ -72,7 +72,7 @@ def _tex_escape(text: str) -> str:
 def _fmt(score: float | None) -> str:
     if score is None:
         return ""
-    return f"{score:.3f}"
+    return f"{score:.4f}"
 
 
 def _fmt_probe(score: float | None, style: str | None) -> str:
@@ -89,7 +89,7 @@ def _fmt_probe(score: float | None, style: str | None) -> str:
 def _delta_str(v: float | None, b: float | None) -> str:
     if v is None or b is None:
         return ""
-    d = (v - b) * 100.0
+    d = (round(v, 4) - round(b, 4)) * 100.0
     if d >= 0:
         return f"\\textcolor{{green!60!black}}{{+{abs(d):.2f}}}"
     return f"\\textcolor{{orange!85!black}}{{-{abs(d):.2f}}}"
@@ -211,7 +211,7 @@ def render_table(
                 v = probe_rows.get(row_id, {}).get(d)
             if v is None:
                 continue
-            vals.append((row_id, round(float(v), 3)))
+            vals.append((row_id, round(float(v), 4)))
         if not vals:
             continue
         unique_scores = sorted({v for _, v in vals}, reverse=True)
