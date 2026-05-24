@@ -25,7 +25,7 @@ cd "${ROOT_DIR}"
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_ood
 
 # # t_ood_pca
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood_pca
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood_pca
 
 # f_ood_pca
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_ood_pca
@@ -38,6 +38,9 @@ PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood_pca
 
 #  t_id_pca
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id_pca
+
+#  t_id_attacks_pca
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id_attacks_pca
 
 # ===========================================================================
 # LAYER
@@ -72,6 +75,9 @@ PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ood_pca
 
 # f_qual
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_qual
+
+# f_qual_if
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_qual_if
 
 # ===========================================================================
 # SAMPLES

@@ -1,0 +1,29 @@
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{4}{c}{\textbf{DetectRL Attacks~\citep{wu2024detectrl}}} \\
+\cmidrule(lr){2-5}
+\textbf{Model} & \textbf{Mixing} & \textbf{Paraphrase} & \textbf{Perturbation} & \textbf{Prompt} \\
+\midrule
+\multicolumn{5}{l}{\textbf{Zero-shot}} \\
+\midrule
+Likelihood & 0.956 & 0.697 & 0.653 & 0.963 \\
+LLR & 0.923 & 0.681 & 0.688 & 0.929 \\
+Rank & 0.212 & 0.411 & 0.819 & 0.158 \\
+Binoculars & 0.150 & 0.281 & 0.442 & 0.198 \\
+FastDetectGPT & 0.891 & 0.786 & 0.622 & 0.893 \\
+GECScore & 0.718 & 0.678 & 0.607 & 0.706 \\
+RAIDAR & 0.739 & 0.721 & 0.650 & 0.712 \\
+\midrule
+\multicolumn{5}{l}{\textbf{Supervised}} \\
+\midrule
+OpenAI-RoBERTa & 0.123 & 0.101 & 0.305 & 0.142 \\
+EditLens & 0.330 & 0.563 & 0.578 & 0.356 \\
+RepreGuard & 0.960 & 0.848 & 0.982 & 0.926 \\
+BiScope & \cellcolor{cyan!25}\textbf{0.999} & \cellcolor{orange!25}\underline{0.969} & 0.988 & \cellcolor{orange!25}\underline{0.995} \\
+TextFluoroscopy & \cellcolor{orange!25}\underline{0.994} & \cellcolor{cyan!25}\textbf{0.997} & \cellcolor{orange!25}\underline{0.997} & 0.993 \\
+RoBERTa &  &  & \cellcolor{cyan!25}\textbf{1.000} & \cellcolor{cyan!25}\textbf{0.999} \\
+\midrule
+\multicolumn{5}{l}{\textbf{Linear Probes}} \\
+\midrule
+\bottomrule
+\end{tabular}
