@@ -9,21 +9,27 @@
 Likelihood & 0.956 & 0.697 & 0.653 & 0.963 \\
 LLR & 0.923 & 0.681 & 0.688 & 0.929 \\
 Rank & 0.212 & 0.411 & 0.819 & 0.158 \\
-Binoculars & 0.150 & 0.281 & 0.442 & 0.198 \\
+Binoculars & \cellcolor{orange!25}\underline{0.999} & 0.907 & 0.925 & 0.985 \\
 FastDetectGPT & 0.891 & 0.786 & 0.622 & 0.893 \\
 GECScore & 0.718 & 0.678 & 0.607 & 0.706 \\
 RAIDAR & 0.739 & 0.721 & 0.650 & 0.712 \\
 \midrule
 \multicolumn{5}{l}{\textbf{Supervised}} \\
 \midrule
-OpenAI-RoBERTa & 0.123 & 0.101 & 0.305 & 0.142 \\
+OpenAI-RoBERTa & 0.877 & 0.899 & 0.695 & 0.858 \\
+RADAR & 0.973 & 0.963 & 0.959 & 0.947 \\
 EditLens & 0.330 & 0.563 & 0.578 & 0.356 \\
+ID & 0.703 &  &  &  \\
 RepreGuard & 0.960 & 0.848 & 0.982 & 0.926 \\
-BiScope & \cellcolor{cyan!25}\textbf{0.999} & \cellcolor{orange!25}\underline{0.969} & 0.988 & \cellcolor{orange!25}\underline{0.995} \\
-TextFluoroscopy & \cellcolor{orange!25}\underline{0.994} & \cellcolor{cyan!25}\textbf{0.997} & \cellcolor{orange!25}\underline{0.997} & 0.993 \\
+BiScope & \cellcolor{orange!25}\underline{0.999} & 0.969 & 0.988 & 0.995 \\
+TextFluoroscopy & 0.994 & \cellcolor{orange!25}\underline{0.997} & \cellcolor{orange!25}\underline{0.997} & 0.993 \\
 RoBERTa &  &  & \cellcolor{cyan!25}\textbf{1.000} & \cellcolor{cyan!25}\textbf{0.999} \\
 \midrule
 \multicolumn{5}{l}{\textbf{Linear Probes}} \\
 \midrule
+LLP & \cellcolor{orange!25}\underline{0.999} & \cellcolor{cyan!25}\textbf{1.000} & \cellcolor{cyan!25}\textbf{1.000} & \cellcolor{orange!25}\underline{0.998} \\
+\hspace*{1em}$\Delta$ vs BL & \textcolor{green!60!black}{+0.00} & \textcolor{green!60!black}{+0.32} & \textcolor{green!60!black}{+0.00} & \textcolor{orange!85!black}{-0.08} \\
+CLP & \cellcolor{cyan!25}\textbf{1.000} & \cellcolor{cyan!25}\textbf{1.000} & \cellcolor{cyan!25}\textbf{1.000} & \cellcolor{cyan!25}\textbf{0.999} \\
+\hspace*{1em}$\Delta$ vs BL & \textcolor{green!60!black}{+0.02} & \textcolor{green!60!black}{+0.31} & \textcolor{green!60!black}{+0.00} & \textcolor{green!60!black}{+0.05} \\
 \bottomrule
 \end{tabular}

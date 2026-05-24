@@ -17,40 +17,17 @@
 - DONE Clean detector description and add LD
 - DONE Analyze model sizes
 - DONE fix the baseline diff -- was just increasing to 4 decimals
-
+- DONE Bino with falcon + higher scores
 __MUST__
 
 
-- RUNNING if angle and curvature seeds --- update if plot and add + write
+Running 
+- RUNNING if angle and curvature seeds --- update if plot and add ref + write
 - RUNNING attacks probes and rob/id
-- RUNNING falcon + higher scores -- update in id_pca and attacks
 
-- reverse open ai rob/radar?
-
-- info flow + ref in paper
-- attacks
+__LAST DAY__
+- Read with Claude critisizing
 - Write detectors
-
-Hanqi
-- Did we compare the results with both two? I only notice the Chen et al., 2025 (RepGuard). also, any explanation why our method are better than the two, as we all linear probe. 
-- maybe we can add in appendix, where we describe these metrics and also discuss a bit that "Tulchinskii 2022 used intrinisc dim as a single feature to train a linear classifier" , and their limitation
-- the fonts in figures for me are too small, normally it should be similar to the caption. (Once, we are required to enlarge the fonts by AAAI26 editor in camera-ready)
-- As a tricky reviewer, they may ask: how about directly using the 4 metrics as separation metrics like "Tulchinskii 2022 et al., 2023" how is that results?  
-- maybe we can add in appendix, where we describe these metrics and also discuss a bit that "Tulchinskii 2022 used intrinisc dim as a single feature to train a linear classifier" , and their limitation
-- I think the differences between existing linear probe and ours are very important, can add one sentence in related work (or experiment setup? here is more important?) with highly dense summerisation. Then, add a reference to appendix B.2 with details.
-    - Summary not sufficient
-- While prior work has shown that linear classifiers can work~\cite{tulchinskii2023intrinsic,chen2025repreguard}~\footnote{We have included the detailed comparison with them in \S\ref{sec:exp}},   I add this footnote (feel free to revise). Because the biggest concern/question for me when I read this is "what is the differences between yours and existing linear Probe)
-    - Say tulchi uses an intermediate metric, that captures one dimension of representations
-
-- Specify appendices
-- Hanqi comment probing vector sim
-
-
-LAST
-- Read with Claude critisizing 
-
-__MUST__
-- Add info flow metrics
 
 ---
 

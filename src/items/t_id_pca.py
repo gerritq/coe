@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 
 BASE_DIR = os.getenv("BASE_COE", ".")
@@ -81,18 +82,18 @@ ZERO_SHOT_MODELS = [
     "likelihood",
     "llr",
     "rank",
-    "binoculars",
-    "fastdetectgpt",
     "gescore",
     "revise",
     "raidar",
+    "fastdetectgpt",
+    "binoculars",
 ]
 
 SUPERVISED_MODELS = [
-    "openai_roberta",
-    "radar",
     "editlens",
     "id",
+    "openai_roberta",
+    "radar",
     "repreguard",
     "biscope",
     "text_fluoroscopy",
@@ -158,7 +159,8 @@ def _canonical_dataset_name(ds: str | None) -> str | None:
 
 def collect_baselines() -> dict[str, dict[str, float]]:
     table: dict[str, dict[str, float]] = {}
-    seen_files: dict[tuple[str, str], list[str]] = {}
+    seen_files: dict[tuple[str, str], list[tuple[str, str | None]]] = {}
+    best_rank: dict[tuple[str, str], tuple[datetime | None, float]] = {}
     datasets = set(_all_datasets())
     for filename in sorted(os.listdir(BASELINE_DIR)):
         if not filename.endswith(".json"):
@@ -182,23 +184,35 @@ def collect_baselines() -> dict[str, dict[str, float]]:
         if model == "repreguard" and auroc > 1.0:
             auroc = auroc / 100.0
         key = (model, ds)
-        seen_files.setdefault(key, []).append(filename)
-        table.setdefault(model, {})[ds] = auroc
+        dt_raw = args.get("datetime")
+        dt_parsed = None
+        if isinstance(dt_raw, str):
+            try:
+                dt_parsed = datetime.strptime(dt_raw, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                dt_parsed = None
+        seen_files.setdefault(key, []).append((filename, dt_raw if isinstance(dt_raw, str) else None))
+        rank = (dt_parsed, os.path.getmtime(path))
+        prev = best_rank.get(key)
+        if prev is None or rank > prev:
+            best_rank[key] = rank
+            table.setdefault(model, {})[ds] = auroc
 
     for (model, ds), files in sorted(seen_files.items()):
         if len(files) > 1:
             print(
                 f"[Warning] Multiple baseline json files for model={model}, dataset={ds}: "
-                f"{len(files)} files. Using last value by sorted filename order."
+                f"{len(files)} files. Using latest args.datetime (fallback: file mtime)."
             )
-            for name in files:
-                print(f"  - {name}")
+            for name, dt in files:
+                print(f"  - {name} (datetime={dt})")
     return table
 
 
 def collect_probes() -> dict[str, dict[str, float]]:
     table: dict[str, dict[str, float]] = {}
-    seen_files: dict[tuple[str, str], list[str]] = {}
+    seen_files: dict[tuple[str, str], list[tuple[str, str | None]]] = {}
+    best_rank: dict[tuple[str, str], tuple[datetime | None, float]] = {}
     datasets = set(_all_datasets())
     for filename in sorted(os.listdir(PROBE_DIR)):
         if not filename.endswith(".json"):
@@ -228,17 +242,28 @@ def collect_probes() -> dict[str, dict[str, float]]:
         if auroc is None:
             continue
         key = (row, ds)
-        seen_files.setdefault(key, []).append(filename)
-        table.setdefault(row, {})[ds] = auroc
+        dt_raw = args.get("datetime")
+        dt_parsed = None
+        if isinstance(dt_raw, str):
+            try:
+                dt_parsed = datetime.strptime(dt_raw, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                dt_parsed = None
+        seen_files.setdefault(key, []).append((filename, dt_raw if isinstance(dt_raw, str) else None))
+        rank = (dt_parsed, os.path.getmtime(path))
+        prev = best_rank.get(key)
+        if prev is None or rank > prev:
+            best_rank[key] = rank
+            table.setdefault(row, {})[ds] = auroc
 
     for (row, ds), files in sorted(seen_files.items()):
         if len(files) > 1:
             print(
                 f"[Warning] Multiple probe json files for row={row}, dataset={ds}: "
-                f"{len(files)} files. Using last value by sorted filename order."
+                f"{len(files)} files. Using latest args.datetime (fallback: file mtime)."
             )
-            for name in files:
-                print(f"  - {name}")
+            for name, dt in files:
+                print(f"  - {name} (datetime={dt})")
     return table
 
 
@@ -299,7 +324,7 @@ def render_table(
             # Normalize to 0-1 for fair rank highlighting only.
             if v_float > 1.0:
                 v_float = v_float / 100.0
-            vals.append((row_id, round(v_float, 3)))
+            vals.append((row_id, round(v_float, 4)))
         if not vals:
             continue
         unique_scores = sorted({v for _, v in vals}, reverse=True)
