@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=desc_if_seeds_angle_curv
+#SBATCH --job-name=desc_if_seeds_len_mag
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=05:00:00
@@ -41,7 +41,7 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
 
 # METRICS=("effective_rank" "von_neumann_entropy" "anisotropy" "intrinsic_dimensionality" )
-METRICS=("curvature" "angle")
+METRICS=("length" "magnitude")
 SEEDS=(43 44 45 46)
 for METRIC in "${METRICS[@]}"; do
   for SEED in "${SEEDS[@]}"; do
