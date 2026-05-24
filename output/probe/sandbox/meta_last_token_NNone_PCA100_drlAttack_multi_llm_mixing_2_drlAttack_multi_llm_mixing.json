@@ -1,0 +1,29 @@
+{
+    "args": {
+        "model": "llama_8b",
+        "dataset": "drlAttack_multi_llm_mixing",
+        "token_mode": "last_token",
+        "ood": false,
+        "smoke_test": false,
+        "components": 100,
+        "mode": "meta",
+        "training_size": null,
+        "folder": "sandbox",
+        "target_dataset": "drlAttack_multi_llm_mixing",
+        "datetime": "2026-05-24 08:41:47"
+    },
+    "test_metrics": {
+        "meta_metrics": {
+            "n_total": 500,
+            "auroc": 0.999504,
+            "accuracy": 0.99,
+            "f1": 0.98989898989899,
+            "tpr_at_fpr_0_05": 0.996,
+            "optimal_threshold_f1": 0.5,
+            "optimal_threshold_acc": 0.5,
+            "aupr": 0.9995206191992899
+        }
+    },
+    "sim_correlations": null,
+    "plot_layer_payload": null
+}

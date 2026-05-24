@@ -2,7 +2,7 @@
 #SBATCH --job-name=binoculars
 #SBATCH --output=logs/%j.log
 #SBATCH --error=logs/%j.err
-#SBATCH --time=02:00:00
+#SBATCH --time=02:30:00
 #SBATCH --partition=gpu,nmes_gpu,interruptible_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -27,7 +27,13 @@ python --version
 # DATASETS=("raidModel_cohere_chat" "raidModel_gpt4" "raidModel_llama_chat" "raidModel_mistral_chat")
 
 
-DATASETS=("drlDomain_arxiv")
+# DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
+# DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
+# DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+# DATASETS=("raidModel_cohere_chat" "raidModel_gpt4" "raidModel_llama_chat" "raidModel_mistral_chat")
+
+
+DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum" "multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh" "tsm_first" "tsm_extend" "tsm_sums" "tsm_tst" "raidModel_cohere_chat" "raidModel_gpt4" "raidModel_llama_chat" "raidModel_mistral_chat" "drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 MODELS=("binoculars")
 SMOKE_TEST=0
 OOD=0

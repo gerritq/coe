@@ -45,6 +45,8 @@ class MLModels:
                 probs = torch.softmax(logits, dim=-1)
                 batch_scores = probs[:, 1].detach().cpu().tolist()
 
+                if args.model in {"radar", "openai_roberta"}:
+                    batch_scores = [-float(s) for s in batch_scores]
                 scores.extend(float(s) for s in batch_scores)
 
         return scores

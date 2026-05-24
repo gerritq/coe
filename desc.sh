@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --job-name=desc_probes
+#SBATCH --job-name=desc_if_seeds_angle_curv
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=01:00:00
+#SBATCH --time=05:00:00
 #SBATCH --partition=gpu,nmes_gpu,interruptible_gpu
-#SBATCH --constraint=h200|a100
+#SBATCH --constraint=a100
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB
 #SBATCH --exclude=erc-hpc-comp054
@@ -41,18 +41,18 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 
 
 # METRICS=("effective_rank" "von_neumann_entropy" "anisotropy" "intrinsic_dimensionality" )
-# METRICS=("curvature")
-# SEEDS=(42)
-# for METRIC in "${METRICS[@]}"; do
-#   for SEED in "${SEEDS[@]}"; do
-#     echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
-#     PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
-#       --model "${MODEL}" \
-#       --smoke_test "${SMOKE_TEST}" \
-#       --metric "${METRIC}" \
-#       --seed "${SEED}"
-#   done
-# done
+METRICS=("curvature" "angle")
+SEEDS=(43 44 45 46)
+for METRIC in "${METRICS[@]}"; do
+  for SEED in "${SEEDS[@]}"; do
+    echo "Running qual_metrics with metric=${METRIC}, seed=${SEED}"
+    PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/qual_metrics.py \
+      --model "${MODEL}" \
+      --smoke_test "${SMOKE_TEST}" \
+      --metric "${METRIC}" \
+      --seed "${SEED}"
+  done
+done
 
 # PROBE VECTORS
 
@@ -89,6 +89,6 @@ echo "Running desc with MODEL=${MODEL}, SMOKE_TEST=${SMOKE_TEST}"
 #     done
 # done
 
-PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/parallel.py \
-  --model "${MODEL}" \
-  --smoke_test "${SMOKE_TEST}"
+# PYTHONPATH="${ROOT_DIR}" uv run python src/descriptives/parallel.py \
+#   --model "${MODEL}" \
+#   --smoke_test "${SMOKE_TEST}"
