@@ -10,26 +10,30 @@
 - DONE Rewrite the qual analysis
     - - End with the strong linearity motivation that Hanqi suggested
 - DONE Rm entropy
+- DONE Sample efficiency with full pca space but only few training instances
+- DONE Hanqi figure
+- DONE bino with falcon even worse
+- DONE Add directions to text sim metrics
+- DONE Clean detector description and add LD
+- DONE Analyze model sizes
+__MUST__
 
-- Sample efficiency with full pca space but only few training instances
-    - Run seeds
-- Hanqi figure
+
+- info flow
+- attacks
+- Write detectors
+- fix the baseline diff, some do not work out
+- check bino last time
+
+- Hanqi comment probing vector sim
+- Read with Claude critisizing 
+
+__MUST__
 - Add info flow metrics
-
-
-
-
-- Appendix
-    - Detectors
-
-- Abstract: Explain good OOD through the shared latent MGT direction (across dimensions)
-
 
 ---
 
 2. **MGT Representations**
-- TO DO:  
-    - See overleaf
 
 - POTENTIAL:
     - Readings:
@@ -75,79 +79,6 @@
 
 ---
 
-3. **ID**
-- TO DO:  
-    - Cut content
-    - Fix Binoculars
-    - May add detector nr 18 from the great repo that has all hehe
-
----
-
-4. **Edit distance**
-- TO DO:  
-    - Cut writing, ensure the metrics are clear from the description (give examples and intuitions of the direction of metrics)
-- POTENTIAL TO DO:  
-    - Reason why it not works with Beemo is that there is not variability
-    - We could try their other prompts and/or Llama
-    - Could add a baseline
-
----
-
-5. **Layer-analysis**
-- TO DO:  
-    - Check whether number of aggregations is correct
-    - Cut content
-
----
-
-4. **Efficiency**
-- TO DO
-    - Cut content
-
----
-
-6. **OOD**
-- TO DO
-    - Cut content
-
----
-
-99. Hanqi Feedback
-    
-    1.  Can we understand why LP works so well OOD?
-        - Can we see increase non-linearity and seeh whether it is getting worse?
-        - x-axis is non-linearly of probes - and y-axis performance => so non linear
-        - MLP with or various activations or probe with higher exponents
-        - Test this for OOD
-
-    2. DONE Ablations with first and last layer
-
-    3. DONE For sample efficiency: add CI, run with different seeds
-
-    4. Combine datasets, apply pca
-        - Get SV and the plot
-        - Or show the decision boundary bc orthogonal
-
-I have implemented your feedback as follows:
-    1.  Can we understand why LP works so well OOD?
-        - Added "Section 3: The Geometry of MGT Representations" to compare representation metrics and linearity
-        - Added "5.4 Probing Vector Similarity" to show probing vectors are similar across datasets
-
-    2. Ablations for last layer
-        - Added to the table + added smaller models
-
-    3. Sample efficieny confidence intervals
-        -  Added CIs for five seed different runs 
-    
-
-
-What is missing:
-    - Need to cut content considerably
-    - Section 3: I will add more references to existing work on representation differences
-    - Results: will also connect more to existing literature (e.g., layer-wise performance on other tasks)
-
---- 
-
 99. Misc
 
     - For cross benchmark https://arxiv.org/pdf/2509.10625
@@ -187,26 +118,6 @@ What is missing:
 
 ## Has to be done
 
-
-- Generator ds using M4!!! In appendeix, we use it for CB
-
-- Once and for all, correct the evaluation metrics. 
-    - Acc/F1 do tuning and Yuoden's k
-    - ALso TPR@1FPR has to be done on the val set
-
-- Clean probe code to have a single flag which runs the specific setting
-
-- Checks
-    - Repreguard metrics
-    - Try to run fluoscope with the old model
-    - MLModel perform crap
-
-- entropy norm?
-- read: Context Matters: Analyzing the Generalizability of Linear Probing and Steering Across Diverse Scenarios
-
-
----
----
 ---
 
 # LP Tweaks

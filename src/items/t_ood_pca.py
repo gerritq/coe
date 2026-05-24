@@ -209,7 +209,7 @@ def _print_ood_coverage_mismatches(
 
 
 def _fmt(v: float | None) -> str:
-    return "" if v is None else f"{v:.3f}"
+    return "" if v is None else f"{v:.4f}"
 
 def _fmt_styled(v: float | None, style: str | None) -> str:
     base = _fmt(v)

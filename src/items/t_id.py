@@ -85,13 +85,13 @@ ZERO_SHOT_MODELS = [
     "fastdetectgpt",
     "gescore",
     "revise",
+    "raidar",
 ]
 
 SUPERVISED_MODELS = [
     "openai_roberta",
     "radar",
     "editlens",
-    "raidar",
     "id",
     "repreguard",
     "biscope",

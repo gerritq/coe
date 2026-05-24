@@ -174,6 +174,9 @@ class Binoculars(object):
 
             binoculars_scores = ppl / x_ppl
 
+            # need to invert so that highr is ai
+            binoculars_scores = -binoculars_scores
+
             all_scores.extend(binoculars_scores.tolist())
 
         return all_scores[0] if isinstance(texts, str) else all_scores

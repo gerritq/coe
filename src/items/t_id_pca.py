@@ -85,13 +85,13 @@ ZERO_SHOT_MODELS = [
     "fastdetectgpt",
     "gescore",
     "revise",
+    "raidar",
 ]
 
 SUPERVISED_MODELS = [
     "openai_roberta",
     "radar",
     "editlens",
-    "raidar",
     "id",
     "repreguard",
     "biscope",
@@ -115,7 +115,7 @@ def _tex_escape(text: str) -> str:
 def _fmt(score: float | None) -> str:
     if score is None:
         return ""
-    return f"{score:.3f}"
+    return f"{score:.4f}"
 
 def _fmt_probe(score: float | None, style: str | None) -> str:
     base = _fmt(score)
@@ -360,10 +360,41 @@ def render_table(
 
     baseline_models = [m for m in (ZERO_SHOT_MODELS + SUPERVISED_MODELS) if m in baseline_rows]
     best_baseline: dict[str, float | None] = {}
+    best_baseline_model: dict[str, str | None] = {}
     for d in datasets:
-        vals = [baseline_rows[m].get(d) for m in baseline_models]
-        vals = [float(v) for v in vals if v is not None]
-        best_baseline[d] = max(vals) if vals else None
+        vals = [(m, baseline_rows[m].get(d)) for m in baseline_models]
+        vals = [(m, float(v)) for m, v in vals if v is not None]
+        if vals:
+            m_best, v_best = max(vals, key=lambda x: x[1])
+            best_baseline[d] = v_best
+            best_baseline_model[d] = m_best
+        else:
+            best_baseline[d] = None
+            best_baseline_model[d] = None
+
+    # Debug print: baseline winner and probe AUROCs used in delta rows.
+    print("[t_id_pca] Baseline vs Probes (per dataset):")
+    for d in datasets:
+        base_model = best_baseline_model.get(d)
+        base_auc = best_baseline.get(d)
+        if base_model is None or base_auc is None:
+            print(f"  - {d}: baseline=None")
+        else:
+            print(f"  - {d}: baseline={base_model} auc={base_auc:.6f}")
+        for model in ordered_probe_rows:
+            probe_auc = probe_rows.get(model, {}).get(d)
+            if probe_auc is None:
+                print(f"      probe={model} auc=None delta_pp=None")
+            else:
+                base_auc = best_baseline.get(d)
+                if base_auc is None:
+                    delta_pp = None
+                else:
+                    delta_pp = (float(probe_auc) - float(base_auc)) * 100.0
+                if delta_pp is None:
+                    print(f"      probe={model} auc={float(probe_auc):.6f} delta_pp=None")
+                else:
+                    print(f"      probe={model} auc={float(probe_auc):.6f} delta_pp={delta_pp:+.4f}")
 
     for model in ordered_probe_rows:
         vals = [

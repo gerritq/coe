@@ -15,9 +15,9 @@ MODES = ["pca", "meta"]
 METRICS = ["sem_similarity", "levenshtein_distance", "jaccard_distance"]
 
 METRIC_LABELS = {
-    "sem_similarity": "Semantic Similarity",
-    "levenshtein_distance": "Levenshtein Distance",
-    "jaccard_distance": "Jaccard Distance",
+    "sem_similarity": "Semantic Similarity (↓)",
+    "levenshtein_distance": "Levenshtein Distance (↑)",
+    "jaccard_distance": "Jaccard Distance (↑)",
 }
 
 
