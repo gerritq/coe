@@ -40,7 +40,7 @@ cd "${ROOT_DIR}"
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id_pca
 
 #  t_id_attacks_pca
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id_attacks_pca
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id_attacks_pca
 
 # ===========================================================================
 # LAYER
@@ -60,7 +60,7 @@ PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_id_attacks_pca
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
 
 # t_ablations_pca
-# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_pca
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_pca
 
 # ===========================================================================
 # PROBES

@@ -20,16 +20,15 @@
 - DONE Bino with falcon + higher scores
 __MUST__
 
-- radar and raidar --- check assignment and appendix
-
-Running 
-- RUNNING if angle and curvature seeds --- update if plot and add ref + write
-- RUNNING attacks probes and rob/id
-- Write detectors
 
 __LAST DAY__
-- Read with Claude critisizing
+- Add CLP ablations
+- Add no pca to table and compare
 
+- Check table descriptions
+- Cut to inlcude Conclusion
+- Read with Claude critisizing
+- github repo
 
 ---
 

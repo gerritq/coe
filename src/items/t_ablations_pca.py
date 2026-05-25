@@ -319,6 +319,22 @@ def _render(rows: list[dict[str, Any]]) -> str:
         cells = [_fmt_delta_only(v, ref_vals[d]) for v, d in zip(vals, DATASETS)]
         lines.append(rf"\hspace*{{1em}}k={k}" + " & " + " & ".join(cells) + r" \\")
 
+    # default (no pca) reference row in this panel
+    no_pca_vals = [
+        _best_match(
+            rows,
+            d,
+            {"mode": "default", "components": 50, "token_mode": "last_token", "training_size_is_none": True},
+        )
+        for d in DATASETS
+    ]
+    lines.append(
+        r"\hspace*{1em}No PCA"
+        + " & "
+        + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(no_pca_vals, DATASETS))
+        + r" \\"
+    )
+
     lines.extend([r"\bottomrule", r"\end{tabular}"])
     return "\n".join(lines) + "\n"
 
