@@ -18,16 +18,14 @@
 - DONE Analyze model sizes
 - DONE fix the baseline diff -- was just increasing to 4 decimals
 - DONE Bino with falcon + higher scores
-__MUST__
-
+- DONE Add CLP ablations
+- DONE Add no pca to table and compare
+- DONE Cut to inlcude Conclusion
+- DONE Read with Claude critisizing
 
 __LAST DAY__
-- Add CLP ablations
-- Add no pca to table and compare
 
-- Check table descriptions
-- Cut to inlcude Conclusion
-- Read with Claude critisizing
+- enlarge fonts
 - github repo
 
 ---

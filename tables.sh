@@ -60,7 +60,10 @@ cd "${ROOT_DIR}"
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations
 
 # t_ablations_pca
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_pca
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_pca
+
+# t_ablations_meta_pca
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_meta_pca
 
 # ===========================================================================
 # PROBES
