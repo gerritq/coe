@@ -63,7 +63,7 @@ cd "${ROOT_DIR}"
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_pca
 
 # t_ablations_meta_pca
-PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_meta_pca
+# PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_meta_pca
 
 # ===========================================================================
 # PROBES
@@ -98,3 +98,18 @@ PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_ablations_meta_pca
 
 # f_complex
 # PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.f_complex
+
+# ===========================================================================
+# Default vs PCA comparison
+# ===========================================================================
+
+# t_default_pca_comparison
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_default_pca
+
+# ===========================================================================
+# Meta vs no-pca_meta comparison
+# ===========================================================================
+
+# t_meta_no_pca
+PYTHONPATH="${ROOT_DIR}"  uv run -m src.items.t_meta_no_pca
+

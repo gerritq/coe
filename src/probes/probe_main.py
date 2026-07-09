@@ -430,6 +430,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--mode", type=str, required=True)
     parser.add_argument("--training_size", type=int, default=None)
     parser.add_argument("--folder", type=str, default="sandbox")
+    parser.add_argument("--max_chars", type=int, default=-1)
     return parser.parse_args()
 
 

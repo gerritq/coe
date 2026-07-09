@@ -15,6 +15,17 @@ from argparse import ArgumentParser
 
 BASE_DIR = os.getenv("BASE_COE")
 
+def truncate_items(items: list[dict], max_chars: int) -> list[dict]:
+    if max_chars <= 0:
+        return items
+
+    out = []
+    for item in items:
+        item = dict(item)
+        item["text"] = item["text"][:max_chars]
+        out.append(item)
+    return out
+
 class MLPProbe(nn.Module):
     def __init__(self, 
                  input_dim: int, 
@@ -421,15 +432,24 @@ class Probing:
     def run(self, args: Namespace) -> None:
         # source
         source_data = load_dataset(args=args)
+
+        # apply truncation if max_chars is set
+        if args.max_chars > 0:
+            source_data["train"] = truncate_items(source_data["train"], args.max_chars)
+            source_data["val"] = truncate_items(source_data["val"], args.max_chars)
+
         train = self._collect_model_states(source_data["train"])
         val = self._collect_model_states(source_data["val"])    
 
         # separate full training subset for fitting scaler/PCA in pca mode
+        # thius is just for the sample size experiment
         pca_train = None
         if args.mode in {"pca", "meta"}:
             pca_args = Namespace(**vars(args))
             pca_args.training_size = None
             pca_data = load_dataset(args=pca_args)
+            if args.max_chars > 0:
+                pca_data["train"] = truncate_items(pca_data["train"], args.max_chars)
             pca_train = self._collect_model_states(pca_data["train"])
         
         # ood
@@ -466,6 +486,8 @@ class Probing:
                                                       smoke_test=args.smoke_test,
                                                       training_size=args.training_size,
                                                       seed=args.seed))['test']
+            if args.max_chars > 0:
+                target_data = truncate_items(target_data, args.max_chars)
             test = self._collect_model_states(target_data)
 
             if self.args.mode in ["default", "pca", "mlp", "first_layer", "last_layer"]:
@@ -484,12 +506,15 @@ class Probing:
             del test_metrics['scores']
 
             # SAVE OUTPUT
+            length_suffix = f"_L{args.max_chars}" if args.max_chars > 0 else ""
             if args.mode == "mlp":
                 filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_D{args.mlp_depth}_{args.dataset}_2_{target_dataset}.json"
             elif args.model in ["llama_1b", "llama_3b", "qwen_06b", "qwen_4b", "qwen_8b"]:
                 filename = f"{args.mode}_{args.model}_{args.token_mode}_N{args.training_size}_PCA{args.components}_{args.dataset}_2_{target_dataset}_S{args.seed}.json"
             else:
                 filename = f"{args.mode}_{args.token_mode}_N{args.training_size}_PCA{args.components}_C{args.C}_{args.dataset}_2_{target_dataset}_S{args.seed}.json"
+
+            filename = filename.replace(".json", length_suffix + ".json")
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)
@@ -519,6 +544,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--C", type=float, default=1.0)
     parser.add_argument("--mlp_depth", type=int, default=1)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--max_chars", type=int, default=-1)
     return parser.parse_args()
 
 
