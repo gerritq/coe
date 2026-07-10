@@ -16,8 +16,7 @@ ROOT_DIR="${BASE_COE:-$(pwd)}"
 cd "${ROOT_DIR}"
 
 SEED=42
-TRAIN_SIZE=80
-VAL_SIZE=200
+TRAIN_FRAC=0.8
 BERT_MODEL="bert-base-uncased"
 BERT_EPOCHS=2
 BERT_BATCH_SIZE=16
@@ -28,8 +27,7 @@ TOKEN_MODE="last_token"
 
 PYTHONPATH="${ROOT_DIR}" uv run -m src.ai_edit \
     --seed "$SEED" \
-    --train_size "$TRAIN_SIZE" \
-    --val_size "$VAL_SIZE" \
+    --train_frac "$TRAIN_FRAC" \
     --bert_model "$BERT_MODEL" \
     --bert_epochs "$BERT_EPOCHS" \
     --bert_batch_size "$BERT_BATCH_SIZE" \

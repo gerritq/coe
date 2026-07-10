@@ -42,12 +42,12 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
         return [json.loads(line) for line in f]
 
 
-def split_train_val(items: list[dict[str, Any]], train_size: int, val_size: int, seed: int) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def split_train_val(items: list[dict[str, Any]], train_frac: float, seed: int) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rng = random.Random(seed)
     items = list(items)
     rng.shuffle(items)
-    selected = items[: train_size + val_size]
-    return selected[:train_size], selected[train_size:]
+    train_size = int(round(len(items) * train_frac))
+    return items[:train_size], items[train_size:]
 
 
 def valid_metric_items(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -203,8 +203,7 @@ def train_llp(args: Namespace, train_items: list[dict[str, Any]], val_items: lis
 def parse_args() -> Namespace:
     parser = ArgumentParser()
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--train_size", type=int, default=80)
-    parser.add_argument("--val_size", type=int, default=200)
+    parser.add_argument("--train_frac", type=float, default=0.8)
     parser.add_argument("--bert_model", type=str, default="bert-base-uncased")
     parser.add_argument("--bert_epochs", type=int, default=2)
     parser.add_argument("--bert_batch_size", type=int, default=16)
@@ -223,7 +222,10 @@ def main() -> None:
     train_pool = load_jsonl(APT_DIR / "train.jsonl")
     test_pool = load_jsonl(APT_DIR / "test.jsonl")
 
-    train_items, val_items = split_train_val(train_pool, args.train_size, args.val_size, args.seed)
+    if not 0.0 < args.train_frac < 1.0:
+        raise ValueError("--train_frac must be between 0 and 1")
+
+    train_items, val_items = split_train_val(train_pool, args.train_frac, args.seed)
     test_eval_items = valid_metric_items(test_pool)
 
     bert_out = train_bert(args, train_items, val_items, test_eval_items)
