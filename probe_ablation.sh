@@ -1,12 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=ablation_chars
+#SBATCH --job-name=ablation_get_del
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=03:00:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
 #SBATCH --constraint=h200|a100
+#SBATCH --exclude=erc-hpc-comp035,erc-hpc-comp050
 
 # set -euo pipefail
 
@@ -20,16 +21,16 @@ MODELS=("llama_8b")
 
 # DS for training size
 # DATASETS=("drlDomain_arxiv" "tsm_first" "multisocial_en" "raidModel_gpt4")
-DATASETS=("drlDomain_arxiv")
+# DATASETS=("drlDomain_arxiv")
 
 # DS for other ablations
-# DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
+DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
 
 MODES=("meta" "pca") # default | pca | meta | meta_attn | poly
 COMPONENTS_LIST=(100)
 TRAINING_SIZES=(-1) # -1 | 10 50 100 250 500
 C_LIST=(1) # 0.01 0.1 1 10 
-MAX_CHARS_LIST=(300 400 500 600 800 1000) # -1 | 50 100 150 200 250 300 400 500 600 800
+MAX_CHARS_LIST=(-1) # -1 | 50 100 150 200 250 300 400 500 600 800
 MLP_DEPTH_LIST=(1)
 SEEDS=(42)
 
