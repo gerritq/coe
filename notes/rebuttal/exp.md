@@ -1,6 +1,6 @@
-- running length for enc
+- running length for enc - baseline_ablation.sh
+- running ece for probe and baseline
 
-- next run ece
 
 # 1. Non-pca reduced performance is slightly stronger or similarly strong. More complete no-pca results would make the conclusion stronger
 

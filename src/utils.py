@@ -56,16 +56,17 @@ def load_dataset(args: Namespace):
         print("Running smoke test.")
         return data
 
-    if args.training_size is not None:
+    training_size = getattr(args, "training_size", None)
+    if training_size is not None and training_size > 0:
         if args.seed != 42:
             train = data["train"].shuffle(seed=seed)
             data["train"] = train
         
-        pos = [x for x in data["train"] if x["label"] == 1][:args.training_size//2]
-        neg = [x for x in data["train"] if x["label"] == 0][:args.training_size//2]
+        pos = [x for x in data["train"] if x["label"] == 1][:training_size//2]
+        neg = [x for x in data["train"] if x["label"] == 0][:training_size//2]
         data["train"] = Dataset.from_list(pos + neg)
 
-        assert len(data["train"]) == args.training_size, f"Too few training samples: {len(data['train'])} < {args.training_size}"
+        assert len(data["train"]) == training_size, f"Too few training samples: {len(data['train'])} < {training_size}"
 
         data["train"] = data["train"].shuffle(seed=seed)
 
