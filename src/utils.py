@@ -124,6 +124,43 @@ def optimal_thresholds(y_true: np.ndarray,
     }
 
 
+def _sigmoid(x: np.ndarray) -> np.ndarray:
+    x = np.clip(x, -500.0, 500.0)
+    return 1.0 / (1.0 + np.exp(-x))
+
+
+def _scores_to_probabilities(y_predict: np.ndarray) -> np.ndarray:
+    if np.min(y_predict) >= 0.0 and np.max(y_predict) <= 1.0:
+        return y_predict
+    return _sigmoid(y_predict)
+
+
+def expected_calibration_error(y_true: np.ndarray,
+                               y_prob: np.ndarray,
+                               n_bins: int = 10,
+                               ) -> float:
+    bins = np.linspace(0.0, 1.0, n_bins + 1)
+    ece = 0.0
+
+    for i in range(n_bins):
+        lo = bins[i]
+        hi = bins[i + 1]
+        if i == n_bins - 1:
+            mask = (y_prob >= lo) & (y_prob <= hi)
+        else:
+            mask = (y_prob >= lo) & (y_prob < hi)
+
+        if not np.any(mask):
+            continue
+
+        bin_acc = float(np.mean(y_true[mask]))
+        bin_conf = float(np.mean(y_prob[mask]))
+        bin_weight = float(np.mean(mask))
+        ece += bin_weight * abs(bin_acc - bin_conf)
+
+    return float(ece)
+
+
 def metrics(y_true: np.ndarray,
                y_predict: np.ndarray,
                f1_threshold: float,
@@ -151,6 +188,10 @@ def metrics(y_true: np.ndarray,
     # AUPR
     aupr = float(average_precision_score(y_true, y_predict))
 
+    # ECE. Probability outputs are used directly; raw probe scores are sigmoid-mapped.
+    y_prob = _scores_to_probabilities(y_predict)
+    ece = expected_calibration_error(y_true=y_true, y_prob=y_prob)
+
     # TPR@FPR=0.01
     fpr, tpr, _ = roc_curve(y_true, y_predict)
 
@@ -166,6 +207,7 @@ def metrics(y_true: np.ndarray,
         "optimal_threshold_f1": f1_threshold,
         "optimal_threshold_acc": acc_threshold,
         "aupr": aupr,
+        "ece": ece,
     }
 
 

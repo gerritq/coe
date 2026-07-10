@@ -10,6 +10,7 @@
 
 - DO: run an experiment on text length on DetectRL
 
+- DO: run bert baseline
 
 
 ---
