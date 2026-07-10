@@ -4,33 +4,34 @@
 \cmidrule(lr){2-5}
 \textbf{Setting} & \textbf{FP} & \textbf{PE} & \textbf{SUM} & \textbf{TST} \\
 \midrule
-Baseline & 0.978 & 0.941 & 0.980 & 0.897 \\
+Baseline & 0.978 & 0.941 & 0.980 & 0.898 \\
 \addlinespace
 \multicolumn{5}{l}{\textbf{Token Aggregation}} \\
-\hspace*{1em}Pooling & -0.008 & -0.073 & -0.011 & -0.046 \\
+\hspace*{1em}Pooling & -0.008 & -0.073 & -0.011 & -0.047 \\
 \addlinespace
 \multicolumn{5}{l}{\textbf{Layer Selection}} \\
-\hspace*{1em}First layer & -0.396 & -0.315 & -0.433 & -0.360 \\
-\hspace*{1em}Last layer & -0.031 & -0.078 & -0.045 & -0.066 \\
+\hspace*{1em}First layer & -0.396 & -0.315 & -0.433 & -0.361 \\
+\hspace*{1em}Last layer & -0.031 & -0.078 & -0.045 & -0.067 \\
 \addlinespace
 \multicolumn{5}{l}{\textbf{Model}} \\
-\hspace*{1em}Llama-3B & -0.004 & -0.014 & -0.003 & -0.014 \\
-\hspace*{1em}Llama-1B & -0.013 & -0.022 & -0.007 & -0.009 \\
-\hspace*{1em}Qwen-8B & +0.009 & +0.012 & +0.005 & +0.013 \\
-\hspace*{1em}Qwen-4B & +0.006 & +0.005 & +0.005 & +0.001 \\
-\hspace*{1em}Qwen-0.6B & -0.010 & -0.032 & -0.015 & -0.044 \\
+\hspace*{1em}Llama-3B & -0.004 & -0.014 & -0.003 & -0.015 \\
+\hspace*{1em}Llama-1B & -0.013 & -0.022 & -0.007 & -0.010 \\
+\hspace*{1em}Qwen-32B &  &  &  &  \\
+\hspace*{1em}Qwen-8B & +0.009 & +0.012 & +0.005 & +0.012 \\
+\hspace*{1em}Qwen-4B & +0.006 & +0.005 & +0.005 & -0.000 \\
+\hspace*{1em}Qwen-0.6B & -0.010 & -0.032 & -0.015 & -0.045 \\
 \addlinespace
 \multicolumn{5}{l}{\textbf{Regularization Penalty}} \\
-\hspace*{1em}C=0.01 & -0.002 & +0.003 & +0.001 & +0.002 \\
-\hspace*{1em}C=0.1 & -0.001 & +0.002 & +0.001 & -0.001 \\
-\hspace*{1em}C=10 & +0.000 & -0.000 & -0.000 & +0.001 \\
+\hspace*{1em}C=0.01 & -0.002 & +0.003 & +0.001 & +0.001 \\
+\hspace*{1em}C=0.1 & -0.000 & +0.002 & +0.001 & -0.002 \\
+\hspace*{1em}C=10 & +0.000 & -0.000 & -0.000 & -0.000 \\
 \addlinespace
 \multicolumn{5}{l}{\textbf{PCA Activations}} \\
-\hspace*{1em}k=10 & -0.072 & -0.115 & -0.048 & -0.121 \\
-\hspace*{1em}k=50 & -0.017 & -0.013 & -0.011 & -0.024 \\
-\hspace*{1em}k=100 & -0.007 & +0.003 & -0.002 & +0.000 \\
-\hspace*{1em}k=150 & -0.004 & +0.007 & -0.002 & +0.010 \\
-\hspace*{1em}k=200 & -0.005 & +0.007 & -0.003 & +0.010 \\
-\hspace*{1em}k=250 & -0.005 & +0.008 & -0.004 & +0.008 \\
+\hspace*{1em}k=10 & -0.071 & -0.115 & -0.048 & -0.122 \\
+\hspace*{1em}k=50 & -0.016 & -0.013 & -0.010 & -0.025 \\
+\hspace*{1em}k=100 & +0.012 & +0.031 & +0.011 & +0.045 \\
+\hspace*{1em}k=150 & -0.003 & +0.007 & -0.001 & +0.009 \\
+\hspace*{1em}k=200 & -0.005 & +0.007 & -0.003 & +0.009 \\
+\hspace*{1em}k=250 & -0.004 & +0.008 & -0.004 & +0.007 \\
 \bottomrule
 \end{tabular}

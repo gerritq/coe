@@ -5,6 +5,7 @@ from typing import Any
 
 BASE_DIR = os.getenv("BASE_COE", ".")
 ABLATION_DIR = os.path.join(BASE_DIR, "output", "probe", "ablation")
+SANDBOX_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
 OUT_PATH = os.path.join(BASE_DIR, "output", "item", "t_ablation_pca.tex")
 
 DATASETS = ["tsm_first", "tsm_extend", "tsm_sums", "tsm_tst"]
@@ -16,15 +17,15 @@ DATASET_LABELS = {
 }
 
 
-def _load_rows() -> list[dict[str, Any]]:
+def _load_rows(directory: str) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    if not os.path.isdir(ABLATION_DIR):
+    if not os.path.isdir(directory):
         return rows
 
-    for filename in sorted(os.listdir(ABLATION_DIR)):
+    for filename in sorted(os.listdir(directory)):
         if not filename.endswith(".json"):
             continue
-        path = os.path.join(ABLATION_DIR, filename)
+        path = os.path.join(directory, filename)
         try:
             with open(path, "r", encoding="utf-8") as f:
                 obj = json.load(f)
@@ -129,7 +130,7 @@ def _fmt_delta_only(x: float | None, ref: float | None) -> str:
     return f"{sign}{abs(delta):.3f}"
 
 
-def _render(rows: list[dict[str, Any]]) -> str:
+def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> str:
     # discover C for pca(100) last_token full-data
     c_values = sorted(
         {
@@ -175,8 +176,8 @@ def _render(rows: list[dict[str, Any]]) -> str:
         "C": 1.0,
         "training_size_is_none": True,
     }
-    ref_rows = {d: _best_match_row(rows, d, ref_cond) for d in DATASETS}
-    ref_vals = {d: _best_match(rows, d, ref_cond) for d in DATASETS}
+    ref_rows = {d: _best_match_row(baseline_rows, d, ref_cond) for d in DATASETS}
+    ref_vals = {d: _best_match(baseline_rows, d, ref_cond) for d in DATASETS}
     lines.append("Baseline" + " & " + " & ".join(_fmt(ref_vals[d]) for d in DATASETS) + r" \\")
 
     lines.append(r"\addlinespace")
@@ -241,6 +242,20 @@ def _render(rows: list[dict[str, Any]]) -> str:
         r"\hspace*{1em}Llama-1B"
         + " & "
         + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(llama_1b_vals, DATASETS))
+        + r" \\"
+    )
+    qwen_32b_vals = [
+            _best_match(
+                rows,
+                d,
+                {"model": "qwen_32b", "mode": "pca", "components": 100, "token_mode": "last_token", "training_size_is_none": True},
+            )
+            for d in DATASETS
+    ]
+    lines.append(
+        r"\hspace*{1em}Qwen-32B"
+        + " & "
+        + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(qwen_32b_vals, DATASETS))
         + r" \\"
     )
     qwen_8b_vals = [
@@ -340,8 +355,9 @@ def _render(rows: list[dict[str, Any]]) -> str:
 
 
 def main() -> None:
-    rows = _load_rows()
-    table = _render(rows)
+    rows = _load_rows(ABLATION_DIR)
+    baseline_rows = _load_rows(SANDBOX_DIR)
+    table = _render(rows, baseline_rows)
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w", encoding="utf-8") as f:
         f.write(table)
