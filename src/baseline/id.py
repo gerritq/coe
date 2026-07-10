@@ -173,7 +173,8 @@ class IDEstimator:
             out_args['target_dataset'] = ood_name
             out_args['datetime'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-            file_name = f"{args.model}_{args.dataset}_2_{ood_name}.json"
+            length_suffix = f"_L{args.max_chars}" if getattr(args, "max_chars", -1) > 0 else ""
+            file_name = f"{args.model}_{args.dataset}_2_{ood_name}{length_suffix}.json"
 
             out = {"args": out_args, 
                    "metrics": metrics_res}

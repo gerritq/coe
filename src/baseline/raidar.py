@@ -283,7 +283,8 @@ class RAIDAR:
                                   f1_threshold=0.5,
                                   acc_threshold=0.5)
 
-            file_name = f"{self.args.model}_{self.args.dataset}_2_{ds['name']}.json"
+            length_suffix = f"_L{self.args.max_chars}" if getattr(self.args, "max_chars", -1) > 0 else ""
+            file_name = f"{self.args.model}_{self.args.dataset}_2_{ds['name']}{length_suffix}.json"
 
             args_copy = Namespace(**vars(self.args))  
             out_args = return_args(args_copy)

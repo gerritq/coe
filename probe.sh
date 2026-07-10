@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=probe_meta_pca_attacks
+#SBATCH --job-name=probe_ece
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
-#SBATCH --time=03:00:00
+#SBATCH --time=02:00:00
 #SBATCH --partition=gpu,nmes_gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
@@ -18,7 +18,7 @@ cd "${ROOT_DIR}"
 
 MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 
-# DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
+DATASETS=("drlDomain_arxiv" "drlDomain_writing_prompt" "drlDomain_yelp_review" "drlDomain_xsum")
 # DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 # DATASETS=("multisocial_en" "multisocial_de" "multisocial_ru" "multisocial_zh")
 # DATASETS=("tsm_first" "tsm_extend" "tsm_sums" "tsm_tst")
@@ -27,7 +27,7 @@ MODELS=("llama_8b") # "llama_8b" "qwen_06b"
 # DATASETS=("apt" "apt_m4_train")
 
 # ALL
-DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
+# DATASETS=("drlAttack_multi_llm_mixing" "drlAttack_paraphrase_attacks_llm" "drlAttack_perturbation_attacks_llm" "drlAttack_prompt_attacks_llm")
 
 TOKEN_MODE="last_token"
 MODES=("meta" "pca") # "default" "meta" "meta_attn" "pca" "meta_no_pca" 

@@ -114,7 +114,8 @@ class EncoderBaseline:
                                   acc_threshold=optimal_thresholds_dict["threshold_acc"],
                                   f1_threshold=optimal_thresholds_dict["threshold_f1"])
             
-            file_name = f"{args.model}_{args.dataset}_2_{ood_name}_N{args.training_size}_S{args.seed}.json"
+            length_suffix = f"_L{args.max_chars}" if getattr(args, "max_chars", -1) > 0 else ""
+            file_name = f"{args.model}_{args.dataset}_2_{ood_name}_N{args.training_size}_S{args.seed}{length_suffix}.json"
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)

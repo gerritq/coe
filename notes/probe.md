@@ -1,4 +1,11 @@
 # To do
+
+- ablation does not use mean raw scores but probabilites ---- needs to be changed
+
+
+
+
+
 - DONE OOD and ID look good
 - DONE edit plot
 - DONE New AI-edit viz

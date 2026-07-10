@@ -21,6 +21,21 @@ SEED = 42
 set_seed(SEED)
 
 
+def truncate_dataset_text(data, max_chars: int):
+    if max_chars <= 0:
+        return data
+
+    def truncate_batch(batch):
+        return {"text": [text[:max_chars] for text in batch["text"]]}
+
+    return data.map(truncate_batch, batched=True)
+
+
+def length_suffix(args: Namespace) -> str:
+    max_chars = int(getattr(args, "max_chars", -1))
+    return f"_L{max_chars}" if max_chars > 0 else ""
+
+
 def supervised_models(args):
     if args.model == "encoder":
         from src.baseline.enc import EncoderBaseline
@@ -46,7 +61,7 @@ def supervised_models(args):
         from src.baseline.id import IDEstimator
         baseline = IDEstimator(args=args)
 
-    source_data = load_dataset(args=args)
+    source_data = truncate_dataset_text(load_dataset(args=args), args.max_chars)
     ood_data = []
     for target_dataset in OOD[args.dataset.split("_")[0]]:
         if not args.ood:
@@ -57,10 +72,11 @@ def supervised_models(args):
         print(f"Loading target dataset: {target_dataset}")
         print("="*60)
 
-        target_data = load_dataset(args=Namespace(dataset=target_dataset, 
-                                                  smoke_test=args.smoke_test, 
+        target_data = load_dataset(args=Namespace(dataset=target_dataset,
+                                                  smoke_test=args.smoke_test,
                                                   training_size=args.training_size,
                                                   seed=args.seed))
+        target_data = truncate_dataset_text(target_data, args.max_chars)
         ood_data.append({"data": target_data, "name": target_dataset})
 
     scores = baseline.run(args=args, training_data=source_data, ood_data=ood_data)
@@ -120,7 +136,7 @@ def run(args):
     # UNSUPERVISED MODELS
     else:
         # Source dataset for calibration.
-        source_data = load_dataset(args=args)
+        source_data = truncate_dataset_text(load_dataset(args=args), args.max_chars)
         baseline = return_model (args)
         
         # VAL
@@ -143,10 +159,11 @@ def run(args):
             print("="*60)
 
             # bit reduant for the ID case but whatever
-            target_data = load_dataset(args=Namespace(dataset=target_dataset, 
-                                                      smoke_test=args.smoke_test, 
-                                                      training_size=args.training_size, 
+            target_data = load_dataset(args=Namespace(dataset=target_dataset,
+                                                      smoke_test=args.smoke_test,
+                                                      training_size=args.training_size,
                                                       seed=args.seed))
+            target_data = truncate_dataset_text(target_data, args.max_chars)
             target_y = target_data['test']["label"]
             target_text = target_data['test']["text"]
             
@@ -159,7 +176,7 @@ def run(args):
                                 f1_threshold=optimal_thresholds_dict["threshold_f1"],
                                 acc_threshold=optimal_thresholds_dict["threshold_acc"])
 
-            file_name = f"{args.model}_{args.dataset}_2_{target_dataset}.json"
+            file_name = f"{args.model}_{args.dataset}_2_{target_dataset}{length_suffix(args)}.json"
 
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)
@@ -184,6 +201,7 @@ def main():
     parser.add_argument("--training_size", type=int, default=None)
     parser.add_argument("--folder", type=str, default="sandbox")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--max_chars", type=int, default=-1)
     args = parser.parse_args()
 
     if args.smoke_test not in (0, 1):

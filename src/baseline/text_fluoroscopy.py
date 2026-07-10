@@ -244,7 +244,8 @@ class TextFluoroscopy:
         )
 
         for ood_name, metrics in results["ood_metrics"].items():
-            file_name = f"{args.model}_{args.dataset}_2_{ood_name}.json"
+            length_suffix = f"_L{args.max_chars}" if getattr(args, "max_chars", -1) > 0 else ""
+            file_name = f"{args.model}_{args.dataset}_2_{ood_name}{length_suffix}.json"
             
             args_copy = Namespace(**vars(args))  
             out_args = return_args(args_copy)

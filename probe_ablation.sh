@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=ablation_get_del
+#SBATCH --job-name=ablation_ece
 #SBATCH --output=logs/%j.out
 #SBATCH --error=logs/%j.err
 #SBATCH --time=01:00:00
