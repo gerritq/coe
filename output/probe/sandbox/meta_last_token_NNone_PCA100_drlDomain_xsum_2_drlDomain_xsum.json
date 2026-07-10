@@ -3,14 +3,15 @@
         "model": "llama_8b",
         "dataset": "drlDomain_xsum",
         "token_mode": "last_token",
-        "ood": true,
+        "ood": false,
         "smoke_test": false,
         "components": 100,
         "mode": "meta",
         "training_size": null,
         "folder": "sandbox",
+        "max_chars": -1,
         "target_dataset": "drlDomain_xsum",
-        "datetime": "2026-05-21 20:24:19"
+        "datetime": "2026-07-11 00:22:13"
     },
     "test_metrics": {
         "meta_metrics": {
@@ -21,7 +22,8 @@
             "tpr_at_fpr_0_05": 1.0,
             "optimal_threshold_f1": 0.5,
             "optimal_threshold_acc": 0.5,
-            "aupr": 0.9999840637450199
+            "aupr": 0.9999840637450199,
+            "ece": 0.0029248928316174313
         }
     },
     "sim_correlations": null,

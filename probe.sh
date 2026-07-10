@@ -7,7 +7,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50GB
 #SBATCH --constraint=h200|a100
-#SBATCH --exclude=erc-hpc-comp054
+#SBATCH --exclude=erc-hpc-comp054,erc-hpc-comp040
 
 set -euo pipefail
 
