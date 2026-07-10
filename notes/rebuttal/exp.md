@@ -1,4 +1,4 @@
-1. Non-pca reduced performance is slightly stronger or similarly strong. More complete no-pca results would make the conclusion stronger
+# 1. Non-pca reduced performance is slightly stronger or similarly strong. More complete no-pca results would make the conclusion stronger
 
 - DONE: table comparing pca vs non-pca for llp and clp across datasets
 
