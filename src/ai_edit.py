@@ -33,6 +33,7 @@ LOCAL_EDITLENS_PATH = Path(
 )
 EDITLENS_PATH = Path(os.getenv("EDITLENS_PATH", SCRATCH_EDITLENS_PATH if SCRATCH_EDITLENS_PATH.exists() else LOCAL_EDITLENS_PATH))
 OUT_PATH = BASE_DIR / "notes" / "rebuttal" / "ai_edit.json"
+EDITLENS_MODEL = "pangram/editlens_roberta-large"
 
 LABEL_ORDER = ["human_written", "ai_edited", "ai_generated"]
 LABEL_TO_ID = {label: idx for idx, label in enumerate(LABEL_ORDER)}
@@ -193,6 +194,21 @@ def train_bert(args: Namespace, train_items: list[dict[str, Any]], val_items: li
     }
 
 
+def eval_editlens(args: Namespace, val_items: list[dict[str, Any]], test_items: list[dict[str, Any]]) -> dict[str, Any]:
+    from src.baseline.mlmodel import MLModels
+
+    model = MLModels(model_name=EDITLENS_MODEL)
+    model_args = Namespace(model="editlens")
+    val_scores = np.asarray(model.run([item["text"] for item in val_items], model_args), dtype=np.float64)
+    test_scores = np.asarray(model.run([item["text"] for item in test_items], model_args), dtype=np.float64)
+
+    thresholds = tune_two_thresholds(val_scores, labels_array(val_items))
+    return {
+        "thresholds": thresholds,
+        "test_labels": labels_from_thresholds(test_scores, thresholds),
+    }
+
+
 def collect_hidden_states(items: list[dict[str, Any]], args: Namespace) -> dict[str, np.ndarray]:
     inference = Inference(args.llp_model)
     hidden_states = []
@@ -310,6 +326,7 @@ def main() -> None:
     test_items = splits["test"]
 
     bert_out = train_bert(args, train_items, val_items, test_items)
+    editlens_out = eval_editlens(args, val_items, test_items)
     probe_out = train_probes(args, train_items, val_items, test_items)
 
     out = {
@@ -326,6 +343,10 @@ def main() -> None:
             "encoder": {
                 "validation_score_thresholds": bert_out["thresholds"],
                 "metrics": evaluate_predictions(bert_out["test_labels"], test_items),
+            },
+            "editlens": {
+                "validation_score_thresholds": editlens_out["thresholds"],
+                "metrics": evaluate_predictions(editlens_out["test_labels"], test_items),
             },
             "llp": {
                 "validation_score_thresholds": probe_out["llp"]["thresholds"],
