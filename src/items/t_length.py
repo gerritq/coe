@@ -6,9 +6,10 @@ from collections import defaultdict
 
 BASE_DIR = os.getenv("BASE_COE", ".")
 PROBE_DIR = os.path.join(BASE_DIR, "output", "probe", "ablation")
+BASELINE_ABLATION_DIR = os.path.join(BASE_DIR, "output", "baseline", "ablation")
 OUT_PATH = os.path.join(BASE_DIR, "output", "item", "t_length.tex")
 
-MODE_ORDER = ["default", "pca", "meta", "meta_no_pca", "mlp", "first_layer", "last_layer"]
+MODE_ORDER = ["default", "pca", "meta", "encoder", "meta_no_pca", "mlp", "first_layer", "last_layer"]
 
 
 def _auroc(obj: dict) -> float | None:
@@ -55,6 +56,35 @@ def collect_scores() -> dict[str, dict[int, list[float]]]:
             continue
 
         scores[str(mode)][max_chars].append(auroc)
+
+    if os.path.isdir(BASELINE_ABLATION_DIR):
+        for filename in sorted(os.listdir(BASELINE_ABLATION_DIR)):
+            if not filename.endswith(".json"):
+                continue
+
+            path = os.path.join(BASELINE_ABLATION_DIR, filename)
+            with open(path, "r", encoding="utf-8") as f:
+                obj = json.load(f)
+
+            args = obj.get("args", {})
+            if args.get("model") != "encoder":
+                continue
+            if "max_chars" not in args:
+                continue
+
+            max_chars = int(args["max_chars"])
+            if max_chars == -1:
+                continue
+
+            auroc = obj.get("metrics", {}).get("auroc")
+            if auroc is None:
+                continue
+
+            auroc = float(auroc)
+            if math.isnan(auroc):
+                continue
+
+            scores["encoder"][max_chars].append(auroc)
 
     return scores
 
