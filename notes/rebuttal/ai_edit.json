@@ -1,0 +1,114 @@
+{
+  "args": {
+    "seed": 42,
+    "data_path": "/scratch/prj/inf_nlg_ai_detection/coe/data/raw/editlens/train.csv",
+    "bert_model": "bert-base-uncased",
+    "bert_epochs": 2,
+    "bert_batch_size": 16,
+    "bert_lr": 2e-05,
+    "bert_max_length": 256,
+    "llp_model": "llama_8b",
+    "llp_mode": "default",
+    "components": 50,
+    "token_mode": "last_token"
+  },
+  "data": {
+    "path": "/scratch/prj/inf_nlg_ai_detection/coe/data/raw/editlens/train.csv",
+    "labels": [
+      "human_written",
+      "ai_edited",
+      "ai_generated"
+    ],
+    "requested_sizes": {
+      "train": 1000,
+      "val": 200,
+      "test": 200
+    },
+    "train_size": 999,
+    "validation_size": 198,
+    "test_size": 198
+  },
+  "models": {
+    "encoder": {
+      "validation_score_thresholds": [
+        0.5597271472215652,
+        1.3678453117609024
+      ],
+      "metrics": {
+        "accuracy": 0.6565656565656566,
+        "macro_f1": 0.6477272727272728,
+        "by_group": {
+          "human_written": {
+            "n": 66,
+            "accuracy": 0.5303030303030303,
+            "f1": 0.5833333333333334
+          },
+          "ai_edited": {
+            "n": 66,
+            "accuracy": 0.48484848484848486,
+            "f1": 0.48484848484848486
+          },
+          "ai_generated": {
+            "n": 66,
+            "accuracy": 0.9545454545454546,
+            "f1": 0.875
+          }
+        }
+      }
+    },
+    "llp": {
+      "validation_score_thresholds": [
+        0.49855165743959806,
+        1.7251876373131938
+      ],
+      "metrics": {
+        "accuracy": 0.8484848484848485,
+        "macro_f1": 0.848089766942226,
+        "by_group": {
+          "human_written": {
+            "n": 66,
+            "accuracy": 0.8787878787878788,
+            "f1": 0.8055555555555556
+          },
+          "ai_edited": {
+            "n": 66,
+            "accuracy": 0.696969696969697,
+            "f1": 0.7540983606557377
+          },
+          "ai_generated": {
+            "n": 66,
+            "accuracy": 0.9696969696969697,
+            "f1": 0.9846153846153847
+          }
+        }
+      }
+    },
+    "clp": {
+      "validation_score_thresholds": [
+        0.4522831121018845,
+        1.9444435502209234
+      ],
+      "metrics": {
+        "accuracy": 0.8535353535353535,
+        "macro_f1": 0.8533439460268729,
+        "by_group": {
+          "human_written": {
+            "n": 66,
+            "accuracy": 0.8787878787878788,
+            "f1": 0.8111888111888111
+          },
+          "ai_edited": {
+            "n": 66,
+            "accuracy": 0.7121212121212122,
+            "f1": 0.7642276422764228
+          },
+          "ai_generated": {
+            "n": 66,
+            "accuracy": 0.9696969696969697,
+            "f1": 0.9846153846153847
+          }
+        }
+      }
+    }
+  }
+}
