@@ -7,6 +7,7 @@ BASE_DIR = os.getenv("BASE_COE", ".")
 ABLATION_DIR = os.path.join(BASE_DIR, "output", "probe", "ablation")
 SANDBOX_DIR = os.path.join(BASE_DIR, "output", "probe", "sandbox")
 OUT_PATH = os.path.join(BASE_DIR, "output", "item", "t_ablation_pca.tex")
+META_OUT_PATH = os.path.join(BASE_DIR, "output", "item", "t_ablation_meta_pca.tex")
 
 DATASETS = ["tsm_first", "tsm_extend", "tsm_sums", "tsm_tst"]
 DATASET_LABELS = {
@@ -41,8 +42,10 @@ def _load_rows(directory: str) -> list[dict[str, Any]]:
             continue
 
         metrics = obj.get("test_metrics", {})
-        mp = metrics.get("mean_projection_metrics", {})
-        auroc = mp.get("auroc")
+        if args.get("mode") in {"meta", "meta_no_pca", "meta_attn"}:
+            auroc = metrics.get("meta_metrics", {}).get("auroc")
+        else:
+            auroc = metrics.get("mean_projection_metrics", {}).get("auroc")
         if auroc is None:
             continue
 
@@ -130,13 +133,17 @@ def _fmt_delta_only(x: float | None, ref: float | None) -> str:
     return f"{sign}{abs(delta):.3f}"
 
 
-def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> str:
+def _render(
+    rows: list[dict[str, Any]],
+    baseline_rows: list[dict[str, Any]],
+    mode: str,
+) -> str:
     # discover C for pca(100) last_token full-data
     c_values = sorted(
         {
             float(r.get("C", 1.0))
             for r in rows
-            if r.get("mode") == "pca"
+            if r.get("mode") == mode
             and int(r.get("components")) == 100
             and r.get("token_mode") == "last_token"
             and _is_full_data(r.get("training_size"))
@@ -150,7 +157,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
         {
             int(r.get("components"))
             for r in rows
-            if r.get("mode") == "pca"
+            if r.get("mode") == mode
             and r.get("token_mode") == "last_token"
             and _is_full_data(r.get("training_size"))
             and r.get("components") is not None
@@ -170,7 +177,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
 
     ref_cond = {
         "model": "llama_8b",
-        "mode": "pca",
+        "mode": mode,
         "components": 100,
         "token_mode": "last_token",
         "C": 1.0,
@@ -182,7 +189,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
 
     lines.append(r"\addlinespace")
     lines.append(r"\multicolumn{5}{l}{\textbf{Token Aggregation}} \\")
-    pooling_vals = [_best_match(rows, d, {"mode": "pca", "components": 100, "token_mode": "pooling", "C": 1.0, "training_size_is_none": True}) for d in DATASETS]
+    pooling_vals = [_best_match(rows, d, {"mode": mode, "components": 100, "token_mode": "pooling", "C": 1.0, "training_size_is_none": True}) for d in DATASETS]
     lines.append(r"\hspace*{1em}Pooling" + " & " + " & ".join(_fmt_delta_only(v, ref_vals[d]) for v, d in zip(pooling_vals, DATASETS)) + r" \\")
 
     lines.append(r"\addlinespace")
@@ -220,7 +227,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
             _best_match(
                 rows,
                 d,
-                {"model": "llama_3b", "mode": "pca", "components": 100, "token_mode": "last_token", "training_size_is_none": True},
+                {"model": "llama_3b", "mode": mode, "components": 100, "token_mode": "last_token", "training_size_is_none": True},
             )
             for d in DATASETS
     ]
@@ -234,7 +241,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
             _best_match(
                 rows,
                 d,
-                {"model": "llama_1b", "mode": "pca", "components": 100, "token_mode": "last_token", "training_size_is_none": True},
+                {"model": "llama_1b", "mode": mode, "components": 100, "token_mode": "last_token", "training_size_is_none": True},
             )
             for d in DATASETS
     ]
@@ -248,7 +255,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
             _best_match(
                 rows,
                 d,
-                {"model": "qwen_32b", "mode": "pca", "components": 100, "token_mode": "last_token", "training_size_is_none": True},
+                {"model": "qwen_32b", "mode": mode, "components": 100, "token_mode": "last_token", "training_size_is_none": True},
             )
             for d in DATASETS
     ]
@@ -262,7 +269,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
             _best_match(
                 rows,
                 d,
-                {"model": "qwen_8b", "mode": "pca", "components": 100, "token_mode": "last_token", "training_size_is_none": True},
+                {"model": "qwen_8b", "mode": mode, "components": 100, "token_mode": "last_token", "training_size_is_none": True},
             )
             for d in DATASETS
     ]
@@ -276,7 +283,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
             _best_match(
                 rows,
                 d,
-                {"model": "qwen_4b", "mode": "pca", "components": 100, "token_mode": "last_token", "training_size_is_none": True},
+                {"model": "qwen_4b", "mode": mode, "components": 100, "token_mode": "last_token", "training_size_is_none": True},
             )
             for d in DATASETS
     ]
@@ -290,7 +297,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
             _best_match(
                 rows,
                 d,
-                {"model": "qwen_06b", "mode": "pca", "components": 100, "token_mode": "last_token", "training_size_is_none": True},
+                {"model": "qwen_06b", "mode": mode, "components": 100, "token_mode": "last_token", "training_size_is_none": True},
             )
             for d in DATASETS
     ]
@@ -310,7 +317,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
             _best_match(
                 rows,
                 d,
-                {"mode": "pca", "components": 100, "token_mode": "last_token", "C": c, "training_size_is_none": True},
+                {"mode": mode, "components": 100, "token_mode": "last_token", "C": c, "training_size_is_none": True},
             )
             for d in DATASETS
         ]
@@ -327,7 +334,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
             _best_match(
                 rows,
                 d,
-                {"mode": "pca", "token_mode": "last_token", "components": k, "training_size_is_none": True},
+                {"mode": mode, "token_mode": "last_token", "components": k, "training_size_is_none": True},
             )
             for d in DATASETS
         ]
@@ -339,7 +346,7 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
         _best_match(
             rows,
             d,
-            {"mode": "default", "components": 50, "token_mode": "last_token", "training_size_is_none": True},
+            {"mode": "meta_no_pca" if mode == "meta" else "default", "components": 50, "token_mode": "last_token", "training_size_is_none": True},
         )
         for d in DATASETS
     ]
@@ -357,11 +364,12 @@ def _render(rows: list[dict[str, Any]], baseline_rows: list[dict[str, Any]]) -> 
 def main() -> None:
     rows = _load_rows(ABLATION_DIR)
     baseline_rows = _load_rows(SANDBOX_DIR)
-    table = _render(rows, baseline_rows)
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
-    with open(OUT_PATH, "w", encoding="utf-8") as f:
-        f.write(table)
-    print(f"Saved: {OUT_PATH}")
+
+    for mode, out_path in [("pca", OUT_PATH), ("meta", META_OUT_PATH)]:
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(_render(rows, baseline_rows, mode))
+        print(f"Saved: {out_path}")
 
 
 if __name__ == "__main__":

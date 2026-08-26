@@ -4,7 +4,7 @@
 \cmidrule(lr){2-5}\cmidrule(lr){6-9}\cmidrule(lr){10-13}\cmidrule(lr){14-17}
 \textbf{Model} & \textbf{ArXiv} & \textbf{Reddit} & \textbf{Yelp} & \textbf{News} & \textbf{en} & \textbf{de} & \textbf{ru} & \textbf{zh} & \textbf{Cohere} & \textbf{GPT4} & \textbf{Llama} & \textbf{Mistral} & \textbf{FP} & \textbf{PE} & \textbf{SUM} & \textbf{TST} \\
 \midrule
-\multicolumn{17}{l}{\textbf{Zero-shot}} \\
+\rowcolor{gray!15} \multicolumn{17}{c}{\textbf{Zero-shot}} \\
 \midrule
 Likelihood & 0.6534 & 0.8620 & 0.8852 & 0.5793 & 0.7902 & 0.6935 & 0.6720 & 0.5848 & 0.7025 & 0.6937 & 0.7867 & 0.7339 & 0.5214 & 0.4344 & 0.5045 & 0.5096 \\
 LLR & 0.7317 & 0.8226 & 0.8660 & 0.5965 & 0.7759 & 0.7130 & 0.6333 & 0.6500 & 0.7577 & 0.7212 & 0.8406 & 0.8091 & 0.5025 & 0.4130 & 0.5147 & 0.5107 \\
@@ -15,7 +15,7 @@ RAIDAR & 0.8566 & 0.5395 & 0.7158 & 0.8490 & 0.8131 & 0.7943 & 0.6446 & 0.9153 &
 FastDetectGPT & 0.8563 & 0.6969 & 0.8304 & 0.6842 & 0.7850 & 0.7185 & 0.6500 & 0.6251 & 0.8922 & 0.7441 & 0.8221 & 0.7752 & 0.5060 & 0.4347 & 0.6082 & 0.4963 \\
 Binoculars & 0.9393 & 0.9423 & 0.9661 & 0.8682 & 0.8082 & 0.7473 & 0.7118 & 0.7428 & 0.9312 & 0.8960 & 0.9490 & 0.9207 & 0.5668 & 0.4930 & 0.6294 & 0.5429 \\
 \midrule
-\multicolumn{17}{l}{\textbf{Supervised}} \\
+\rowcolor{gray!15} \multicolumn{17}{c}{\textbf{Supervised}} \\
 \midrule
 EditLens & 0.6732 & 0.4702 & 0.5050 & 0.3088 & 0.6769 & 0.7164 & 0.7510 & 0.6432 & 0.6532 & 0.5239 & 0.5835 & 0.5707 & 0.5840 & 0.6991 & 0.6092 & 0.6313 \\
 ID & 0.7251 & 0.5616 & 0.6996 & 0.7681 & 0.5487 & 0.4998 & 0.5793 & 0.4900 & 0.5383 & 0.4832 & 0.5075 & 0.5280 & 0.5513 & 0.4715 & 0.5916 & 0.5312 \\
@@ -26,7 +26,7 @@ BiScope & 0.9923 & 0.9820 & 0.9838 & 0.9925 & 0.8789 & 0.8014 & 0.7779 & 0.7904 
 TextFluoroscopy & \cellcolor{orange!25}\underline{0.9948} & 0.9983 & 0.9951 & \cellcolor{orange!25}\underline{0.9980} & 0.9313 & 0.9015 & 0.8810 & 0.9032 & 0.8832 & 0.9546 & 0.9692 & 0.9492 & 0.7058 & 0.3723 & 0.2781 & 0.4089 \\
 RoBERTa & \cellcolor{cyan!25}\textbf{1.0000} & 0.9996 & 0.9994 & \cellcolor{cyan!25}\textbf{1.0000} & 0.9507 & 0.8649 & 0.7762 & 0.8471 & 0.9404 & 0.9669 & 0.9770 & 0.9814 & 0.9361 & 0.7539 & 0.9333 & 0.7924 \\
 \midrule
-\multicolumn{17}{l}{\textbf{Linear Probes}} \\
+\rowcolor{gray!15} \multicolumn{17}{c}{\textbf{Linear Probes}} \\
 \midrule
 LLP & \cellcolor{cyan!25}\textbf{1.0000} & \cellcolor{cyan!25}\textbf{1.0000} & \cellcolor{cyan!25}\textbf{1.0000} & \cellcolor{cyan!25}\textbf{1.0000} & \cellcolor{cyan!25}\textbf{0.9565} & \cellcolor{cyan!25}\textbf{0.9337} & \cellcolor{cyan!25}\textbf{0.9212} & \cellcolor{orange!25}\underline{0.9443} & \cellcolor{cyan!25}\textbf{0.9714} & \cellcolor{cyan!25}\textbf{0.9925} & \cellcolor{orange!25}\underline{0.9946} & \cellcolor{cyan!25}\textbf{0.9928} & \cellcolor{orange!25}\underline{0.9707} & \cellcolor{cyan!25}\textbf{0.9424} & \cellcolor{cyan!25}\textbf{0.9783} & \cellcolor{cyan!25}\textbf{0.8960} \\
 \hspace*{1em}$\Delta$ vs BL & \textcolor{green!60!black}{+0.00} & \textcolor{green!60!black}{+0.04} & \textcolor{green!60!black}{+0.06} & \textcolor{green!60!black}{+0.00} & \textcolor{green!60!black}{+0.58} & \textcolor{green!60!black}{+3.22} & \textcolor{green!60!black}{+4.02} & \textcolor{green!60!black}{+2.90} & \textcolor{green!60!black}{+3.09} & \textcolor{green!60!black}{+2.55} & \textcolor{green!60!black}{+1.76} & \textcolor{green!60!black}{+1.14} & \textcolor{green!60!black}{+3.46} & \textcolor{green!60!black}{+18.85} & \textcolor{green!60!black}{+4.50} & \textcolor{green!60!black}{+10.35} \\

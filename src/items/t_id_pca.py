@@ -354,7 +354,7 @@ def render_table(
         "\\midrule",
     ]
 
-    lines.append("\\multicolumn{%d}{l}{\\textbf{Zero-shot}} \\\\" % (n_data_cols + 1))
+    lines.append('\\rowcolor{gray!15} \\multicolumn{%d}{c}{\\textbf{Zero-shot}} \\\\' % (n_data_cols + 1))
     lines.append("\\midrule")
     for model in ZERO_SHOT_MODELS:
         if model not in baseline_rows:
@@ -367,7 +367,7 @@ def render_table(
         lines.append(f"{_tex_escape(model_label)} & " + " & ".join(vals) + " \\\\")
 
     lines.append("\\midrule")
-    lines.append("\\multicolumn{%d}{l}{\\textbf{Supervised}} \\\\" % (n_data_cols + 1))
+    lines.append('\\rowcolor{gray!15} \\multicolumn{%d}{c}{\\textbf{Supervised}} \\\\' % (n_data_cols + 1))
     lines.append("\\midrule")
     for model in SUPERVISED_MODELS:
         if model not in baseline_rows:
@@ -380,7 +380,7 @@ def render_table(
         lines.append(f"{_tex_escape(model_label)} & " + " & ".join(vals) + " \\\\")
 
     lines.append("\\midrule")
-    lines.append("\\multicolumn{%d}{l}{\\textbf{Linear Probes}} \\\\" % (n_data_cols + 1))
+    lines.append('\\rowcolor{gray!15} \\multicolumn{%d}{c}{\\textbf{Linear Probes}} \\\\' % (n_data_cols + 1))
     lines.append("\\midrule")
 
     baseline_models = [m for m in (ZERO_SHOT_MODELS + SUPERVISED_MODELS) if m in baseline_rows]

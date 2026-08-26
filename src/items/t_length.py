@@ -11,6 +11,14 @@ OUT_PATH = os.path.join(BASE_DIR, "output", "item", "t_length.tex")
 
 MODE_ORDER = ["default", "pca", "meta", "encoder", "meta_no_pca", "mlp", "first_layer", "last_layer"]
 
+MODE_LABELS = {
+    "default": "LLP",
+    "pca": "LLP",
+    "meta": "CLP",
+    "meta_no_pca": "CLP",
+    "encoder": "RoBERTa",
+}
+
 
 def _auroc(obj: dict) -> float | None:
     args = obj.get("args", {})
@@ -102,19 +110,20 @@ def _ordered_modes(scores: dict[str, dict[int, list[float]]]) -> list[str]:
 
 
 def render_table(scores: dict[str, dict[int, list[float]]]) -> str:
-    lengths = sorted({length for by_length in scores.values() for length in by_length})
+    lengths = sorted({length for by_length in scores.values() for length in by_length if length <= 400})
     cols = "l" + "c" * len(lengths)
 
     lines = [
         f"\\begin{{tabular}}{{{cols}}}",
         "\\toprule",
-        "Metric & " + " & ".join(str(length) for length in lengths) + r" \\",
+        'Model $\\downarrow$ & \\multicolumn{%d}{c}{$n$ chars $\\rightarrow$} \\\\' % len(lengths),
+        " & " + " & ".join(str(length) for length in lengths) + r" \\",
         "\\midrule",
     ]
 
     for mode in _ordered_modes(scores):
         vals = [_fmt(scores[mode].get(length, [])) for length in lengths]
-        lines.append(f"AUC ({mode}) & " + " & ".join(vals) + r" \\")
+        lines.append(f"{MODE_LABELS.get(mode, mode)} & " + " & ".join(vals) + r" \\")
 
     lines.extend(["\\bottomrule", "\\end{tabular}"])
     return "\n".join(lines)
